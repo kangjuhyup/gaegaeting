@@ -1,0 +1,17 @@
+import { UserEntity, UserGender, UserRegion } from "@app/domain/model/user";
+import { Command } from "@nestjs/cqrs";
+
+export class UpdateUserCommand extends Command<UserEntity> {
+  constructor(
+    public readonly id: string,
+    public readonly data: {
+      nickname?: string;
+      profileImageUrl?: string;
+      gender?: UserGender;
+      region?: UserRegion;
+      bio?: string;
+    },
+  ) {
+    super();
+  }
+}
