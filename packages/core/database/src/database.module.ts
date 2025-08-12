@@ -102,7 +102,7 @@ export class DatabaseModule {
         ...this.createAsyncProviders(options),
         // 여기에 데이터베이스 관련 서비스 제공자를 추가합니다
       ],
-      exports: [TypeOrmModule, "DATABASE_OPTIONS"],
+      exports: [TypeOrmModule],
     };
   }
 

@@ -3,14 +3,14 @@ import {
   UserIdColumn,
   UserBasicInfoColumn,
   UserPersonalInfoColumn,
-  UserAuthInfoColumn,
+  UserStatusColumn,
   UserMetadataColumn,
   UserGender,
   UserStatus,
-  AuthProvider,
   UserRegion,
 } from "../column/user";
 import { PetOrmEntity } from "./pet";
+import { AuthOrmEntity } from "./auth";
 
 /**
  * 사용자 엔티티
@@ -24,7 +24,7 @@ export class UserOrmEntity
   implements
     UserBasicInfoColumn,
     UserPersonalInfoColumn,
-    UserAuthInfoColumn,
+    UserStatusColumn,
     UserMetadataColumn
 {
   // UserBasicInfoColumn 구현
@@ -40,11 +40,8 @@ export class UserOrmEntity
   bio: string | null;
   phoneNumber: string | null;
 
-  // UserAuthInfoColumn 구현
-  authProvider: AuthProvider;
-  authProviderId: string | null;
+  // UserStatusColumn 구현
   status: UserStatus;
-  lastLoginAt: Date | null;
 
   // UserMetadataColumn 구현
   createdAt: Date;
@@ -55,4 +52,12 @@ export class UserOrmEntity
    */
   @OneToMany(() => PetOrmEntity, (pet) => pet.owner)
   pets: PetOrmEntity[];
+
+  /**
+   * 사용자의 인증 정보들
+   * 
+   * 한 사용자는 여러 인증 세션을 가질 수 있습니다.
+   */
+  @OneToMany(() => AuthOrmEntity, (auth) => auth.user)
+  auths: AuthOrmEntity[];
 }

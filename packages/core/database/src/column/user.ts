@@ -120,33 +120,17 @@ export class UserPersonalInfoColumn {
 }
 
 /**
- * 사용자 인증 정보 컴포넌트
+ * 사용자 상태 컴포넌트
  */
-export class UserAuthInfoColumn {
-  /**
-   * 인증 방식
-   */
-  @Column({ type: 'enum', enum: AuthProvider, default: AuthProvider.EMAIL, name: 'auth_provider' })
-  authProvider: AuthProvider;
-
-  /**
-   * 소셜 로그인 제공자 ID
-   */
-  @Column({ type: 'varchar', length: 255, nullable: true, name: 'auth_provider_id' })
-  authProviderId: string | null;
-
+export class UserStatusColumn {
   /**
    * 회원 상태
    */
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE, name: 'status' })
   status: UserStatus;
-
-  /**
-   * 마지막 로그인 시간
-   */
-  @Column({ type: 'timestamp', nullable: true, name: 'last_login_at' })
-  lastLoginAt: Date | null;
 }
+
+// 나머지 인증 관련 컴포넌트는 Auth 엔티티로 이동되었습니다.
 
 /**
  * 사용자 메타데이터 컴포넌트

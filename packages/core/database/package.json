@@ -1,10 +1,12 @@
 {
   "name": "@core/database",
   "version": "0.0.1",
-  "description": "",
+  "description": "데이터베이스 모듈",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -19,11 +21,13 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/typeorm": "^11.0.0",
     "dotenv": "^16.4.5",
     "mysql2": "^3.11.3",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "tslib": "^2.7.0",
+    "typeorm": "^0.3.25",
     "ulid": "^3.0.1"
   },
   "devDependencies": {
