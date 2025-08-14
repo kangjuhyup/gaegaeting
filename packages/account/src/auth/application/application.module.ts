@@ -13,9 +13,9 @@ const providers : Provider[] = [
 ]
 
 @Module({
-    imports : [
-        AuthInfraStructureModule,
-            // JWT
+  imports : [
+    AuthInfraStructureModule,
+    // JWT
     JwtModule.registerAsync({
         imports: [ConfigModule],
         inject: [ConfigService],
@@ -26,9 +26,9 @@ const providers : Provider[] = [
           },
         }),
       }),   
-    ],
-    providers : providers,
-    exports : providers
+  ],
+  providers : providers,
+  exports : providers
 })
 export class AuthApplicationModule {
     

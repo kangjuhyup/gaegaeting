@@ -5,7 +5,7 @@ import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
 import { ENV_KEY } from '../../config/env.config';
-import { AuthProvider } from '@app/auth/domain/model/type/auth-provider.type';
+import { AuthProvider } from '@core/database';
 
 /**
  * 카카오 인증 어댑터

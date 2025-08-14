@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { SocialRedirectQuery } from "@app/auth/application/port/in/query/social-redirect.port";
-import { AuthProvider } from '@app/auth/domain/model/type/auth-provider.type';
+import { AuthProvider } from '@core/database';
 import { SocialRedirectStrategy, KakaoRedirectStrategy, NaverRedirectStrategy, GoogleRedirectStrategy } from '../redirect-strategy';
 
 @QueryHandler(SocialRedirectQuery)

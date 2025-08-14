@@ -9,8 +9,6 @@ import { AuthMapper } from "./repository/mapper/auth.mapper";
 import { DatabaseModule, DatabaseSchema } from "@core/database";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { HttpModule } from "@core/http";
-import { UserRepositoryPort } from "../domain/port/out/user-repository.port";
-import { UserOrmRepository } from "@app/user/infrastructure/repository/user";
 
 const providers : Provider[] = [
     // 매퍼 클래스
@@ -19,10 +17,6 @@ const providers : Provider[] = [
     {
         provide : AuthRepositoryPort,
         useClass : AuthOrmRepository
-    },
-    {
-        provide : UserRepositoryPort,
-        useClass : UserOrmRepository
     },
     // 소셜 인증 제공자
     {

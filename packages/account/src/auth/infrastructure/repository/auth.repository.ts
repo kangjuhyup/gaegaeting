@@ -1,6 +1,6 @@
 import { AuthRepositoryPort } from "@app/auth/domain/port/out/auth-repository.port";
 import { AuthEntity } from "@app/auth/domain/model/auth";
-import { AuthProvider } from "@app/auth/domain/model/type/auth-provider.type";
+import { AuthProvider } from "@core/database";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
@@ -15,12 +15,12 @@ export class AuthOrmRepository implements AuthRepositoryPort {
         @InjectRepository(AuthOrmEntity) private readonly auth : Repository<AuthOrmEntity>
     ) {}
     
-    async saveAuth(userId: string, auth: AuthEntity): Promise<string> {
+    async saveAuth(auth: AuthEntity): Promise<number> {
         const ormEntity = this.authMapper.toOrmEntity(auth);
-        ormEntity.user.id = userId;
         const authEntity = await this.auth.save(ormEntity);
         return authEntity.id;
     }
+
     async findByUserIdAndProvider(userId: string, provider: AuthProvider, providerId: string): Promise<AuthEntity | null> {
         const ormEntity = await this.auth.findOne({
             where: {
@@ -43,8 +43,8 @@ export class AuthOrmRepository implements AuthRepositoryPort {
         
         return ormEntity ? this.authMapper.toDomainEntity(ormEntity) : null;
     }
-    async updateAuth(authId: string, auth: AuthEntity): Promise<boolean> {
-        await this.auth.update(authId, auth);
+    async updateAuth(authId: number, auth: AuthEntity): Promise<boolean> {
+        await this.auth.update(authId, this.authMapper.toOrmEntity(auth));
         return true;
     }
     

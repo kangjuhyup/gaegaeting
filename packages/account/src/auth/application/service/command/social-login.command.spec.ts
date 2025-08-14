@@ -5,9 +5,8 @@ import { SocialLoginCommand } from '@app/auth/application/port/in/command/social
 import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
-import { UserRepositoryPort } from '@app/auth/domain/port/out/user-repository.port';
 import { AuthRepositoryPort } from '@app/auth/domain/port/out/auth-repository.port';
-import { AuthProvider } from '@app/auth/domain/model/type/auth-provider.type';
+import { AuthProvider } from '@core/database';
 
 /**
  * 소셜 로그인 커맨드 핸들러 테스트
@@ -18,7 +17,6 @@ describe('SocialLoginHandler', () => {
   let handler: SocialLoginHandler;
   let jwtService: JwtService;
   let kakaoAuthProvider: SocialAuthProviderPort;
-  let userRepository: UserRepositoryPort;
   let authRepository: AuthRepositoryPort;
   
   // 테스트용 모의 객체 생성
@@ -59,10 +57,6 @@ describe('SocialLoginHandler', () => {
           useValue: [mockKakaoAuthProvider],
         },
         {
-          provide: UserRepositoryPort,
-          useValue: mockUserRepository,
-        },
-        {
           provide: AuthRepositoryPort,
           useValue: mockAuthRepository,
         },
@@ -73,7 +67,6 @@ describe('SocialLoginHandler', () => {
     jwtService = module.get<JwtService>(JwtService);
     const providers = module.get<SocialAuthProviderPort[]>('SocialAuthProviders');
     kakaoAuthProvider = providers[0];
-    userRepository = module.get<UserRepositoryPort>(UserRepositoryPort);
     authRepository = module.get<AuthRepositoryPort>(AuthRepositoryPort);
   });
   

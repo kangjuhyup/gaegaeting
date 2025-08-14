@@ -1,5 +1,5 @@
 import { AuthToken } from './auth-token';
-import { AuthProvider } from './type/auth-provider.type';
+import { AuthProvider } from '@core/database';
 import { PersistenceEntity } from '@core/model';
 
 export interface IAuth {

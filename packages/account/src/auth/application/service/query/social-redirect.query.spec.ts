@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { SocialRedirectHandler } from './social-redirect.query';
 import { SocialRedirectQuery } from '@app/auth/application/port/in/query/social-redirect.port';
-import { AuthProvider } from '@app/auth/domain/model/type/auth-provider.type';
+import { AuthProvider } from '@core/database';
 
 /**
  * 소셜 리다이렉트 핸들러 테스트

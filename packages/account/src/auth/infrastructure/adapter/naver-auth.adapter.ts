@@ -4,7 +4,7 @@ import { FetchHttpClient } from '@core/http';
 import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
-import { AuthProvider } from '@app/auth/domain/model/type/auth-provider.type';
+import { AuthProvider } from '@core/database';
 
 /**
  * 네이버 인증 어댑터

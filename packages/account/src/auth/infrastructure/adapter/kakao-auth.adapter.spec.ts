@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { FetchHttpClient } from '@core/http';
 import { KakaoAuthAdapter } from './kakao-auth.adapter';
-import { AuthProvider } from '@app/auth/domain/model/type/auth-provider.type';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
+import { AuthProvider } from '@core/database';
 
 /**
  * 카카오 인증 어댑터 테스트

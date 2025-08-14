@@ -1,8 +1,7 @@
-import { AuthOrmEntity } from '@core/database';
+import { AuthOrmEntity, AuthProvider } from '@core/database';
 import { AuthEntity } from '@app/auth/domain/model/auth';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { Injectable } from '@nestjs/common';
-import { AuthProvider, toAuthProvider } from '@app/auth/domain/model/type/auth-provider.type';
 
 /**
  * 인증 매퍼
@@ -26,7 +25,7 @@ export class AuthMapper {
     }
     
     // 인증 제공자 정보 매핑
-    ormEntity.authProvider = auth.getProvider().toString();
+    ormEntity.authProvider = auth.getProvider();
     ormEntity.authProviderId = auth.getProviderId() || null;
     
     // 토큰 정보 매핑
@@ -87,7 +86,7 @@ export class AuthMapper {
     // AuthEntity 생성
     const authEntity = new AuthEntity(
       {
-        provider : toAuthProvider(ormEntity.authProvider),
+        provider : ormEntity.authProvider,
         userId: ormEntity.user.id,
         providerId: ormEntity.authProviderId || undefined,
         authToken: authToken,

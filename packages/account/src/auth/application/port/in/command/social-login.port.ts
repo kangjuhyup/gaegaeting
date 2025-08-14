@@ -1,5 +1,5 @@
 import { AuthEntity } from "@app/auth/domain/model/auth";
-import { AuthProvider } from "@app/auth/domain/model/type/auth-provider.type";
+import { AuthProvider } from "@core/database";
 import { Command } from "@nestjs/cqrs";
 
 export class SocialLoginCommand extends Command<AuthEntity> {

@@ -6,7 +6,8 @@ import { SocialLoginCommand } from '@app/auth/application/port/in/command/social
 import { SocialLoginBody } from './dto/request/social-login.request';
 import { ConfigService } from '@nestjs/config';
 import { ENV_KEY } from '../../../config/env.config';
-import { AuthProvider } from '@app/auth/domain/model/type/auth-provider.type';
+import { AuthProvider } from '@core/database';
+import { LoginResponse } from './dto/response/login.response';
 
 /**
  * 인증 컨트롤러
@@ -69,7 +70,6 @@ export class AuthController {
     @Body() body: SocialLoginBody,
     @Res() res: Response,
   ): Promise<void> {
-    try {
       // 소셜 로그인 커맨드 실행
       const result = await this.commandBus.execute(
         new SocialLoginCommand(
@@ -98,13 +98,7 @@ export class AuthController {
         path: '/',
         sameSite: 'lax'
       });
-      
-      // 성공 페이지로 리다이렉트
-      res.redirect('/auth/success');
-    } catch (error) {
-      console.error('카카오 로그인 콜백 처리 중 오류:', error);
-      res.redirect('/auth/error');
-    }
+    res.json(LoginResponse.from(result));
   }
   
   /**
@@ -115,7 +109,6 @@ export class AuthController {
     @Body() body: SocialLoginBody,
     @Res() res: Response,
   ): Promise<void> {
-    try {
       // 소셜 로그인 커맨드 실행
       const result = await this.commandBus.execute(
         new SocialLoginCommand(
@@ -145,12 +138,7 @@ export class AuthController {
         sameSite: 'lax'
       });
       
-      // 성공 페이지로 리다이렉트
-      res.redirect('/auth/success');
-    } catch (error) {
-      console.error('네이버 로그인 콜백 처리 중 오류:', error);
-      res.redirect('/auth/error');
-    }
+      res.json(LoginResponse.from(result));
   }
   
   /**
@@ -161,7 +149,6 @@ export class AuthController {
     @Body() body: SocialLoginBody,
     @Res() res: Response,
   ): Promise<void> {
-    try {
       // 소셜 로그인 커맨드 실행
       const result = await this.commandBus.execute(
         new SocialLoginCommand(
@@ -191,30 +178,8 @@ export class AuthController {
         sameSite: 'lax'
       });
       
-      // 성공 페이지로 리다이렉트
-      res.redirect('/auth/success');
-    } catch (error) {
-      console.error('구글 로그인 콜백 처리 중 오류:', error);
-      res.redirect('/auth/error');
-    }
+      res.json(LoginResponse.from(result));
   }
-  
-  /**
-   * 로그인 성공 페이지
-   */
-  @Get('success')
-  loginSuccess(): { message: string } {
-    return { message: '로그인 성공' };
-  }
-  
-  /**
-   * 로그인 오류 페이지
-   */
-  @Get('error')
-  loginError(): { message: string } {
-    return { message: '로그인 실패' };
-  }
-  
   /**
    * 테스트용 카카오 로그인 페이지
    * 
@@ -373,7 +338,6 @@ export class AuthController {
     @Query('state') state: string,
     @Res() res: Response,
   ): Promise<void> {
-    try {
       // 소셜 로그인 커맨드 실행
       const result = await this.commandBus.execute(
         new SocialLoginCommand(
@@ -403,11 +367,6 @@ export class AuthController {
         sameSite: 'lax'
       });
       
-      // 성공 페이지로 리다이렉트
-      res.redirect('/auth/success');
-    } catch (error) {
-      console.error('카카오 로그인 콜백 처리 중 오류:', error);
-      res.redirect('/auth/error');
-    }
+      res.json(LoginResponse.from(result));
   }
 }
