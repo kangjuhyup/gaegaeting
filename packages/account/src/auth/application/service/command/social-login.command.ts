@@ -1,5 +1,4 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { SocialLoginCommand } from "@app/auth/application/port/in/command/social-login.port";
 import { AuthEntity } from "@app/auth/domain/model/auth";
@@ -7,6 +6,7 @@ import { AuthProvider } from '@core/database';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
 import { AuthRepositoryPort } from '@app/auth/domain/port/out/auth-repository.port';
+import { JwtTokenService } from '@core/auth';
 
 /**
  * 소셜 로그인 커맨드 핸들러    
@@ -25,7 +25,7 @@ export class SocialLoginHandler implements ICommandHandler<SocialLoginCommand, A
     
     constructor(
         private readonly authRepository: AuthRepositoryPort, 
-        private readonly jwtService: JwtService,
+        private readonly jwtTokenService: JwtTokenService,
         @Inject('SocialAuthProviders') private readonly authProviders: SocialAuthProviderPort[],
     ) {
         // 소셜 인증 제공자 맵 초기화
@@ -60,18 +60,14 @@ export class SocialLoginHandler implements ICommandHandler<SocialLoginCommand, A
             this.logger.debug(`user profile => ${JSON.stringify(userProfile)}`)
             
             // JWT 토큰 생성 (자체 토큰)
-            const accessToken = this.jwtService.sign({
+            const accessToken = await this.jwtTokenService.createAccessToken({
                 provider: command.provider,
                 providerId: userProfile.getProviderId(),
-            }, {
-                expiresIn: '1h', // 액세스 토큰 1시간 유효
             });
             
-            const refreshToken = this.jwtService.sign({
+            const refreshToken = await this.jwtTokenService.createRefreshToken({
                 provider: command.provider,
                 providerId: userProfile.getProviderId(),
-            }, {
-                expiresIn: '7d', // 리프레시 토큰 7일 유효
             });
             
             // 자체 토큰 생성

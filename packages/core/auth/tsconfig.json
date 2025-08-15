@@ -1,5 +1,8 @@
 {
+    "include": ["./src"],
+    "extends" : "../../../tsconfig.json",
     "compilerOptions": {
+      "outDir": "./dist",
       "module": "commonjs",
       "declaration": true,
       "removeComments": true,
@@ -16,13 +19,11 @@
       "forceConsistentCasingInFileNames": false,
       "noFallthroughCasesInSwitch": false,
       "baseUrl": "./",
+      "moduleResolution": "node",
       "composite": true,
       "paths": {
-        "@core/database/*": ["packages/core/database/src/*"],
-        "@core/http/*": ["packages/core/http/src/*"],
-        "@core/model/*": ["packages/core/model/src/*"],
-        "@core/auth/*": ["packages/core/auth/src/*"]
+        "@app/*": ["./src/*"]
       }
     }
-  }
+}
   

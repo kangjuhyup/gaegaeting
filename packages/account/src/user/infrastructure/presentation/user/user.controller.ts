@@ -29,17 +29,35 @@ export class UserController {
     private readonly commandBus: CommandBus,
   ) {}
 
+  @Get("/me")
+  async getMyProfile() {
+
+  }
+
   /**
    * 사용자 생성 API
-   * @param createUserDto 사용자 생성 DTO
+   * @param body 사용자 생성 DTO
    * @returns 생성된 사용자 정보
    */
-  @Post()
-  async signUp(@Body() body: CreateUserBody): Promise<UserResponse> {
-    const user = await this.commandBus.execute(
-      new CreateUserCommand(body.toDomain()),
-    );
+  @Post("/me")
+  async createMyProfile(@Body() body: CreateUserBody) {
+    const user = await this.commandBus.execute(new CreateUserCommand(body.toDomain()));
     return UserResponse.fromDomain(user);
+  }  
+
+  /**
+   * 사용자 정보 업데이트 API
+   * @param id 사용자 ID
+   * @param updateUserDto 사용자 업데이트 DTO
+   * @returns 업데이트된 사용자 정보
+   */
+  @Put("/me")
+  async updateUser(
+    @Param("id") id: string,
+    @Body() body: UpdateUserBody,
+  ): Promise<UserResponse> {
+      const user = await this.commandBus.execute(new UpdateUserCommand(id, body));
+      return UserResponse.fromDomain(user);
   }
 
   /**
@@ -48,25 +66,12 @@ export class UserController {
    * @returns 사용자 정보
    */
   @Get(":id")
-  async findUserById(@Param("id") id: string): Promise<UserResponse> {
+  async getUser(@Param("id") id: string): Promise<UserResponse> {
     const user = await this.queryBus.execute(new GetUserQuery(id));
     return UserResponse.fromDomain(user);
   }
 
-  /**
-   * 사용자 정보 업데이트 API
-   * @param id 사용자 ID
-   * @param updateUserDto 사용자 업데이트 DTO
-   * @returns 업데이트된 사용자 정보
-   */
-  @Put(":id")
-  async updateUser(
-    @Param("id") id: string,
-    @Body() body: UpdateUserBody,
-  ): Promise<UserResponse> {
-      const user = await this.commandBus.execute(new UpdateUserCommand(id, body));
-      return UserResponse.fromDomain(user);
-  }
+  
 
   /**
    * 사용자 삭제 API

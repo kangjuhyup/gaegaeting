@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Redirect, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Redirect, Req, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SocialRedirectQuery } from '@app/auth/application/port/in/query/social-redirect.port';
@@ -8,6 +8,8 @@ import { ConfigService } from '@nestjs/config';
 import { ENV_KEY } from '../../../config/env.config';
 import { AuthProvider } from '@core/database';
 import { LoginResponse } from './dto/response/login.response';
+import { SocialProviderDto } from './dto/request/social-provider.dto';
+import { SocialCallbackDto } from './dto/request/social-callback.dto';
 
 /**
  * 인증 컨트롤러
@@ -23,172 +25,118 @@ export class AuthController {
   ) {}
   
   /**
-   * 카카오 로그인 요청 처리
-   */
-  @Get('kakao')
-  async getKakaoLoginPage(@Req() req, @Res() res: Response): Promise<void> {
-    const url = await this.queryBus.execute(
-      new SocialRedirectQuery(
-        AuthProvider.KAKAO, 
-        `${req.protocol}://${req.get('host')}/auth/kakao/callback`
-      )
-    );
-    
-    res.redirect(url);
-  }
-
-  @Get('naver')
-  async getNaverLoginPage(@Req() req, @Res() res: Response): Promise<void> {
-    const url = await this.queryBus.execute(
-      new SocialRedirectQuery(
-        AuthProvider.NAVER, 
-        `${req.protocol}://${req.get('host')}/auth/naver/callback`
-      )
-    );
-    
-    res.redirect(url);
-  }
-
-  @Get('google')
-  async getGoogleLoginPage(@Req() req, @Res() res: Response): Promise<void> {
-    const url = await this.queryBus.execute(
-      new SocialRedirectQuery(
-        AuthProvider.GOOGLE, 
-        `${req.protocol}://${req.get('host')}/auth/google/callback`
-      )
-    );
-    
-    res.redirect(url);
-  }
-
-  
-  /**
-   * 카카오 로그인 콜백 처리
-   */
-  @Post('kakao/callback')
-  async kakaoCallback(
-    @Body() body: SocialLoginBody,
-    @Res() res: Response,
-  ): Promise<void> {
-      // 소셜 로그인 커맨드 실행
-      const result = await this.commandBus.execute(
-        new SocialLoginCommand(
-          AuthProvider.KAKAO,
-          body.code,
-          body.state
-        )
-      );
-
-      // 인증 토큰 가져오기
-      const token = result.getAuthToken();
-      
-      // 프론트엔드로 토큰 전달 (쿠키)
-      res.cookie('accessToken', token.getAccessToken(), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: token.getExpiresIn() * 1000, // 초 단위를 밀리초로 변환
-        path: '/',
-        sameSite: 'lax'
-      });
-      
-      res.cookie('refreshToken', token.getRefreshToken(), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
-        path: '/',
-        sameSite: 'lax'
-      });
-    res.json(LoginResponse.from(result));
-  }
-  
-  /**
-   * 네이버 로그인 콜백 처리
-   */
-  @Post('naver/callback')
-  async naverCallback(
-    @Body() body: SocialLoginBody,
-    @Res() res: Response,
-  ): Promise<void> {
-      // 소셜 로그인 커맨드 실행
-      const result = await this.commandBus.execute(
-        new SocialLoginCommand(
-          AuthProvider.NAVER,
-          body.code,
-          body.state
-        )
-      );
-
-      // 인증 토큰 가져오기
-      const token = result.getAuthToken();
-      
-      // 프론트엔드로 토큰 전달 (쿠키)
-      res.cookie('accessToken', token.getAccessToken(), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: token.getExpiresIn() * 1000, // 초 단위를 밀리초로 변환
-        path: '/',
-        sameSite: 'lax'
-      });
-      
-      res.cookie('refreshToken', token.getRefreshToken(), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
-        path: '/',
-        sameSite: 'lax'
-      });
-      
-      res.json(LoginResponse.from(result));
-  }
-  
-  /**
-   * 구글 로그인 콜백 처리
-   */
-  @Post('google/callback')
-  async googleCallback(
-    @Body() body: SocialLoginBody,
-    @Res() res: Response,
-  ): Promise<void> {
-      // 소셜 로그인 커맨드 실행
-      const result = await this.commandBus.execute(
-        new SocialLoginCommand(
-          AuthProvider.GOOGLE,
-          body.code,
-          body.state
-        )
-      );
-
-      // 인증 토큰 가져오기
-      const token = result.getAuthToken();
-      
-      // 프론트엔드로 토큰 전달 (쿠키)
-      res.cookie('accessToken', token.getAccessToken(), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: token.getExpiresIn() * 1000, // 초 단위를 밀리초로 변환
-        path: '/',
-        sameSite: 'lax'
-      });
-      
-      res.cookie('refreshToken', token.getRefreshToken(), {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
-        path: '/',
-        sameSite: 'lax'
-      });
-      
-      res.json(LoginResponse.from(result));
-  }
-  /**
-   * 테스트용 카카오 로그인 페이지
+   * 소셜 로그인 요청 처리
    * 
-   * 카카오 로그인 버튼이 있는 HTML 페이지를 제공합니다.
+   * @param providerDto 소셜 로그인 제공자 DTO
+   * @param req 요청 객체
+   * @param res 응답 객체
    */
-  @Get('test-kakao')
-  testKakaoLogin(@Req() req, @Res() res: Response): void {
-    const clientId = this.configService.get<string>(ENV_KEY.KAKAO_CLIENT_ID);
-    const redirectUri = `${req.protocol}://${req.get('host')}/auth/kakao/callback`;
+  @Get(':provider')
+  async getSocialLoginPage(
+    @Param() providerDto: SocialProviderDto,
+    @Req() req, 
+    @Res() res: Response
+  ): Promise<void> {
+    
+    const url = await this.queryBus.execute(
+      new SocialRedirectQuery(
+        providerDto.provider, 
+        `${req.protocol}://${req.get('host')}/auth/${providerDto.provider.toLowerCase()}/callback`
+      )
+    );
+    
+    res.redirect(url);
+  }
+  
+  /**
+   * 소셜 로그인 콜백 처리 (POST 방식)
+   * 
+   * @param providerDto 소셜 로그인 제공자 DTO
+   * @param body 소셜 로그인 요청 바디
+   * @param res 응답 객체
+   */
+  @Post(':provider/callback')
+  async socialCallback(
+    @Param() providerDto: SocialProviderDto,
+    @Body() body: SocialLoginBody,
+    @Res() res: Response,
+  ): Promise<void> {
+      
+      // 소셜 로그인 커맨드 실행
+      const result = await this.commandBus.execute(
+        new SocialLoginCommand(
+          providerDto.provider,
+          body.code,
+          body.state
+        )
+      );
+
+      // 인증 토큰 가져오기
+      const token = result.getAuthToken();
+      
+      res.cookie('accessToken', token.getAccessToken(), {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: token.getExpiresIn(),
+      });
+      res.cookie('refreshToken', token.getRefreshToken(), {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: token.getRefreshTokenExpiresIn(),
+      });
+      
+      res.json(LoginResponse.from(result));
+  }
+
+  @Get("/principal")
+  async getUserPrincipal(@Body() body: any) {
+    // 구현 예정
+  }
+
+  /**
+   * 테스트용 소셜 로그인 페이지
+   * 
+   * 소셜 로그인 버튼이 있는 HTML 페이지를 제공합니다.
+   * 
+   * @param providerDto 소셜 로그인 제공자 DTO
+   * @param req 요청 객체
+   * @param res 응답 객체
+   */
+  @Get('test-:provider')
+  testSocialLogin(
+    @Param() providerDto: SocialProviderDto,
+    @Req() req, 
+    @Res() res: Response
+  ): void {
+    
+    // 제공자별 클라이언트 ID 가져오기
+    let clientId = '';
+    let apiKey = '';
+    let providerName = '';
+    let logoUrl = '';
+    
+    switch (providerDto.provider) {
+      case AuthProvider.KAKAO:
+        clientId = this.configService.get<string>(ENV_KEY.KAKAO_CLIENT_ID);
+        apiKey = this.configService.get<string>(ENV_KEY.KAKAO_API_KEY, '설정되지 않음');
+        providerName = '카카오';
+        logoUrl = 'https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png';
+        break;
+      case AuthProvider.NAVER:
+        clientId = this.configService.get<string>(ENV_KEY.NAVER_CLIENT_ID);
+        providerName = '네이버';
+        logoUrl = 'https://static.nid.naver.com/oauth/button_g.PNG';
+        break;
+      case AuthProvider.GOOGLE:
+        clientId = this.configService.get<string>(ENV_KEY.GOOGLE_CLIENT_ID);
+        providerName = '구글';
+        logoUrl = 'https://developers.google.com/identity/images/btn_google_signin_light_normal_web.png';
+        break;
+    }
+    
+    const redirectUri = `${req.protocol}://${req.get('host')}/auth/${providerDto.provider.toLowerCase()}/callback`;
     
     // HTML 페이지 생성
     const html = `
@@ -197,7 +145,7 @@ export class AuthController {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>카카오 로그인 테스트</title>
+        <title>${providerName} 로그인 테스트</title>
         <style>
           body {
             font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
@@ -267,16 +215,16 @@ export class AuthController {
       </head>
       <body>
         <div class="container">
-          <h1>카카오 로그인 테스트</h1>
+          <h1>${providerName} 로그인 테스트</h1>
           
-          <a href="/auth/kakao" class="kakao-btn">
-            <img src="https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png" alt="카카오 로고">
-            카카오 로그인
+          <a href="/auth/${providerDto.provider.toLowerCase()}" class="kakao-btn">
+            <img src="${logoUrl}" alt="${providerName} 로고">
+            ${providerName} 로그인
           </a>
           
           <div class="description">
-            <p>이 페이지는 카카오 로그인 기능을 테스트하기 위한 페이지입니다.</p>
-            <p>위 버튼을 클릭하면 카카오 로그인 페이지로 이동합니다.</p>
+            <p>이 페이지는 ${providerName} 로그인 기능을 테스트하기 위한 페이지입니다.</p>
+            <p>위 버튼을 클릭하면 ${providerName} 로그인 페이지로 이동합니다.</p>
           </div>
           
           <div class="code-block">
@@ -284,7 +232,7 @@ export class AuthController {
             <p><strong>클라이언트 ID:</strong> ${clientId}</p>
           </div>
           
-          <p class="api-key">API 키: ${this.configService.get<string>(ENV_KEY.KAKAO_API_KEY, '설정되지 않음')}</p>
+          <p class="api-key">API 키: ${apiKey || '설정되지 않음'}</p>
         </div>
         
         <script>
@@ -299,7 +247,7 @@ export class AuthController {
               console.log('상태:', state);
               
               // 서버로 코드 전송
-              fetch('/auth/kakao/callback', {
+              fetch('/auth/${providerDto.provider.toLowerCase()}/callback', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
@@ -330,41 +278,41 @@ export class AuthController {
   }
   
   /**
-   * 카카오 로그인 콜백 처리 (GET 방식)
+   * 소셜 로그인 콜백 처리 (GET 방식)
+   * 
+   * @param providerDto 소셜 로그인 제공자 DTO
+   * @param callbackDto 소셜 로그인 콜백 DTO
+   * @param res 응답 객체
    */
-  @Get('kakao/callback')
-  async kakaoCallbackGet(
-    @Query('code') code: string,
-    @Query('state') state: string,
+  @Get(':provider/callback')
+  async socialCallbackGet(
+    @Param() providerDto: SocialProviderDto,
+    @Query() callbackDto: SocialCallbackDto,
     @Res() res: Response,
   ): Promise<void> {
+      
       // 소셜 로그인 커맨드 실행
       const result = await this.commandBus.execute(
         new SocialLoginCommand(
-          AuthProvider.KAKAO,
-          code,
-          state
+          providerDto.provider,
+          callbackDto.code,
+          callbackDto.state
         )
       );
 
       // 인증 토큰 가져오기
       const token = result.getAuthToken();
-      
-      // 프론트엔드로 토큰 전달 (쿠키)
       res.cookie('accessToken', token.getAccessToken(), {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: token.getExpiresIn() * 1000, // 초 단위를 밀리초로 변환
-        path: '/',
-        sameSite: 'lax'
+        secure: true,
+        sameSite: 'strict',
+        maxAge: token.getExpiresIn(),
       });
-      
       res.cookie('refreshToken', token.getRefreshToken(), {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
-        path: '/',
-        sameSite: 'lax'
+        secure: true,
+        sameSite: 'strict',
+        maxAge: token.getRefreshTokenExpiresIn(),
       });
       
       res.json(LoginResponse.from(result));
