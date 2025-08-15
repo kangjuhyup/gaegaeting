@@ -1,4 +1,4 @@
-import { AuthProvider } from "@core/database";
+import { AuthProvider } from "@core/auth";
 
 /**
  * 소셜 로그인 사용자 정보

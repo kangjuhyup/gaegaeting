@@ -1,6 +1,6 @@
+import { AuthProvider } from '@core/auth';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { AuthProvider } from '@core/database';
 
 /**
  * 소셜 로그인 제공자 DTO

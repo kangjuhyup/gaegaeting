@@ -1,4 +1,4 @@
-import { AuthProvider } from "@core/database";
+import { AuthProvider } from "@core/auth";
 import { Query } from "@nestjs/cqrs";
 
 export class SocialRedirectQuery extends Query<string> {

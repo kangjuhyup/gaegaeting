@@ -1,4 +1,4 @@
-import { DynamicModule, Module, Provider, Type } from "@nestjs/common";
+import { DynamicModule, Global, Module, Provider, Type } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DatabaseSchema, getEntitiesBySchema } from "./datasource";
@@ -19,6 +19,7 @@ export interface DatabaseModuleAsyncOptions {
  *
  * 데이터베이스 연결 및 관련 서비스를 제공하는 모듈입니다.
  */
+@Global()
 @Module({})
 export class DatabaseModule {
   /**
@@ -80,14 +81,13 @@ export class DatabaseModule {
           imports: [ConfigModule],
           useFactory: (configService: ConfigService) => ({
             type: "mysql",
-            host: configService.get<string>("DATABASE_HOST", "localhost"),
-            port: configService.get<number>("DATABASE_PORT", 3306),
-            username: configService.get<string>("DATABASE_USERNAME", "root"),
+            host: configService.get<string>("DATABASE_HOST"),
+            port: configService.get<number>("DATABASE_PORT"),
+            username: configService.get<string>("DATABASE_USERNAME"),
             password: configService.get<string>(
               "DATABASE_PASSWORD",
-              "password",
             ),
-            database: configService.get<string>("DATABASE_NAME", "gaegaeting"),
+            database: configService.get<string>("DATABASE_NAME"),
             entities: entities,
             synchronize: configService.get<boolean>(
               "DATABASE_SYNCHRONIZE",

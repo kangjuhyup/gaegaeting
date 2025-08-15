@@ -17,7 +17,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
       throw new Error("이미 존재하는 사용자입니다.");
     }
     const user = await this.userRepository.insertUser(command.user);
-    //TODO: 유저 생성 이벤트 발행
+    
     return user;
   }
 }

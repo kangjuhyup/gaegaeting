@@ -39,7 +39,7 @@ export class AccessGuard extends AuthGuard('jwt') {
             const payload = await this.jwtTokenService.verify(token);
             
             // 검증된 페이로드를 요청 객체에 추가
-            request.user = payload;
+            request.auth = payload;
             
             return true;
         } catch (error) {

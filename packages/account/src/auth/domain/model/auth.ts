@@ -1,5 +1,5 @@
+import { AuthProvider } from '@core/auth';
 import { AuthToken } from './auth-token';
-import { AuthProvider } from '@core/database';
 import { PersistenceEntity } from '@core/model';
 
 export interface IAuth {
@@ -19,45 +19,16 @@ export interface IAuth {
  * 사용자 로그인 정보를 담는 도메인 모델입니다.
  * 컨트롤러 -> 커맨드 -> 외부 API 프로세스에서 사용됩니다.
  */
-export class AuthEntity extends PersistenceEntity<string,IAuth> {
+export class AuthEntity extends PersistenceEntity<{providerType: AuthProvider, providerId: string},IAuth> {
    
     constructor(
         auth : IAuth
     ) {
         super(auth)
     }
-    
-    /**
-     * 이메일 로그인 엔티티 생성
-     * 
-     * @param email 이메일
-     * @param password 비밀번호
-     * @returns 인증 엔티티
-     */
-    static createEmailAuth(email: string, password: string): AuthEntity {
-        return new AuthEntity({ provider: AuthProvider.EMAIL, email, password });
-    }
-    
-    /**
-     * 소셜 로그인 엔티티 생성
-     * 
-     * @param provider 인증 제공자
-     * @param authCode 인증 코드
-     * @returns 인증 엔티티
-     */
-    static createSocialAuth(provider: AuthProvider, authCode: string): AuthEntity {
-        return new AuthEntity({ provider, authCode });
-    }
-    
-    /**
-     * 소셜 로그인 프로필로 엔티티 생성
-     * 
-     * @param provider 인증 제공자
-     * @param providerId 제공자 ID
-     * @returns 인증 엔티티
-     */
-    static createFromSocialProfile(provider: AuthProvider, providerId: string): AuthEntity {
-        return new AuthEntity({ provider, providerId });
+
+    static of(param : IAuth) {
+        return new AuthEntity(param)
     }
     
     /**

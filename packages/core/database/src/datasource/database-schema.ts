@@ -1,6 +1,6 @@
-import { UserOrmEntity } from "../entity/user";
-import { PetOrmEntity } from "../entity/pet";
-import { AuthOrmEntity } from "@app/entity";
+import { UserOrmEntity } from "../entity/account/user";
+import { PetOrmEntity } from "../entity/account/pet";
+import { AuthOrmEntity, PetAttachmentOrmEntity, UserAttachmentOrmEntity } from "@app/entity";
 
 export const DatabaseSchema = {
   USER: "USER",
@@ -16,7 +16,7 @@ export type DatabaseSchema =
  */
 export function getEntitiesBySchema(schema: DatabaseSchema[]): any[] {
   const entityMap = {
-    [DatabaseSchema.USER]: [UserOrmEntity, PetOrmEntity, AuthOrmEntity],
+    [DatabaseSchema.USER]: [UserOrmEntity, PetOrmEntity, AuthOrmEntity, UserAttachmentOrmEntity, PetAttachmentOrmEntity],
     // 다른 스키마에 따른 엔티티들을 추가할 수 있습니다.
   };
 

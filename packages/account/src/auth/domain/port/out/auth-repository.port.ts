@@ -1,5 +1,6 @@
 import { AuthEntity } from "@app/auth/domain/model/auth";
-import { AuthProvider } from "@core/database";
+import { UserPrincipal } from "@core/auth";
+import { AuthProvider } from "@core/auth";
 
 /**
  * 인증 저장소 포트
@@ -13,17 +14,16 @@ export abstract class AuthRepositoryPort {
    * @param auth 인증 엔티티
    * @returns 인증 ID
    */
-  abstract saveAuth(auth: AuthEntity): Promise<number>;
+  abstract saveAuth(auth: AuthEntity): Promise<AuthEntity>;
   
   /**
    * 사용자 ID와 인증 제공자로 인증 정보 조회
    * 
-   * @param userId 사용자 ID
    * @param provider 인증 제공자
    * @param providerId 제공자 ID
-   * @returns 인증 엔티티 (존재하지 않으면 null)
+   * @returns 유저 정보
    */
-  abstract findByUserIdAndProvider(userId: string, provider: AuthProvider, providerId: string): Promise<AuthEntity | null>;
+  abstract findUserByAuthProvider(provider: AuthProvider, providerId: string): Promise<UserPrincipal | null>;
   
   /**
    * 리프레시 토큰으로 인증 정보 조회

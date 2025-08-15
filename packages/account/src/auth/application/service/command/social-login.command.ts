@@ -2,11 +2,10 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { SocialLoginCommand } from "@app/auth/application/port/in/command/social-login.port";
 import { AuthEntity } from "@app/auth/domain/model/auth";
-import { AuthProvider } from '@core/database';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
 import { AuthRepositoryPort } from '@app/auth/domain/port/out/auth-repository.port';
-import { JwtTokenService } from '@core/auth';
+import { AuthProvider, JwtTokenService } from '@core/auth';
 
 /**
  * 소셜 로그인 커맨드 핸들러    
@@ -71,19 +70,22 @@ export class SocialLoginHandler implements ICommandHandler<SocialLoginCommand, A
             });
             
             // 자체 토큰 생성
-            const authToken = new AuthToken(
+            const authToken = new AuthToken({
                 accessToken,
                 refreshToken,
-                3600, // 1시간
-                3600 * 24 * 7, // 7일   
-                'Bearer'
-            );
+                //TODO: 시간 직접입력X , 서비스에서 내려받도록
+                expiresIn : 3600, // 1시간
+                refreshTokenExpiresIn : 3600 * 24 * 7, // 7일   
+                tokenType : 'Bearer'
+            });
             
             // 인증 엔티티 생성
-            const authEntity = AuthEntity.createFromSocialProfile(
-                command.provider,
-                userProfile.getProviderId()
-            );
+            const authEntity = AuthEntity.of({
+                provider : command.provider,
+                providerId : userProfile.getProviderId(),
+                authToken : authToken,
+                lastLoginAt : new Date()
+            });
             
             // 인증 토큰 설정
             authEntity.setAuthToken(authToken);

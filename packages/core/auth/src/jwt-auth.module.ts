@@ -6,6 +6,8 @@ import { JwtStrategy } from "./strategy/jwt.strategy";
 import { JwtTokenService } from "./service/jwt-token.service";
 import { AccessGuard } from "./guard/access.guard";
 import { AuthConfigValidator, AuthConfigValidationError } from "./config/auth-config.validator";
+import { UserService } from "./service/user.service";
+import { UserGuard } from "./guard/user.guard";
 
 // AUTH_MODULE_OPTIONS 상수 정의
 export const AUTH_MODULE_OPTIONS = 'AUTH_MODULE_OPTIONS';
@@ -28,6 +30,11 @@ export interface AuthModuleOptions {
      * 리프레시 토큰 만료 시간 (초 단위 숫자)
      */
     refreshExpiresIn: number;
+
+    /**
+     * UserPrincipal 을 조회하기 위한 서비스 호스트
+     */
+    userServiceHost : string;
 }
 
 /**
@@ -94,12 +101,21 @@ export class JwtAuthModule {
                     },
                     inject: [AUTH_MODULE_OPTIONS, JwtService]
                 },
+                {
+                    provide: UserService,
+                    useFactory: (authOptions: AuthModuleOptions) => {
+                        return new UserService(authOptions.userServiceHost);
+                    },
+                    inject: [AUTH_MODULE_OPTIONS]
+                },
                 AccessGuard,
             ],
             exports: [
                 JwtModule,
                 JwtTokenService,
+                UserService,
                 AccessGuard,
+                UserGuard
             ],
         };
     }
@@ -154,12 +170,22 @@ export class JwtAuthModule {
                     },
                     inject: [AUTH_MODULE_OPTIONS, JwtService]
                 },
+                {
+                    provide : UserService,
+                    useFactory : async (authOptions: AuthModuleOptions) => {
+                        return new UserService(authOptions.userServiceHost);
+                    },
+                    inject : [AUTH_MODULE_OPTIONS]
+                },
                 AccessGuard,
+                UserGuard
             ],
             exports: [
                 JwtModule,
                 JwtTokenService,
+                UserService,
                 AccessGuard,
+                UserGuard
             ],
         };
     }

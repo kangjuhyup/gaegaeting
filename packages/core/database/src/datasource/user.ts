@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { join } from 'path';
 
-export const LetterDataSource = (param: {
+export const UserDataSource = (param: {
   type: any;
   host: string;
   port: number;

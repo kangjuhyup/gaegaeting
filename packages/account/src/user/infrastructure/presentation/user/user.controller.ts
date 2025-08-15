@@ -7,6 +7,7 @@ import {
   Put,
   Delete,
   HttpCode,
+  UseGuards,
 } from "@nestjs/common";
 import { CreateUserBody } from "./dto/request/create-user.request";
 import { UpdateUserBody } from "./dto/request/update-user.request";
@@ -16,6 +17,9 @@ import { UpdateUserCommand } from "@app/user/application/port/in/command/update-
 import { GetUserQuery } from "@app/user/application/port/in/query/get-user.port";
 import { UserResponse } from "./dto/response/user.response";
 import { DeleteUserCommand } from "@app/user/application/port/in/command/delete-user.port";
+import { AccessGuard,UserGuard, UserParam, UserPrincipal, AuthProviderParam, AuthProviderPrincipal } from "@core/auth";
+import { GetPresignedUrlResponse } from "./dto/response/get-presgined.response";
+import { GeneratePresignedCommand } from "@app/user/application/port/in/command/generate-presigned.port";
 
 /**
  * 사용자 컨트롤러
@@ -28,10 +32,18 @@ export class UserController {
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
   ) {}
-
+  /**
+   * 내 프로필 조회 API
+   * @param user 인증된 사용자 정보
+   * @returns 사용자 프로필 정보
+   */
   @Get("/me")
-  async getMyProfile() {
-
+  @UseGuards(AccessGuard,UserGuard)
+  async getMyProfile(
+    @UserParam() user: UserPrincipal
+  ) {
+    const userProfile = await this.queryBus.execute(new GetUserQuery(user.userId));
+    return UserResponse.fromDomain(userProfile);
   }
 
   /**
@@ -40,12 +52,16 @@ export class UserController {
    * @returns 생성된 사용자 정보
    */
   @Post("/me")
-  async createMyProfile(@Body() body: CreateUserBody) {
-    const user = await this.commandBus.execute(new CreateUserCommand(body.toDomain()));
+  @UseGuards(AccessGuard)
+  async createMyProfile(
+    @AuthProviderParam() authProvider: AuthProviderPrincipal,
+    @Body() body: CreateUserBody
+  ) {
+    const user = await this.commandBus.execute(new CreateUserCommand(authProvider,body.toDomain()));
     return UserResponse.fromDomain(user);
   }  
 
-  /**
+  /** 
    * 사용자 정보 업데이트 API
    * @param id 사용자 ID
    * @param updateUserDto 사용자 업데이트 DTO
@@ -58,6 +74,22 @@ export class UserController {
   ): Promise<UserResponse> {
       const user = await this.commandBus.execute(new UpdateUserCommand(id, body));
       return UserResponse.fromDomain(user);
+  }
+
+  /**
+   * 프로필 이미지 업로드 URL 생성 API
+   * @param user 
+   * @param query 
+   * @returns 
+   */
+  @Get('me/presign/:no')
+  @UseGuards(AccessGuard,UserGuard)
+  async getPresignedUrl(
+    @UserParam() user: UserPrincipal,
+    @Param() no : string
+  ) : Promise<GetPresignedUrlResponse> {
+    const presignedUrl = await this.commandBus.execute(new GeneratePresignedCommand(user.userId,Number(no)));
+    return GetPresignedUrlResponse.from(presignedUrl);
   }
 
   /**
@@ -78,10 +110,12 @@ export class UserController {
    * @param id 사용자 ID
    * @returns 삭제 결과 (204 No Content)
    */
-  @Delete(":id")
+  @Delete()
   @HttpCode(204)
-  async deleteUser(@Param("id") id: string): Promise<void> {
-    await this.commandBus.execute(new DeleteUserCommand(id));
+  async deleteUser(
+    @UserParam() user : UserPrincipal
+  ): Promise<void> {
+    await this.commandBus.execute(new DeleteUserCommand(user.userId));
     return;
   }
 }

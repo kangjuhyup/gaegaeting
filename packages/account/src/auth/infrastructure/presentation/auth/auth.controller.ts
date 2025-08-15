@@ -6,10 +6,13 @@ import { SocialLoginCommand } from '@app/auth/application/port/in/command/social
 import { SocialLoginBody } from './dto/request/social-login.request';
 import { ConfigService } from '@nestjs/config';
 import { ENV_KEY } from '../../../config/env.config';
-import { AuthProvider } from '@core/database';
 import { LoginResponse } from './dto/response/login.response';
 import { SocialProviderDto } from './dto/request/social-provider.dto';
 import { SocialCallbackDto } from './dto/request/social-callback.dto';
+import { GetUserPrincipalRequest } from './dto/request/get-user-principal.request';
+import { GetUserPrincipalResponse } from './dto/response/get-user-principal.response';
+import { GetUserPrincipalQuery } from '@app/auth/application/port/in/query/get-user-princial.port';
+import { AuthProvider } from '@core/auth';
 
 /**
  * 인증 컨트롤러
@@ -41,7 +44,7 @@ export class AuthController {
     const url = await this.queryBus.execute(
       new SocialRedirectQuery(
         providerDto.provider, 
-        `${req.protocol}://${req.get('host')}/auth/${providerDto.provider.toLowerCase()}/callback`
+        `${req.protocol}://${req.get('host')}/auth/${providerDto.provider.label.toLowerCase()}/callback`
       )
     );
     
@@ -90,9 +93,51 @@ export class AuthController {
       res.json(LoginResponse.from(result));
   }
 
-  @Get("/principal")
-  async getUserPrincipal(@Body() body: any) {
-    // 구현 예정
+  @Get("/principal/:providerType/:providerId")
+  async getUserPrincipal(@Param() param: GetUserPrincipalRequest) : Promise<GetUserPrincipalResponse> {
+    const userPrincipal = await this.queryBus.execute(new GetUserPrincipalQuery(param.providerType, param.providerId));
+    return GetUserPrincipalResponse.from(userPrincipal);
+  }
+
+  /**
+   * 소셜 로그인 콜백 처리 (GET 방식)
+   * 
+   * @param providerDto 소셜 로그인 제공자 DTO
+   * @param callbackDto 소셜 로그인 콜백 DTO
+   * @param res 응답 객체
+   */
+  @Get(':provider/callback')
+  async socialCallbackGet(
+    @Param() providerDto: SocialProviderDto,
+    @Query() callbackDto: SocialCallbackDto,
+    @Res() res: Response,
+  ): Promise<void> {
+      
+      // 소셜 로그인 커맨드 실행
+      const result = await this.commandBus.execute(
+        new SocialLoginCommand(
+          providerDto.provider,
+          callbackDto.code,
+          callbackDto.state
+        )
+      );
+
+      // 인증 토큰 가져오기
+      const token = result.getAuthToken();
+      res.cookie('accessToken', token.getAccessToken(), {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: token.getExpiresIn(),
+      });
+      res.cookie('refreshToken', token.getRefreshToken(), {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: token.getRefreshTokenExpiresIn(),
+      });
+      
+      res.json(LoginResponse.from(result));
   }
 
   /**
@@ -136,7 +181,7 @@ export class AuthController {
         break;
     }
     
-    const redirectUri = `${req.protocol}://${req.get('host')}/auth/${providerDto.provider.toLowerCase()}/callback`;
+    const redirectUri = `${req.protocol}://${req.get('host')}/auth/${providerDto.provider.label.toLowerCase()}/callback`;
     
     // HTML 페이지 생성
     const html = `
@@ -217,7 +262,7 @@ export class AuthController {
         <div class="container">
           <h1>${providerName} 로그인 테스트</h1>
           
-          <a href="/auth/${providerDto.provider.toLowerCase()}" class="kakao-btn">
+          <a href="/auth/${providerDto.provider.label.toLowerCase()}" class="kakao-btn">
             <img src="${logoUrl}" alt="${providerName} 로고">
             ${providerName} 로그인
           </a>
@@ -247,7 +292,7 @@ export class AuthController {
               console.log('상태:', state);
               
               // 서버로 코드 전송
-              fetch('/auth/${providerDto.provider.toLowerCase()}/callback', {
+              fetch('/auth/${providerDto.provider.label.toLowerCase()}/callback', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
@@ -277,44 +322,5 @@ export class AuthController {
     res.send(html);
   }
   
-  /**
-   * 소셜 로그인 콜백 처리 (GET 방식)
-   * 
-   * @param providerDto 소셜 로그인 제공자 DTO
-   * @param callbackDto 소셜 로그인 콜백 DTO
-   * @param res 응답 객체
-   */
-  @Get(':provider/callback')
-  async socialCallbackGet(
-    @Param() providerDto: SocialProviderDto,
-    @Query() callbackDto: SocialCallbackDto,
-    @Res() res: Response,
-  ): Promise<void> {
-      
-      // 소셜 로그인 커맨드 실행
-      const result = await this.commandBus.execute(
-        new SocialLoginCommand(
-          providerDto.provider,
-          callbackDto.code,
-          callbackDto.state
-        )
-      );
-
-      // 인증 토큰 가져오기
-      const token = result.getAuthToken();
-      res.cookie('accessToken', token.getAccessToken(), {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: token.getExpiresIn(),
-      });
-      res.cookie('refreshToken', token.getRefreshToken(), {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: token.getRefreshTokenExpiresIn(),
-      });
-      
-      res.json(LoginResponse.from(result));
-  }
+  
 }

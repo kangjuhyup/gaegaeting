@@ -1,10 +1,6 @@
-import {
-  UserGender,
-  UserRegion,
-  AuthProvider,
-  UserEntity,
-  UserStatus,
-} from "@app/user/domain/model/user";
+
+import { UserGender, UserRegion, UserStatus } from "@app/user/domain/enum/user.enum";
+import { UserEntity } from "@app/user/domain/model/user";
 import {
   IsEmail,
   IsNotEmpty,
@@ -76,32 +72,15 @@ export class CreateUserBody {
   @IsOptional()
   phoneNumber?: string;
 
-  /**
-   * 인증 방식
-   */
-  @IsEnum(AuthProvider, { message: "유효한 인증 방식이 아닙니다." })
-  @IsOptional()
-  authProvider?: AuthProvider = AuthProvider.EMAIL;
-
-  /**
-   * 소셜 로그인 제공자 ID
-   */
-  @IsString({ message: "소셜 로그인 ID는 문자열이어야 합니다." })
-  @IsOptional()
-  authProviderId?: string;
-
   toDomain(): UserEntity {
-    return new UserEntity({
-      email: this.email,
-      password: this.password,
+    return UserEntity.of({
+      passwordHash: this.password,
       nickname: this.nickname,
       gender: this.gender,
       birthDate: this.birthDate,
       region: this.region,
       bio: this.bio,
       phoneNumber: this.phoneNumber,
-      authProvider: this.authProvider,
-      authProviderId: this.authProviderId,
       status: UserStatus.ACTIVE, // 기본 상태는 ACTIVE
     });
   }

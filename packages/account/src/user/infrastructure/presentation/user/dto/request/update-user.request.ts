@@ -1,4 +1,4 @@
-import { UserGender, UserRegion } from "@app/user/domain/model/user";
+import { UserGender, UserRegion } from "@app/user/domain/enum/user.enum";
 import {
   IsString,
   MinLength,
@@ -16,13 +16,6 @@ export class UpdateUserBody {
   @MaxLength(50, { message: "닉네임은 최대 50자까지 가능합니다." })
   @IsOptional()
   nickname?: string;
-
-  /**
-   * 프로필 이미지 URL
-   */
-  @IsString({ message: "프로필 이미지 URL은 문자열이어야 합니다." })
-  @IsOptional()
-  profileImageUrl?: string;
 
   @IsEnum(UserGender, { message: "유효한 성별이 아닙니다." })
   @IsOptional()

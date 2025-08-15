@@ -1,6 +1,6 @@
 import { SocialUserProfile } from "@app/auth/domain/model/auth-provider";
 import { AuthToken } from "@app/auth/domain/model/auth-token";
-import { AuthProvider } from "@core/database";
+import { AuthProvider } from "@core/auth";
 
 /**
  * 소셜 인증 제공자 포트

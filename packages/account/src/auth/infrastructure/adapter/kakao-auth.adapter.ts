@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FetchHttpClient } from '@core/http';
 import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
 import { ENV_KEY } from '../../config/env.config';
-import { AuthProvider } from '@core/database';
+import { AuthProvider } from '@core/auth';
 
 /**
  * 카카오 인증 어댑터
@@ -81,13 +81,13 @@ export class KakaoAuthAdapter implements SocialAuthProviderPort {
     
     const data = response.data;
     
-    return new AuthToken(
-      data.access_token,
-      data.refresh_token,
-      data.expires_in,
-      data.refresh_token_expires_in,
-      data.token_type
-    );
+    return new AuthToken({
+      accessToken : data.access_token,
+      refreshToken : data.refresh_token,
+      expiresIn : data.expires_in,
+      refreshTokenExpiresIn : data.refresh_token_expires_in,
+      tokenType : data.token_type
+    });
   }
   
   /**

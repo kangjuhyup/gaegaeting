@@ -4,7 +4,7 @@ import { FetchHttpClient } from '@core/http';
 import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
-import { AuthProvider } from '@core/database';
+import { AuthProvider } from '@core/auth';
 
 /**
  * 구글 인증 어댑터
@@ -82,13 +82,13 @@ export class GoogleAuthAdapter implements SocialAuthProviderPort {
     
     const data = response.data;
     
-    return new AuthToken(
-      data.access_token,
-      data.refresh_token || '',
-      data.expires_in,
-      data.refresh_expires_in,
-      'Bearer'
-    );
+    return new AuthToken({
+      accessToken : data.access_token,
+      refreshToken : data.refresh_token || '',
+      expiresIn : data.expires_in,
+      refreshTokenExpiresIn : data.refresh_expires_in,
+      tokenType : 'Bearer'
+    });
   }
   
   /**

@@ -1,3 +1,11 @@
+interface IAuthToken {
+  accessToken: string,
+    refreshToken: string,
+    expiresIn: number,
+    refreshTokenExpiresIn : number,
+    tokenType: string
+}
+
 /**
  * 인증 토큰 도메인 모델
  * 
@@ -29,18 +37,16 @@ export class AuthToken {
    */
   private readonly tokenType: string;
   
-  constructor(
-    accessToken: string,
-    refreshToken: string,
-    expiresIn: number,
-    refreshTokenExpiresIn : number,
-    tokenType: string = 'Bearer',
-  ) {
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-    this.expiresIn = expiresIn;
-    this.refreshTokenExpiresIn = refreshTokenExpiresIn;
-    this.tokenType = tokenType;
+  constructor(param : IAuthToken) {
+    this.accessToken = param.accessToken;
+    this.refreshToken = param.refreshToken;
+    this.expiresIn = param.expiresIn;
+    this.refreshTokenExpiresIn = param.refreshTokenExpiresIn;
+    this.tokenType = param.tokenType;
+  }
+
+  static of(param : IAuthToken) {
+    return new AuthToken(param);
   }
   
   /**

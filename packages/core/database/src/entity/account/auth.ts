@@ -1,7 +1,6 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { AuthProvider } from "../enum/user";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
 import { UserOrmEntity } from "./user";
-import { EnumTransformer } from "../transformer/enum.transformer";
+import { BaseEntity } from "../base";
 
 /**
  * 인증 엔티티
@@ -10,12 +9,22 @@ import { EnumTransformer } from "../transformer/enum.transformer";
  * 각 컴포넌트는 관련 속성들을 그룹화하여 관리하기 쉽게 합니다.
  */
 @Entity('auth')
-export class AuthOrmEntity {
+export class AuthOrmEntity extends BaseEntity {
   /**
-   * 인증 ID
+   * 인증 방식 (PK 일부)
    */
-  @PrimaryGeneratedColumn({ name: "id" })
-  id: number;
+  @PrimaryColumn({ 
+    type: "tinyint", 
+    default: 0, 
+    name: "auth_provider",
+  })
+  authProvider: number;
+
+  /**
+   * 소셜 로그인 제공자 ID (PK 일부)
+   */
+  @PrimaryColumn({ type: "varchar", length: 255, name: "auth_provider_id" })
+  authProviderId: string;
 
   /**
    * 리프레시 토큰
@@ -29,23 +38,7 @@ export class AuthOrmEntity {
   @Column({ name: "refresh_token_expires_at", nullable: true })
   refreshTokenExpiresAt: Date | null;
 
-  /**
-   * 인증 방식
-   */
-  @Column({ 
-    type: "tinyint", 
-    default: AuthProvider.EMAIL, 
-    name: "auth_provider",
-    transformer: new EnumTransformer(AuthProvider)
-  })
-  authProvider: AuthProvider;
-
-  /**
-   * 소셜 로그인 제공자 ID
-   */
-  @Column({ type: "varchar", length: 255, nullable: true, name: "auth_provider_id" })
-  authProviderId: string | null;
-
+  
   /**
    * 마지막 로그인 시간
    */
@@ -70,24 +63,13 @@ export class AuthOrmEntity {
   @Column({ name: "last_login_location", nullable: true })
   lastLoginLocation: string | null;
 
-  /**
-   * 생성일시
-   */
-  @CreateDateColumn({ name: "created_at" })
-  createdAt: Date;
-
-  /**
-   * 수정일시
-   */
-  @UpdateDateColumn({ name: "updated_at" })
-  updatedAt: Date;
 
   /**
    * 인증 정보와 연결된 사용자
    * 
    * 한 사용자는 여러 인증 정보(세션)를 가질 수 있습니다.
    */
-  @ManyToOne(() => UserOrmEntity, (user) => user.auths)
+  @OneToOne(() => UserOrmEntity, (user) => user.auth)
   @JoinColumn({ name: "user_id" })
   user: UserOrmEntity;
 

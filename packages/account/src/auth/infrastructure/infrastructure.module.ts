@@ -48,16 +48,6 @@ const providers : Provider[] = [
         HttpModule.forRoot({
             logger : Logger,
         }),
-        // DATABASE
-        DatabaseModule.forRootAsync(
-            {
-                imports : [
-                    ConfigModule
-                ],
-                inject : [ConfigService]
-            },
-            [DatabaseSchema.USER],
-        ),
     ],
     controllers : [
         AuthController

@@ -1,7 +1,8 @@
-import { AuthOrmEntity, AuthProvider } from '@core/database';
+import { AuthOrmEntity } from '@core/database';
 import { AuthEntity } from '@app/auth/domain/model/auth';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { Injectable } from '@nestjs/common';
+import { AuthProvider } from '@core/auth';
 
 /**
  * 인증 매퍼
@@ -25,7 +26,7 @@ export class AuthMapper {
     }
     
     // 인증 제공자 정보 매핑
-    ormEntity.authProvider = auth.getProvider();
+    ormEntity.authProvider = auth.getProvider().value;
     ormEntity.authProviderId = auth.getProviderId() || null;
     
     // 토큰 정보 매핑
@@ -63,37 +64,25 @@ export class AuthMapper {
    * @returns 도메인 인증 엔티티
    */
   toDomainEntity(ormEntity: AuthOrmEntity): AuthEntity {
-    // 인증 토큰 생성
-    let authToken: AuthToken | undefined;
-    if (ormEntity.refreshToken) {
-      // 리프레시 토큰 만료 시간 계산 (초 단위)
-      let refreshTokenExpiresIn: number | undefined;
-      if (ormEntity.refreshTokenExpiresAt) {
-        const now = new Date();
-        refreshTokenExpiresIn = Math.floor((ormEntity.refreshTokenExpiresAt.getTime() - now.getTime()) / 1000);
-        if (refreshTokenExpiresIn < 0) refreshTokenExpiresIn = 0;
-      }
-      
-      authToken = new AuthToken(
-        '', // 액세스 토큰은 ORM에 저장하지 않음
-        ormEntity.refreshToken,
-        0, // 액세스 토큰 만료 시간은 ORM에 저장하지 않음
-        refreshTokenExpiresIn,
-        'bearer', // 기본값
-      );
-    }
-    
-    // AuthEntity 생성
-    const authEntity = new AuthEntity(
-      {
-        provider : ormEntity.authProvider,
-        userId: ormEntity.user.id,
-        providerId: ormEntity.authProviderId || undefined,
-        authToken: authToken,
+    return AuthEntity.of({
+        provider : AuthProvider.from(ormEntity.authProvider),
+        userId: ormEntity.user?.id,
+        providerId: ormEntity.authProviderId,
+        authToken: AuthToken.of({
+          accessToken: '',
+          refreshToken: ormEntity.refreshToken,
+          expiresIn: 0,
+          refreshTokenExpiresIn: ormEntity.refreshTokenExpiresAt ? Math.floor((ormEntity.refreshTokenExpiresAt.getTime() - new Date().getTime()) / 1000) : 0,
+          tokenType: 'Bearer'
+        }),
         lastLoginAt: ormEntity.lastLoginAt || undefined
-      }
+    }).setPersistence(
+      {
+        providerType : AuthProvider.from(ormEntity.authProvider),
+        providerId : ormEntity.authProviderId
+      }, 
+      ormEntity.createdAt, 
+      ormEntity.updatedAt
     );
-    
-    return authEntity;
   }
 }

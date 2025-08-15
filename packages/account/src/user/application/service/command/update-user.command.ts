@@ -16,15 +16,8 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
         if(!existsUser) {
             throw new Error("존재하지 않는 사용자입니다.");
         }
-        existsUser.updateProfile(
-            command.data.nickname,
-            command.data.profileImageUrl,
-            command.data.gender,
-            command.data.region,
-            command.data.bio,
-        )
+        //TODO: 유저 값 업데이트 필요
         const user = await this.userRepository.updateUser(existsUser);
-        //TODO: 유저 업데이트 이벤트 발행
         return user;
     }
 }

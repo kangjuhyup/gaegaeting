@@ -1,4 +1,5 @@
-import { UserEntity, UserStatus, UserGender, UserRegion } from "@app/user/domain/model/user";
+import { UserGender, UserRegion, UserStatus } from "@app/user/domain/enum/user.enum";
+import { UserEntity } from "@app/user/domain/model/user";
 import { UserOrmEntity } from "@core/database";
 
 /**
@@ -14,24 +15,17 @@ export class UserOrmMapper {
      * @param userOrmEntity TypeORM 엔티티
      * @returns 도메인 엔티티
      */
-    static toDomain(userOrmEntity: UserOrmEntity): UserEntity {
-        if (!userOrmEntity) return null;
+    static toDomain(orm: UserOrmEntity): UserEntity {
+        if (!orm) return null;
         
-        return new UserEntity({
-            id: userOrmEntity.id,
-            email: userOrmEntity.email,
-            password: userOrmEntity.passwordHash,
-            nickname: userOrmEntity.nickname,
-            profileImageUrl: userOrmEntity.profileImageUrl,
-            gender: userOrmEntity.gender as UserGender,
-            birthDate: userOrmEntity.birthDate,
-            region: userOrmEntity.region as UserRegion,
-            bio: userOrmEntity.bio,
-            phoneNumber: userOrmEntity.phoneNumber || '',
-            status: userOrmEntity.status as UserStatus,
-            createdAt: userOrmEntity.createdAt,
-            updatedAt: userOrmEntity.updatedAt
-        });
+        return UserEntity.of({
+            nickname: orm.nickname,
+            gender: UserGender.from(orm.gender),
+            birthDate: orm.birthDate,
+            region: UserRegion.from(orm.region),
+            phoneNumber: orm.phoneNumber,
+            status: UserStatus.from(orm.status),
+        }).setPersistence(orm.id,orm.createdAt,orm.updatedAt);
     }
 
     /**
@@ -52,7 +46,6 @@ export class UserOrmMapper {
         userOrm.email = userEntity.email;
         userOrm.passwordHash = userEntity.passwordHash;
         userOrm.nickname = userEntity.nickname;
-        userOrm.profileImageUrl = userEntity.profileImageUrl;
         
         // 개인 정보 설정
         userOrm.gender = userEntity.gender;
