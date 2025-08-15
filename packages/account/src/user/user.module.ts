@@ -1,9 +1,8 @@
 import { Module } from "@nestjs/common";
-import { UserInfraStructureModule } from "./infrastructure/infrastructure.module";
-
+import { UserApplicationModule } from "./application/application.module";
 @Module({
     imports : [
-        UserInfraStructureModule
+        UserApplicationModule
     ]
 })
 export class UserModule {}

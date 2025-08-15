@@ -64,13 +64,15 @@ export class AuthOrmEntity extends BaseEntity {
   lastLoginLocation: string | null;
 
 
+  @Column({ name : 'user_id', type : 'char' , length: 26, nullable: true})
+  userId? : string;
   /**
    * 인증 정보와 연결된 사용자
    * 
    * 한 사용자는 여러 인증 정보(세션)를 가질 수 있습니다.
    */
-  @OneToOne(() => UserOrmEntity, (user) => user.auth)
+  @OneToOne(() => UserOrmEntity, (user) => user.auth, {nullable : true})
   @JoinColumn({ name: "user_id" })
-  user: UserOrmEntity;
+  user?: UserOrmEntity;
 
 }

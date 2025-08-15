@@ -51,7 +51,6 @@ export class AuthMapper {
     ormEntity.lastLoginLocation = null; // 필요시 추가 구현
     
     // 메타데이터 매핑
-    ormEntity.createdAt = new Date();
     ormEntity.updatedAt = new Date();
     
     return ormEntity;

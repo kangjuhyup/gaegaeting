@@ -2,22 +2,25 @@ import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { CreateUserCommand } from "../../port/in/command/create-user.port";
 import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
 import { UserEntity } from "@app/user/domain/model/user";
+import { AuthInternalApiPort } from "@app/user/domain/port/out/auth-internal-api.port";
 
 @CommandHandler(CreateUserCommand)
-export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
-  constructor(private readonly userRepository: UserRepositoryPort) {}
+export class CreateUserHandler implements ICommandHandler<CreateUserCommand, UserEntity> {
+  constructor(
+    private readonly userRepository: UserRepositoryPort,
+    private readonly authInternalApiPort : AuthInternalApiPort
+  ) {}
 
   async execute(command: CreateUserCommand): Promise<UserEntity> {
-    const existsUser = await this.userRepository.selectUserFromPhone(
-      command.user.phoneNumber,
+    const existsUser = await this.userRepository.selectUserFromAuthProvider(
+      command.authProvider,
     );
 
-    //TODO : softdelete 때문에 length 뿐만 아니라 isActive 도 확인해야한다.
-    if (existsUser.length > 0) {
+    if (existsUser) {
       throw new Error("이미 존재하는 사용자입니다.");
     }
     const user = await this.userRepository.insertUser(command.user);
-    
+    await this.authInternalApiPort.setUserId(command.authProvider, user.id);
     return user;
   }
 }

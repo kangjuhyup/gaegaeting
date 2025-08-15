@@ -29,7 +29,9 @@ import { DatabaseModule, DatabaseSchema } from '@core/database';
       [DatabaseSchema.USER],
   ),
     // CQRS
-    CqrsModule.forRoot(),
+    CqrsModule.forRoot({
+      
+    }),
     // 인증 모듈
     JwtAuthModule.forRootAsync({
       imports : [ConfigModule],
@@ -49,8 +51,8 @@ import { DatabaseModule, DatabaseSchema } from '@core/database';
       },
     }),
     // 도메인 모듈
-    AuthModule,
     UserModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

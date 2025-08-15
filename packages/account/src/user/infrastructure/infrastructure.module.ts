@@ -6,25 +6,27 @@ import { UserOrmRepository } from "./repository/user";
 import { UserController } from "./presentation/user/user.controller";
 import { PetController } from "./presentation/pet/pet.controller";
 import { StorageModule } from "@core/storage";
+import { AuthInternalApiAdapter } from "./adapter/auth-internal-api.adpater";
+import { AuthInternalApiPort } from "../domain/port/out/auth-internal-api.port";
+import { AuthOrmRepository } from "@app/auth/infrastructure/repository/auth.repository";
+import { AuthMapper } from "@app/auth/infrastructure/repository/mapper/auth.mapper";
 
 const providers : Provider[] = [
     {
         provide : UserRepositoryPort,
         useClass : UserOrmRepository
     },
+    // TODO: AuthInternalApiAdapter 가 Api Client 의존성을 가지게 되면 제거
+    AuthOrmRepository,
+    AuthMapper,
+    {
+        provide : AuthInternalApiPort,
+        useClass : AuthInternalApiAdapter,
+    }
 ]
 
 @Module({
     imports : [
-        DatabaseModule.forRootAsync(
-            {
-                imports : [
-                    ConfigModule
-                ],
-                inject : [ConfigService]
-            },
-            [DatabaseSchema.USER],
-        ),
         StorageModule.forRootAsync({
             imports : [
                 ConfigModule

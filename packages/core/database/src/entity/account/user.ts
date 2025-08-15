@@ -29,7 +29,7 @@ export class UserOrmEntity extends BaseEntity{
   /**
    * 비밀번호 해시
    */
-  @Column({ type: 'varchar', length: 255, nullable : false, name: 'password_hash' })
+  @Column({ type: 'varchar', length: 255, nullable : true, name: 'password_hash' })
   passwordHash?: string;
 
   /**
@@ -99,7 +99,7 @@ export class UserOrmEntity extends BaseEntity{
    * 
    * 사용자가 생성 되면 인증에 userId 가 자동적으로 업데이트 됩니다.
    */
-  @OneToOne(() => AuthOrmEntity, (auth) => auth.user , { cascade : ['insert','remove']})
+  @OneToOne(() => AuthOrmEntity, (auth) => auth.user , { cascade : ['insert','remove'], nullable : false})
   auth: AuthOrmEntity;
 
   /**

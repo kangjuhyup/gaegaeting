@@ -1,5 +1,5 @@
 import { AuthEntity } from "@app/auth/domain/model/auth";
-import { UserPrincipal } from "@core/auth";
+import { AuthProviderPrincipal, UserPrincipal } from "@core/auth";
 import { AuthProvider } from "@core/auth";
 
 /**
@@ -36,9 +36,9 @@ export abstract class AuthRepositoryPort {
   /**
    * 인증 정보 업데이트
    * 
-   * @param authId 인증 ID
-   * @param auth 인증 엔티티
+   * @param authProvider 인증 제공자
+   * @param userId 사용자 ID
    * @returns 업데이트 성공 여부
    */
-  abstract updateAuth(authId: number, auth: AuthEntity): Promise<boolean>;
+  abstract updateUserId(authProvider:AuthProviderPrincipal, userId:string): Promise<boolean>;
 }

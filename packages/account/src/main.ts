@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 /**
@@ -9,6 +10,27 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   // NestJS 애플리케이션 생성
   const app = await NestFactory.create(AppModule);
+  
+  // 스웨거 설정
+  const config = new DocumentBuilder()
+    .setTitle('개개팅 API')
+    .setDescription('강아지 산책 소개팅 애플리케이션 API 문서')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'JWT 토큰을 입력하세요',
+        in: 'header',
+      },
+      'access-token',
+    )
+    .build();
+  
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
   
   // 전역 파이프 설정 (유효성 검증)
   app.useGlobalPipes(new ValidationPipe({

@@ -5,7 +5,9 @@ import { GetUserHandler } from "./service/query/get-user.query";
 import { UserInfraStructureModule } from "../infrastructure/infrastructure.module";
 import { GeneratePresignedUrlHandler } from "./service/command/generate-presigned.command";
 
+
 const providers : Provider[] = [
+    
     // Query
     GetUserHandler,
 

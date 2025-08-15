@@ -9,6 +9,7 @@ import {
   HttpCode,
   UseGuards,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { CreateUserBody } from "./dto/request/create-user.request";
 import { UpdateUserBody } from "./dto/request/update-user.request";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
@@ -21,23 +22,18 @@ import { AccessGuard,UserGuard, UserParam, UserPrincipal, AuthProviderParam, Aut
 import { GetPresignedUrlResponse } from "./dto/response/get-presgined.response";
 import { GeneratePresignedCommand } from "@app/user/application/port/in/command/generate-presigned.port";
 
-/**
- * 사용자 컨트롤러
- *
- * 사용자 관련 HTTP 요청을 처리하는 컨트롤러입니다.
- */
+@ApiTags('Account','User')
 @Controller("users")
 export class UserController {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
   ) {}
-  /**
-   * 내 프로필 조회 API
-   * @param user 인증된 사용자 정보
-   * @returns 사용자 프로필 정보
-   */
+  
   @Get("/me")
+  @ApiOperation({ summary : '내 프로필 조회' })
+  @ApiResponse({ status : 200, type : () => UserResponse })
+  @ApiBearerAuth('access-token')
   @UseGuards(AccessGuard,UserGuard)
   async getMyProfile(
     @UserParam() user: UserPrincipal
@@ -52,6 +48,9 @@ export class UserController {
    * @returns 생성된 사용자 정보
    */
   @Post("/me")
+  @ApiOperation({ summary : '내 프로필 생성' })
+  @ApiResponse({ status : 201, type : () => UserResponse })
+  @ApiBearerAuth('access-token')
   @UseGuards(AccessGuard)
   async createMyProfile(
     @AuthProviderParam() authProvider: AuthProviderPrincipal,
@@ -68,6 +67,10 @@ export class UserController {
    * @returns 업데이트된 사용자 정보
    */
   @Put("/me")
+  @ApiOperation({ summary : '내 프로필 수정' })
+  @ApiResponse({ status : 200, type : () => UserResponse })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AccessGuard,UserGuard)
   async updateUser(
     @Param("id") id: string,
     @Body() body: UpdateUserBody,
@@ -83,6 +86,9 @@ export class UserController {
    * @returns 
    */
   @Get('me/presign/:no')
+  @ApiOperation({ summary : '프로필 이미지 업로드 URL 생성' })
+  @ApiResponse({ status : 200, type : () => GetPresignedUrlResponse })
+  @ApiBearerAuth('access-token')
   @UseGuards(AccessGuard,UserGuard)
   async getPresignedUrl(
     @UserParam() user: UserPrincipal,
@@ -98,12 +104,12 @@ export class UserController {
    * @returns 사용자 정보
    */
   @Get(":id")
+  @ApiOperation({ summary : '특정 사용자 조회' })
+  @ApiResponse({ status : 200, type : () => UserResponse })
   async getUser(@Param("id") id: string): Promise<UserResponse> {
     const user = await this.queryBus.execute(new GetUserQuery(id));
     return UserResponse.fromDomain(user);
   }
-
-  
 
   /**
    * 사용자 삭제 API
@@ -111,6 +117,9 @@ export class UserController {
    * @returns 삭제 결과 (204 No Content)
    */
   @Delete()
+  @ApiOperation({ summary : '내 계정 삭제' })
+  @ApiResponse({ status : 204, description: '계정 삭제 성공' })
+  @ApiBearerAuth('access-token')
   @HttpCode(204)
   async deleteUser(
     @UserParam() user : UserPrincipal

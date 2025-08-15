@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { SocialLoginCommand } from "@app/auth/application/port/in/command/social-login.port";
 import { AuthEntity } from "@app/auth/domain/model/auth";
@@ -12,7 +12,6 @@ import { AuthProvider, JwtTokenService } from '@core/auth';
  * 
  * 소셜 로그인 요청을 처리하고 자체 토큰을 발급하는 핸들러입니다.
  */
-@Injectable()
 @CommandHandler(SocialLoginCommand)
 export class SocialLoginHandler implements ICommandHandler<SocialLoginCommand, AuthEntity> {
 
@@ -51,12 +50,11 @@ export class SocialLoginHandler implements ICommandHandler<SocialLoginCommand, A
             }
             
             // 인증 코드로 카카오 액세스 토큰 요청
-            const redirectUrl = `http://localhost:3000/auth/${command.provider}/callback`; // 프론트엔드 콜백 URL
+            const redirectUrl = `http://localhost:3000/auth/${command.provider.label.toLowerCase()}/callback`; // 프론트엔드 콜백 URL
             const kakaoToken = await provider.getAccessToken(code, redirectUrl);
             
             // 카카오 액세스 토큰으로 사용자 정보 요청
             const userProfile = await provider.getUserProfile(kakaoToken.getAccessToken());
-            this.logger.debug(`user profile => ${JSON.stringify(userProfile)}`)
             
             // JWT 토큰 생성 (자체 토큰)
             const accessToken = await this.jwtTokenService.createAccessToken({

@@ -1,24 +1,20 @@
-import { Body, Controller, Get, Param, Post, Query, Redirect, Req, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Body, Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SocialRedirectQuery } from '@app/auth/application/port/in/query/social-redirect.port';
 import { SocialLoginCommand } from '@app/auth/application/port/in/command/social-login.port';
-import { SocialLoginBody } from './dto/request/social-login.request';
+import { SocialCallbackDto } from './dto/request/social-callback.dto';
 import { ConfigService } from '@nestjs/config';
 import { ENV_KEY } from '../../../config/env.config';
 import { LoginResponse } from './dto/response/login.response';
 import { SocialProviderDto } from './dto/request/social-provider.dto';
-import { SocialCallbackDto } from './dto/request/social-callback.dto';
 import { GetUserPrincipalRequest } from './dto/request/get-user-principal.request';
 import { GetUserPrincipalResponse } from './dto/response/get-user-principal.response';
 import { GetUserPrincipalQuery } from '@app/auth/application/port/in/query/get-user-princial.port';
 import { AuthProvider } from '@core/auth';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-/**
- * 인증 컨트롤러
- * 
- * 소셜 로그인 관련 HTTP 요청을 처리하는 컨트롤러입니다.
- */
+@ApiTags('Account','Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -27,17 +23,11 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
   
-  /**
-   * 소셜 로그인 요청 처리
-   * 
-   * @param providerDto 소셜 로그인 제공자 DTO
-   * @param req 요청 객체
-   * @param res 응답 객체
-   */
   @Get(':provider')
-  async getSocialLoginPage(
+  @ApiOperation({ summary : '소셜 로그인 페이지 요청' })
+  @ApiResponse({ status : 302 , description : '소셜로그인 페이지 리다이렉트'})async getSocialLoginPage(
     @Param() providerDto: SocialProviderDto,
-    @Req() req, 
+    @Req() req: Request, 
     @Res() res: Response
   ): Promise<void> {
     
@@ -51,17 +41,12 @@ export class AuthController {
     res.redirect(url);
   }
   
-  /**
-   * 소셜 로그인 콜백 처리 (POST 방식)
-   * 
-   * @param providerDto 소셜 로그인 제공자 DTO
-   * @param body 소셜 로그인 요청 바디
-   * @param res 응답 객체
-   */
   @Post(':provider/callback')
+  @ApiOperation({ summary : '소셜 로그인 콜백 처리 (POST 방식)' })
+  @ApiResponse({ status : 200 , type : () => LoginResponse ,description : '소셜로그인 성공'})
   async socialCallback(
     @Param() providerDto: SocialProviderDto,
-    @Body() body: SocialLoginBody,
+    @Body() body: SocialCallbackDto,
     @Res() res: Response,
   ): Promise<void> {
       
@@ -94,19 +79,17 @@ export class AuthController {
   }
 
   @Get("/principal/:providerType/:providerId")
+  @ApiOperation({ summary : '유저 정보 획득' , description : '해당 API 는 각 서비스에서 유저정보를 획득하기 위해 사용합니다. 클라이언트에서 사용하지 않습니다.' })
+  @ApiResponse({ status : 200 , type : () => GetUserPrincipalResponse ,description : '유저 정보 획득 성공'})
   async getUserPrincipal(@Param() param: GetUserPrincipalRequest) : Promise<GetUserPrincipalResponse> {
     const userPrincipal = await this.queryBus.execute(new GetUserPrincipalQuery(param.providerType, param.providerId));
     return GetUserPrincipalResponse.from(userPrincipal);
   }
 
-  /**
-   * 소셜 로그인 콜백 처리 (GET 방식)
-   * 
-   * @param providerDto 소셜 로그인 제공자 DTO
-   * @param callbackDto 소셜 로그인 콜백 DTO
-   * @param res 응답 객체
-   */
+  
   @Get(':provider/callback')
+  @ApiOperation({ summary : '소셜 로그인 콜백 처리 (GET 방식)' })
+  @ApiResponse({ status : 200 , type : () => LoginResponse ,description : '소셜로그인 성공'})
   async socialCallbackGet(
     @Param() providerDto: SocialProviderDto,
     @Query() callbackDto: SocialCallbackDto,
@@ -149,10 +132,10 @@ export class AuthController {
    * @param req 요청 객체
    * @param res 응답 객체
    */
-  @Get('test-:provider')
+  @Get('test/:provider')
   testSocialLogin(
     @Param() providerDto: SocialProviderDto,
-    @Req() req, 
+    @Req() req: Request, 
     @Res() res: Response
   ): void {
     
@@ -288,8 +271,6 @@ export class AuthController {
             const state = urlParams.get('state');
             
             if (code) {
-              console.log('인증 코드:', code);
-              console.log('상태:', state);
               
               // 서버로 코드 전송
               fetch('/auth/${providerDto.provider.label.toLowerCase()}/callback', {
@@ -305,7 +286,6 @@ export class AuthController {
                 }
               })
               .catch(error => {
-                console.error('에러:', error);
               });
             }
           }
@@ -321,6 +301,5 @@ export class AuthController {
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
   }
-  
   
 }

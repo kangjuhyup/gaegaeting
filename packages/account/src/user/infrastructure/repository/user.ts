@@ -7,6 +7,7 @@ import { UserOrmMapper } from "./mapper/user-orm";
 import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
 import { ProfileEntity } from "@app/user/domain/model/profile";
 import { ProfileOrmMapper } from "./mapper/profile-orm";
+import { AuthProviderPrincipal } from "@core/auth";
 
 @Injectable()
 export class UserOrmRepository implements UserRepositoryPort {
@@ -32,6 +33,21 @@ export class UserOrmRepository implements UserRepositoryPort {
     async selectUserFromPhone(phoneNumber: string): Promise<UserEntity[]> {
         const userOrm = await this.userRepository.find({ where: { phoneNumber } });
         return userOrm.map(UserOrmMapper.toDomain);
+    }
+
+    async selectUserFromAuthProvider(authProviderPrincipal: AuthProviderPrincipal): Promise<UserEntity | undefined> {
+        const userOrm = await this.userRepository.findOne({
+            where : {
+                auth : {
+                    authProvider : authProviderPrincipal.provider.value,
+                    authProviderId : authProviderPrincipal.providerId,
+                }
+            }
+        })
+        if(userOrm){
+            return UserOrmMapper.toDomain(userOrm);
+        }
+        return undefined;
     }
 
     async updateUser(user: UserEntity): Promise<UserEntity> {

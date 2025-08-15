@@ -1,34 +1,14 @@
 import { AuthProvider } from '@core/auth';
-import { Transform } from 'class-transformer';
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
+import { EnumTransformPipe } from '@app/common/pipes/enum-transform.pipe';
 
-/**
- * 소셜 로그인 제공자 DTO
- * 
- * 소셜 로그인 제공자 파라미터를 위한 DTO 클래스입니다.
- */
 export class SocialProviderDto {
-  /**
-   * 소셜 로그인 제공자
-   * 
-   * 지원되는 소셜 로그인 제공자: kakao, naver, google
-   */
-  @IsNotEmpty({ message: '소셜 로그인 제공자는 필수입니다.' })
-  @Transform(({ value }) => {
-    if (typeof value !== 'string') return value;
-    
-    const lowerValue = value.toLowerCase();
-    switch (lowerValue) {
-      case 'kakao':
-        return AuthProvider.KAKAO;
-      case 'naver':
-        return AuthProvider.NAVER;
-      case 'google':
-        return AuthProvider.GOOGLE;
-      default:
-        return value; // 유효성 검사에서 처리
-    }
+  @ApiProperty({ 
+    description: '소셜 로그인 제공자', 
+    enum: () => Object.entries(AuthProvider).map(([key, value]) => key) 
   })
-  @IsEnum(AuthProvider, { message: '지원하지 않는 소셜 로그인 제공자입니다. (kakao, naver, google만 지원)' })
+  @IsNotEmpty({ message: '소셜 로그인 제공자는 필수입니다.' })
+  @EnumTransformPipe(AuthProvider, '지원하지 않는 소셜 로그인 제공자입니다.')
   provider: AuthProvider;
 }

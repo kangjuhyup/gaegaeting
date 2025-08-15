@@ -5,11 +5,14 @@ import { AuthInfraStructureModule } from "../infrastructure/infrastructure.modul
 import { GetUserPrincipalHandler } from "./service/query/get-user-principal.query";
 
 const providers : Provider[] = [
-     // 쿼리 핸들러
+     // Query
      SocialRedirectHandler,
-     SocialLoginHandler,
      SocialRedirectHandler,   
      GetUserPrincipalHandler,
+
+     // Command
+     SocialLoginHandler,
+
 ]
 
 @Module({

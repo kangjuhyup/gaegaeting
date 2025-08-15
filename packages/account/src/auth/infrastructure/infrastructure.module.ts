@@ -48,6 +48,7 @@ const providers : Provider[] = [
         HttpModule.forRoot({
             logger : Logger,
         }),
+       
     ],
     controllers : [
         AuthController

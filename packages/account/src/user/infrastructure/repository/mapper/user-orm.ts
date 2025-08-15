@@ -1,6 +1,7 @@
 import { UserGender, UserRegion, UserStatus } from "@app/user/domain/enum/user.enum";
 import { UserEntity } from "@app/user/domain/model/user";
 import { UserOrmEntity } from "@core/database";
+import { ulid } from "ulid";
 
 /**
  * UserOrmMapper 클래스
@@ -40,27 +41,22 @@ export class UserOrmMapper {
         const userOrm = new UserOrmEntity();
         
         // ID 설정
-        userOrm.id = userEntity.id;
-        
+        userOrm.id = userEntity.id || ulid();
         // 기본 정보 설정
         userOrm.email = userEntity.email;
         userOrm.passwordHash = userEntity.passwordHash;
         userOrm.nickname = userEntity.nickname;
-        
         // 개인 정보 설정
-        userOrm.gender = userEntity.gender;
+        userOrm.gender = userEntity.gender.value;
         userOrm.birthDate = userEntity.birthDate;
-        userOrm.region = userEntity.region;
+        userOrm.region = userEntity.region.value;
         userOrm.bio = userEntity.bio;
         userOrm.phoneNumber = userEntity.phoneNumber;
-        
         // 인증 정보 설정
-        userOrm.status = userEntity.status;
-        
+        userOrm.status = userEntity.status.value;
         // 메타데이터 설정
         userOrm.createdAt = userEntity.createdAt;
         userOrm.updatedAt = userEntity.updatedAt;
-        
         return userOrm;
     }
 }

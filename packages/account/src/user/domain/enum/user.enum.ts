@@ -1,9 +1,16 @@
+
+type UserGenderValue = {
+    label: string;
+    value: number;
+};
+
+
 export const UserGender = {
     MALE : { label : "MALE", value : 0 },
     FEMALE : { label : "FEMALE", value : 1 },
     
-    from: (value: number): typeof UserGender[keyof typeof UserGender] => {
-        const entries = Object.entries<{label:string,value:number}>(UserGender);
+    from: (value: number): UserGenderValue => {
+        const entries = Object.entries(UserGender) as [string, UserGenderValue][];
         for (const [key, val] of entries) {
             if (key !== 'from' && val.value === value) {
                 return val;
@@ -13,8 +20,12 @@ export const UserGender = {
     }
 } as const;
 
-export type UserGender = typeof UserGender[keyof typeof UserGender];
+export type UserGender = UserGenderValue;
 
+type UserRegionValue = {
+    label: string;
+    value: number;
+};
 /**
  * 사용자 성별 열거형
  */
@@ -29,8 +40,8 @@ export const UserRegion = {
     JEJU : { label : "JEJU", value : 7 }, // 제주
     
     // 숫자 값으로부터 해당 enum 반환
-    from: (value: number): typeof UserRegion[keyof typeof UserRegion] => {
-        const entries = Object.entries<{label:string,value:number}>(UserRegion);
+    from: (value: number): UserRegionValue => {
+        const entries = Object.entries(UserRegion) as [string, UserRegionValue][];
         for (const [key, val] of entries) {
             if (key !== 'from' && val.value === value) {
                 return val;
@@ -40,8 +51,12 @@ export const UserRegion = {
     }
 } as const;
 
-export type UserRegion = typeof UserRegion[keyof typeof UserRegion];
+export type UserRegion = UserRegionValue;
 
+type UserStatusValue = {
+    label : string,
+    value : number
+}
 /**
  * 사용자 회원 상태 열거형
  */
@@ -52,8 +67,8 @@ export const UserStatus = {
     DELETED : { label : "DELETED", value : 3 }, // 탈퇴
     
     // 숫자 값으로부터 해당 enum 반환
-    from: (value: number): typeof UserStatus[keyof typeof UserStatus] => {
-        const entries = Object.entries<{label:string,value:number}>(UserStatus);
+    from: (value: number): UserStatusValue => {
+        const entries = Object.entries(UserStatus) as [string, UserStatusValue][];
         for (const [key, val] of entries) {
             if (key !== 'from' && val.value === value) {
                 return val;
@@ -63,4 +78,4 @@ export const UserStatus = {
     }
 } as const;
 
-export type UserStatus = typeof UserStatus[keyof typeof UserStatus];
+export type UserStatus = UserStatusValue;

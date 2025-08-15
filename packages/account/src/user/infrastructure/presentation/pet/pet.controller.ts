@@ -1,13 +1,12 @@
 import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards, Query } from '@nestjs/common';
-import { UserEntity } from '@app/user/domain/model/user';
 import { CreatePetBody } from './dto/request/create-pet.request';
 import { PetResponse } from './dto/response/pet-response';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetPetsQuery } from '@app/user/application/port/in/query/get-pets.port';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AccessGuard, UserGuard, UserParam, UserPrincipal } from '@core/auth';
 
-/**
- * 강아지 컨트롤러
- */
+@ApiTags('Account','Pet')
 @Controller('pets')
 export class PetController {
   constructor(
@@ -15,81 +14,71 @@ export class PetController {
     private readonly commandBUs : CommandBus,
   ) {}
 
-  /**
-   * 강아지 생성 API
-   * @param createPetDto 강아지 생성 DTO
-   * @returns 생성된 강아지 정보
-   */
   @Post()
-  async createPet(@Body() body: CreatePetBody): Promise<any> {
+  @UseGuards(AccessGuard,UserGuard)
+  @ApiOperation({ summary : '반려동물 추가' })
+  @ApiBearerAuth('access-token')
+  async createPet(
+    @UserParam() user : UserPrincipal,
+    @Body() body: CreatePetBody
+  ): Promise<any> {
     return 
   }
 
-  /**
-   * 모든 강아지 조회 API
-   * @param page 페이지 번호
-   * @param limit 페이지당 항목 수
-   * @returns 강아지 목록
-   */
   @Get()
+  @UseGuards(AccessGuard,UserGuard)
+  @ApiOperation({ summary : '내 반려동물 목록 조회' })
+  @ApiBearerAuth('access-token')
   async findAllPets(
-    user : UserEntity
+    @UserParam() user : UserPrincipal
   ): Promise<PetResponse> {
-    const pets = await this.queryBus.execute(new GetPetsQuery(user.id));
-    return PetResponse.of(user.id, pets);
+    const pets = await this.queryBus.execute(new GetPetsQuery(user.userId));
+    return PetResponse.of(user.userId, pets);
   }
 
-  /**
-   * 특정 강아지 조회 API
-   * @param id 강아지 ID
-   * @returns 강아지 정보
-   */
   @Get(':id')
-  async findPetById(@Param('id') id: string): Promise<any> {
+  @UseGuards(AccessGuard,UserGuard)
+  @ApiOperation({ summary : '특정 반려동물 조회' })
+  @ApiBearerAuth('access-token')
+  async findPetById(@UserParam() user : UserPrincipal, @Param('id') id: string): Promise<any> {
     return 
   }
 
-  /**
-   * 강아지 정보 업데이트 API
-   * @param id 강아지 ID
-   * @param updatePetDto 강아지 업데이트 DTO
-   * @returns 업데이트된 강아지 정보
-   */
   @Put(':id')
+  @UseGuards(AccessGuard,UserGuard)
+  @ApiOperation({ summary : '반려동물 정보 갱신'})
+  @ApiBearerAuth('access-token')
   async updatePet(
+    @UserParam() user : UserPrincipal,
     @Param('id') id: string,
     @Body() updatePetDto: any,
   ): Promise<any> {
     return
   }
 
-  /**
-   * 강아지 삭제 API
-   * @param id 강아지 ID
-   * @returns 삭제 결과
-   */
   @Delete(':id')
-  async deletePet(@Param('id') id: string): Promise<any> {
-    return 
-  }
-
-  /**
-   * 특정 사용자의 강아지 목록 조회 API
-   * @param userId 사용자 ID
-   * @returns 사용자가 소유한 강아지 목록
-   */
-  @Get('user/:userId')
-  async findPetsByUserId(@Param('userId') userId: string): Promise<any> {
+  @UseGuards(AccessGuard,UserGuard)
+  @ApiOperation({ summary : '반려동물 삭제'})
+  @ApiBearerAuth('access-token')
+  async deletePet(
+    @UserParam() user : UserPrincipal,
+    @Param('id') id: string,
+  ): Promise<any> {
     return
   }
 
-  /**
-   * 강아지 이미지 추가 API
-   * @param id 강아지 ID
-   * @param imageDto 이미지 정보 DTO
-   * @returns 업데이트된 강아지 정보
-   */
+  @ApiOperation({ summary : '특정 사용자의 반려동물 목록 조회' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AccessGuard,UserGuard)
+  @Get('user/:userId')
+  async findPetsByUserId(@UserParam() user : UserPrincipal, @Param('userId') userId: string): Promise<any> {
+    return
+  }
+
   @Post(':id/images')
+  @UseGuards(AccessGuard,UserGuard)
+  @ApiOperation({ summary : '반려동물 이미지 추가'})
+  @ApiBearerAuth('access-token')
   async addPetImage(
     @Param('id') id: string,
     @Body() imageDto: any,
@@ -97,14 +86,12 @@ export class PetController {
     return
   }
 
-  /**
-   * 강아지 이미지 삭제 API
-   * @param id 강아지 ID
-   * @param imageIndex 삭제할 이미지 인덱스
-   * @returns 업데이트된 강아지 정보
-   */
   @Delete(':id/images/:imageIndex')
+  @UseGuards(AccessGuard,UserGuard)
+  @ApiOperation({ summary : '반려동물 이미지 삭제'})
+  @ApiBearerAuth('access-token')
   async removePetImage(
+    @UserParam() user : UserPrincipal,
     @Param('id') id: string,
     @Param('imageIndex') imageIndex: number,
   ): Promise<any> {

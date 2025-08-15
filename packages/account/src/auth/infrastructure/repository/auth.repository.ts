@@ -5,8 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { AuthOrmEntity } from '@core/database';
 import { AuthMapper } from "./mapper/auth.mapper";
-import { AuthProvider, UserPrincipal } from "@core/auth";
-import { UserRegion } from '../../../user/domain/enum/user.enum';
+import { AuthProvider, AuthProviderPrincipal, UserPrincipal } from "@core/auth";
 
 @Injectable()
 export class AuthOrmRepository implements AuthRepositoryPort {
@@ -15,6 +14,7 @@ export class AuthOrmRepository implements AuthRepositoryPort {
         private readonly authMapper : AuthMapper,
         @InjectRepository(AuthOrmEntity) private readonly auth : Repository<AuthOrmEntity>
     ) {}
+
     
     async saveAuth(auth: AuthEntity): Promise<AuthEntity> {
         const ormEntity = this.authMapper.toOrmEntity(auth);
@@ -34,8 +34,8 @@ export class AuthOrmRepository implements AuthRepositoryPort {
             return {
                 userId : ormEntity.user.id,
                 nickname : ormEntity.user.nickname,
-                birth : ormEntity.user.birthDate.getDate().toString(),
-                region : UserRegion.from(ormEntity.user.region),
+                birth : ormEntity.user.birthDate.toString(),
+                region : ormEntity.user.region,
             }
         }
         return null;
@@ -50,9 +50,11 @@ export class AuthOrmRepository implements AuthRepositoryPort {
         
         return ormEntity ? this.authMapper.toDomainEntity(ormEntity) : null;
     }
-    async updateAuth(authId: number, auth: AuthEntity): Promise<boolean> {
-        await this.auth.update(authId, this.authMapper.toOrmEntity(auth));
+    
+    async updateUserId(authProvider: AuthProviderPrincipal, userId: string): Promise<boolean> {
+        const result = await this.auth.update({ authProvider : authProvider.provider.value, authProviderId : authProvider.providerId }, { userId }).catch(console.log);
+        console.log(result);
         return true;
-    }
+    }    
     
 }
