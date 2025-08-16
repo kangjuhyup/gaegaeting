@@ -13,14 +13,15 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand, Use
 
   async execute(command: CreateUserCommand): Promise<UserEntity> {
     const existsUser = await this.userRepository.selectUserFromAuthProvider(
-      command.authProvider,
+      command.providerType,
+      command.providerId
     );
 
     if (existsUser) {
       throw new Error("이미 존재하는 사용자입니다.");
     }
     const user = await this.userRepository.insertUser(command.user);
-    await this.authInternalApiPort.setUserId(command.authProvider, user.id);
+    await this.authInternalApiPort.setUserId(command.providerType, command.providerId, user.id);
     return user;
   }
 }

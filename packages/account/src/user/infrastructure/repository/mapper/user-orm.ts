@@ -30,10 +30,9 @@ export class UserOrmMapper {
             phoneNumber: orm.phoneNumber,
             status: UserStatus.from(orm.status),
             profiles : orm.attachments?.map(a => ProfileEntity.of({
-                userId : orm.id,
                 path : a.path,
                 active : a.isActive
-            }))
+            }).setPersistence({ userId : orm.id, no : a.no },a.createdAt,a.updatedAt))
         }).setPersistence(orm.id,orm.createdAt,orm.updatedAt);
     }
 

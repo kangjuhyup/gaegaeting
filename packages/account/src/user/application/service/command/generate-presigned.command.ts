@@ -16,9 +16,7 @@ export class GeneratePresignedUrlHandler implements ICommandHandler<GeneratePres
     async execute(command: GeneratePresignedCommand): Promise<PresignedUrl> {
         const presignedUrl = await this.userStoragePort.getPresignedUrl(command.userId, command.no);
         const profile = ProfileEntity.of({
-            userId : command.userId,
             path : presignedUrl.path,
-            no : command.no,
             active : false,
         });
         await this.userRepositoryPort.insertUserAttachment(profile);

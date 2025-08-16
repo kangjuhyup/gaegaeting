@@ -2,25 +2,25 @@ import { ConfigService } from '@nestjs/config';
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { SocialRedirectQuery } from "@app/auth/application/port/in/query/social-redirect.port";
 import { SocialRedirectStrategy, KakaoRedirectStrategy, NaverRedirectStrategy, GoogleRedirectStrategy } from '../redirect-strategy';
-import { AuthProvider } from '@core/auth';
+import { AuthProvider } from '@core/auth/src/type/enum/auth-provider.enum';
 
 @QueryHandler(SocialRedirectQuery)
 export class SocialRedirectHandler implements IQueryHandler<SocialRedirectQuery, string> {
-  private readonly strategies: Map<AuthProvider, SocialRedirectStrategy>;
+  private readonly strategies: Map<number, SocialRedirectStrategy>;
   
   constructor(private readonly configService: ConfigService) {
-    this.strategies = new Map<AuthProvider, SocialRedirectStrategy>();
-    this.strategies.set(AuthProvider.KAKAO, new KakaoRedirectStrategy(configService));
-    this.strategies.set(AuthProvider.NAVER, new NaverRedirectStrategy(configService));
-    this.strategies.set(AuthProvider.GOOGLE, new GoogleRedirectStrategy(configService));
+    this.strategies = new Map<number, SocialRedirectStrategy>();
+    this.strategies.set(AuthProvider.KAKAO.value, new KakaoRedirectStrategy(configService));
+    this.strategies.set(AuthProvider.NAVER.value, new NaverRedirectStrategy(configService));
+    this.strategies.set(AuthProvider.GOOGLE.value, new GoogleRedirectStrategy(configService));
   }
 
   async execute(query: SocialRedirectQuery): Promise<string> {
-    const { provider, redirectUrl } = query;
+    const { providerType, redirectUrl } = query;
     
-    const strategy = this.strategies.get(provider);
+    const strategy = this.strategies.get(providerType);
     if (!strategy) {
-      throw new Error(`지원하지 않는 인증 제공자입니다: ${provider}`);
+      throw new Error(`지원하지 않는 인증 제공자입니다: ${providerType}`);
     }
     
     return strategy.generateAuthUrl(redirectUrl);

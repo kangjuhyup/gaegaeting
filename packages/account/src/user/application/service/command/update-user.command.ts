@@ -12,14 +12,11 @@ export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {
     ) {}
 
     async execute(command: UpdateUserCommand): Promise<UserEntity> {
-        console.log(command);
         const existsUser = await this.userRepository.selectUserFromId(command.id);
-        console.log(existsUser);
         if(!existsUser) {
             throw new Error("존재하지 않는 사용자입니다.");
         }
         existsUser.updateInfo(command.data);
-        console.log(existsUser);
         const user = await this.userRepository.updateUser(existsUser);
         return user;
     }

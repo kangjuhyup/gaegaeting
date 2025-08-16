@@ -5,7 +5,8 @@ import { AuthEntity } from "@app/auth/domain/model/auth";
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
 import { AuthRepositoryPort } from '@app/auth/domain/port/out/auth-repository.port';
-import { AuthProvider, JwtTokenService } from '@core/auth';
+import { AuthProvider } from '@core/auth/src/type/enum/auth-provider.enum';
+import { JwtPort } from '@app/auth/domain/port/out/jwt.port';
 
 /**
  * 소셜 로그인 커맨드 핸들러    
@@ -23,7 +24,7 @@ export class SocialLoginHandler implements ICommandHandler<SocialLoginCommand, A
     
     constructor(
         private readonly authRepository: AuthRepositoryPort, 
-        private readonly jwtTokenService: JwtTokenService,
+        private readonly jwtPort: JwtPort,
         @Inject('SocialAuthProviders') private readonly authProviders: SocialAuthProviderPort[],
     ) {
         // 소셜 인증 제공자 맵 초기화
@@ -57,24 +58,23 @@ export class SocialLoginHandler implements ICommandHandler<SocialLoginCommand, A
             const userProfile = await provider.getUserProfile(kakaoToken.getAccessToken());
             
             // JWT 토큰 생성 (자체 토큰)
-            const accessToken = await this.jwtTokenService.createAccessToken({
+            const accessToken = await this.jwtPort.createAccessToken({
                 provider: command.provider,
                 providerId: userProfile.getProviderId(),
             });
             
-            const refreshToken = await this.jwtTokenService.createRefreshToken({
+            const refreshToken = await this.jwtPort.createRefreshToken({
                 provider: command.provider,
                 providerId: userProfile.getProviderId(),
             });
             
-            const expiresIn = this.jwtTokenService.getExpriesIn
-            console.log(expiresIn)
+            const expiresIn = this.jwtPort.getExpriesIn()
             // 자체 토큰 생성
             const authToken = new AuthToken({
                 accessToken,
                 refreshToken,
-                expiresIn : expiresIn.acess, // 1시간
-                refreshTokenExpiresIn : expiresIn.refresh, // 7일   
+                expiresIn : expiresIn.accessToken, // 1시간
+                refreshTokenExpiresIn : expiresIn.refreshToken, // 7일   
                 tokenType : 'Bearer'
             });
             

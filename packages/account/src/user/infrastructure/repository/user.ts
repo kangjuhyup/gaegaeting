@@ -73,6 +73,11 @@ export class UserOrmRepository implements UserRepositoryPort {
         await this.userRepository.delete(id);
     }
 
+    async selectUserAttachment(userId: string, no: number): Promise<ProfileEntity> {
+        const userAttachmentOrm = await this.userAttachmentRepository.findOne({ where: { userId, no } });
+        return ProfileOrmMapper.toDomain(userAttachmentOrm);
+    }
+
     async insertUserAttachment(userAttachment : ProfileEntity) : Promise<ProfileEntity> {
         const userAttachmentOrm = ProfileOrmMapper.toOrm(userAttachment);
         const insertedUserAttachment = await this.userAttachmentRepository.save(userAttachmentOrm);

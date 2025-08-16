@@ -9,6 +9,8 @@ import { AuthMapper } from "./repository/mapper/auth.mapper";
 import { DatabaseModule, DatabaseSchema } from "@core/database";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { HttpModule } from "@core/http";
+import { JwtPort } from "../domain/port/out/jwt.port";
+import { JwtAdpater } from "./adapter/jwt.adapter";
 
 const providers : Provider[] = [
     // 매퍼 클래스
@@ -40,6 +42,10 @@ const providers : Provider[] = [
         ) => [kakaoAuthAdapter, naverAuthAdapter, googleAuthAdapter],
         inject: ['KAKAO_AUTH_PROVIDER', 'NAVER_AUTH_PROVIDER', 'GOOGLE_AUTH_PROVIDER'],
     },
+    {
+        provide : JwtPort,
+        useClass : JwtAdpater
+    }
 ]
 
 @Module({

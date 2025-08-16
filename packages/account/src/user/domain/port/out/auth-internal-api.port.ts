@@ -1,6 +1,4 @@
-import { AuthProvider, AuthProviderPrincipal } from "@core/auth";
-
 export abstract class AuthInternalApiPort {
 
-    abstract setUserId(authProvider:AuthProviderPrincipal, userId : string) : Promise<void> 
+    abstract setUserId(providerType:number,providerId:string, userId : string) : Promise<void> 
 }

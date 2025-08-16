@@ -11,7 +11,7 @@ export class AuthInternalApiAdapter implements AuthInternalApiPort {
         private readonly authOrmRepository : AuthOrmRepository
     ){}
 
-    async setUserId(authProvider: AuthProviderPrincipal, userId: string): Promise<void> {
-        await this.authOrmRepository.updateUserId(authProvider, userId);
+    async setUserId(providerType:number,providerId:string, userId: string): Promise<void> {
+        await this.authOrmRepository.updateUserId(providerType,providerId, userId);
     }
 }

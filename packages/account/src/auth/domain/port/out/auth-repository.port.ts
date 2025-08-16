@@ -1,7 +1,5 @@
 import { AuthEntity } from "@app/auth/domain/model/auth";
-import { AuthProviderPrincipal, UserPrincipal } from "@core/auth";
-import { AuthProvider } from "@core/auth";
-
+import { UserPrincipal } from "@core/auth";
 /**
  * 인증 저장소 포트
  * 
@@ -19,11 +17,11 @@ export abstract class AuthRepositoryPort {
   /**
    * 사용자 ID와 인증 제공자로 인증 정보 조회
    * 
-   * @param provider 인증 제공자
+   * @param providerType 인증 제공자 타입
    * @param providerId 제공자 ID
    * @returns 유저 정보
    */
-  abstract findUserByAuthProvider(provider: AuthProvider, providerId: string): Promise<UserPrincipal | null>;
+  abstract findUserByAuthProvider(providerType: number, providerId: string): Promise<UserPrincipal | null>;
   
   /**
    * 리프레시 토큰으로 인증 정보 조회
@@ -36,9 +34,10 @@ export abstract class AuthRepositoryPort {
   /**
    * 인증 정보 업데이트
    * 
-   * @param authProvider 인증 제공자
+   * @param providerType 인증 제공자 타입
+   * @param providerId 제공자 ID
    * @param userId 사용자 ID
    * @returns 업데이트 성공 여부
    */
-  abstract updateUserId(authProvider:AuthProviderPrincipal, userId:string): Promise<boolean>;
+  abstract updateUserId(providerType:number,providerId:string, userId:string): Promise<boolean>;
 }

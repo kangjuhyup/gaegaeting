@@ -1,9 +1,8 @@
-import { AuthProvider } from "@core/auth";
 import { Query } from "@nestjs/cqrs";
 
 export class SocialRedirectQuery extends Query<string> {
     constructor(
-        public readonly provider : AuthProvider,
+        public readonly providerType : number,
         public readonly redirectUrl : string
     ) {
         super()
