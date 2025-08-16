@@ -5,7 +5,7 @@ import { AuthEntity } from "@app/auth/domain/model/auth";
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
 import { AuthRepositoryPort } from '@app/auth/domain/port/out/auth-repository.port';
-import { AuthProvider } from '@core/auth/src/type/enum/auth-provider.enum';
+import { AuthProvider } from '@core/auth';
 import { JwtPort } from '@app/auth/domain/port/out/jwt.port';
 
 /**

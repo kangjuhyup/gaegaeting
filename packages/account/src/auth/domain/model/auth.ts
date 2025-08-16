@@ -1,4 +1,4 @@
-import { AuthProvider } from '@core/auth/src/type/enum/auth-provider.enum';
+import { AuthProvider } from '@core/auth';
 import { AuthToken } from './auth-token';
 import { PersistenceEntity } from '@core/model';
 
