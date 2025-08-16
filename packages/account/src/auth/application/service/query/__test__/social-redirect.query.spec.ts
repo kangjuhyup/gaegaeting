@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { SocialRedirectHandler } from '../social-redirect.query';
 import { SocialRedirectQuery } from '@app/auth/application/port/in/query/social-redirect.port';
 import { KakaoRedirectStrategy, NaverRedirectStrategy, GoogleRedirectStrategy } from '../../redirect-strategy';
-import { AuthProvider } from '@core/auth/src/type/enum/auth-provider.enum';
+import { AuthProvider } from '@core/auth';
 
 // ConfigService 모킹
 jest.mock('@nestjs/config');

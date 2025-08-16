@@ -7,6 +7,18 @@
   "license": "UNLICENSED",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "require": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/src/public-api.js",
+      "require": "./dist/src/public-api.js",
+      "types": "./dist/src/public-api.d.ts"
+    }
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

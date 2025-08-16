@@ -11,6 +11,7 @@ module.exports = {
   roots: ['<rootDir>/src/'],
   moduleNameMapper: {
     '^@app/(.*)$': '<rootDir>/src/$1',
+    '^@core/auth$': '<rootDir>/../core/auth/dist/src/public-api',
     '^@core/(.*)$': '<rootDir>/../core/$1',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
