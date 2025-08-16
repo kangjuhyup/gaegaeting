@@ -30,7 +30,7 @@ async function bootstrap() {
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
-  fs.writeFileSync('./swagger-spec.json', JSON.stringify(document));
+  fs.writeFileSync('../../docs/account/swagger-spec.json', JSON.stringify(document));
 
   SwaggerModule.setup('docs', app, document);
   
