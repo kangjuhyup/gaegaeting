@@ -3,6 +3,7 @@ import { PetInfraStructureModule } from "../infrastructure/infrastructure.module
 import { GetPetHandler } from "./service/query/get-pet.query";
 import { GetPetsHandler } from "./service/query/get-pets.query";
 import { RegisterPetHandler } from "./service/command/register-pet.command";
+import { GeneratePetPresignedUrlHandler } from "./service/command/generate-pet-presigned.command";
 
 
 const providers : Provider[] = [
@@ -12,6 +13,8 @@ const providers : Provider[] = [
     GetPetsHandler,
     // Command
     RegisterPetHandler,
+    
+    GeneratePetPresignedUrlHandler
 ]
 
 @Module({
