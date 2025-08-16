@@ -9,12 +9,26 @@ export class UserStorageAdapter implements UserStoragePort {
         private readonly storageService : StorageService
     ) {}
     async getPresignedUrl(userId: string, no : number): Promise<PresignedUrl> {
-        const url = await this.storageService.generateUploadPresignedUrl({
+        const result = await this.storageService.generateUploadPresignedUrl({
             type : 'image',
             key : `${userId}-${no}`,
             expires : 3600
         });
-        return PresignedUrl.from(url, 3600);
+        return PresignedUrl.from(result, 3600);
     }
 
+    async deletePresignedUrl(userId: string, no : number): Promise<void> {
+        await this.storageService.deleteObject({
+            key : `${userId}-${no}`
+        });
+    }
+
+    async hasMetadata(userId: string, no : number): Promise<boolean> {
+        const metadata = await this.storageService.getObjectMetadata({
+            key : `${userId}-${no}`
+        });
+
+        // 메타데이터 존재할 경우 True 없을 경우 False
+        return metadata !== undefined;
+    }
 }

@@ -35,7 +35,7 @@ export class CreatePetBody {
     
       @ApiProperty({ description : '반려동물 성격 특성', enum : () => Object.entries(PetPersonality).map(([key, value]) => key) ,required : true})
       @EnumTransformPipe(PetPersonality,'지원하지 않는 성격 특성이 있습니다.')
-  @IsArray({ message: '성격 특성은 배열이어야 합니다.', each : true })
+  @IsArray({ message: '성격 특성은 배열이어야 합니다.' })
   @IsNotEmpty({ message: '성격 특성은 필수 입력 항목입니다.' })
   personalities: PetPersonality[];
     

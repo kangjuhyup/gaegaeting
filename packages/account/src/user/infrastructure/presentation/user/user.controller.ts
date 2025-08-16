@@ -21,6 +21,7 @@ import { DeleteUserCommand } from "@app/user/application/port/in/command/delete-
 import { AccessGuard,UserGuard, UserParam, UserPrincipal, AuthProviderParam, AuthProviderPrincipal } from "@core/auth";
 import { GetPresignedUrlResponse } from "./dto/response/get-presgined.response";
 import { GeneratePresignedCommand } from "@app/user/application/port/in/command/generate-presigned.port";
+import { DeleteProfileImageCommand } from "@app/user/application/port/in/command/delete-profile-image.port";
 
 @ApiTags('Account','User')
 @Controller("users")
@@ -42,11 +43,6 @@ export class UserController {
     return UserResponse.fromDomain(userProfile);
   }
 
-  /**
-   * 사용자 생성 API
-   * @param body 사용자 생성 DTO
-   * @returns 생성된 사용자 정보
-   */
   @Post("/me")
   @ApiOperation({ summary : '내 프로필 생성' })
   @ApiResponse({ status : 201, type : () => UserResponse })
@@ -60,19 +56,13 @@ export class UserController {
     return UserResponse.fromDomain(user);
   }  
 
-  /** 
-   * 사용자 정보 업데이트 API
-   * @param id 사용자 ID
-   * @param updateUserDto 사용자 업데이트 DTO
-   * @returns 업데이트된 사용자 정보
-   */
-  @Put("/me")
+  @Put("/me/:id")
   @ApiOperation({ summary : '내 프로필 수정' })
   @ApiResponse({ status : 200, type : () => UserResponse })
   @ApiBearerAuth('access-token')
   @UseGuards(AccessGuard,UserGuard)
   async updateUser(
-    @Param("id") id: string,
+    @Param('id') id: string,
     @Body() body: UpdateUserBody,
   ): Promise<UserResponse> {
       const user = await this.commandBus.execute(new UpdateUserCommand(id, body));
@@ -86,7 +76,7 @@ export class UserController {
   @UseGuards(AccessGuard,UserGuard)
   async getPresignedUrl(
     @UserParam() user: UserPrincipal,
-    @Param() no : string
+    @Param('no') no : string
   ) : Promise<GetPresignedUrlResponse> {
     const presignedUrl = await this.commandBus.execute(new GeneratePresignedCommand(user.userId,Number(no)));
     return GetPresignedUrlResponse.from(presignedUrl);
@@ -101,7 +91,7 @@ export class UserController {
     @UserParam() user: UserPrincipal,
     @Param() no : string
   ) : Promise<void> {
-    // await this.commandBus.execute(new DeletePresignedCommand(user.userId,Number(no)));
+    await this.commandBus.execute(new DeleteProfileImageCommand(user.userId,Number(no)));
     return;
   }
 

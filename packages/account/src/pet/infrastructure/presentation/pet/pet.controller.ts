@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards, Query, NotFoundException } from '@nestjs/common';
 import { CreatePetBody } from './dto/request/create-pet.request';
 import { PetResponse } from './dto/response/pet-response';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -13,7 +13,7 @@ import { GetPetQuery } from '@app/pet/application/port/in/query/get-pet.port';
 export class PetController {
   constructor(
     private readonly queryBus : QueryBus,
-    private readonly commandBUs : CommandBus,
+    private readonly commandBus : CommandBus,
   ) {}
 
   @Post()
@@ -24,7 +24,7 @@ export class PetController {
     @UserParam() user : UserPrincipal,
     @Body() body: CreatePetBody
   ): Promise<any> {
-    const pet = await this.commandBUs.execute(new RegisterPetCommand(body.toDomain(user.userId)));
+    const pet = await this.commandBus.execute(new RegisterPetCommand(body.toDomain(user.userId)));
     return PetResponse.of(user.userId, [pet]);
   }
 
@@ -85,6 +85,7 @@ export class PetController {
   @ApiBearerAuth('access-token')
   async addPetImage(
     @Param('id') id: string,
+    @Param('no') no: string,
     @Body() imageDto: any,
   ): Promise<any> {
     return
@@ -97,7 +98,7 @@ export class PetController {
   async removePetImage(
     @UserParam() user : UserPrincipal,
     @Param('id') id: string,
-    @Param('imageIndex') imageIndex: number,
+    @Param('imageIndex') imageIndex: string,
   ): Promise<any> {
     return
   }

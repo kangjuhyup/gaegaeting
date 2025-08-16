@@ -5,8 +5,10 @@ import { PetController } from "../../pet/infrastructure/presentation/pet/pet.con
 import { StorageModule } from "@core/storage";
 import { PetRepositoryPort } from "../domain/port/out/pet-repository.port";
 import { PetOrmRepository } from "./repository/pet";
+import { PetOrmMapper } from "./repository/mapper/pet-orm";
 
 const providers : Provider[] = [
+    PetOrmMapper,
     {
         provide : PetRepositoryPort,
         useClass : PetOrmRepository

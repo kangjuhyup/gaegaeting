@@ -18,6 +18,7 @@ export class UserOrmRepository implements UserRepositoryPort {
         @InjectRepository(UserAttachmentOrmEntity)
         private readonly userAttachmentRepository : Repository<UserAttachmentOrmEntity>
     ) {}
+
     
     async insertUser(user: UserEntity): Promise<UserEntity> {
         const userOrm = UserOrmMapper.toOrm(user);
@@ -27,6 +28,18 @@ export class UserOrmRepository implements UserRepositoryPort {
     
     async selectUserFromId(id: string): Promise<UserEntity> {
         const userOrm = await this.userRepository.findOneBy({ id });
+        return UserOrmMapper.toDomain(userOrm);
+    }
+
+    async selectUserFromIdWithProfiles(id: string): Promise<UserEntity> {
+        const userOrm = await this.userRepository.findOne({
+            where : {
+                id
+            },
+            relations : {
+                attachments : true
+            }
+        })
         return UserOrmMapper.toDomain(userOrm);
     }
 
@@ -64,5 +77,13 @@ export class UserOrmRepository implements UserRepositoryPort {
         const userAttachmentOrm = ProfileOrmMapper.toOrm(userAttachment);
         const insertedUserAttachment = await this.userAttachmentRepository.save(userAttachmentOrm);
         return ProfileOrmMapper.toDomain(insertedUserAttachment);
+    }
+
+    async updateUserAttachmentActive(userId: string, no: number, active: boolean): Promise<void> {
+        await this.userAttachmentRepository.update({ userId, no }, { isActive: active });
+    }
+
+    async deleteUserAttachment(userId : string, no : number) : Promise<void> {
+        await this.userAttachmentRepository.delete({ userId, no });
     }
 }

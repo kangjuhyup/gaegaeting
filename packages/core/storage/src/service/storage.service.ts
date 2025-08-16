@@ -35,31 +35,43 @@ export class StorageService {
         key: string;
         expires: number;
         meta?: any;
-      }): Promise<string> {
+      }): Promise<{ presignedUrl: string; path: string }> {
+        const key = this.prefix ? `${this.prefix}/${param.key}` : param.key;
         const command = new PutObjectCommand({
           Bucket: this.bucket,
-          Key: this.prefix ? `${this.prefix}/${param.key}` : param.key,
+          Key: key,
           ContentType: param.type === 'image' ? 'image/png' : 'text/plain',
           Metadata: {
             ...param.meta,
           },
         });
-        return await getSignedUrl(this.s3Client, command, {
+        const presignedUrl = await getSignedUrl(this.s3Client, command, {
           expiresIn: param.expires,
         });
+        
+        return {
+          presignedUrl,
+          path: `${this.storageHost}/${this.bucket}/${key}`
+        };
       }
     
       async generateDownloadPresignedUrl(param: {
         key: string;
         expires: number;
-      }): Promise<string> {
+      }): Promise<{ presignedUrl: string; path: string }> {
+        const key = this.prefix ? `${this.prefix}/${param.key}` : param.key;
         const command = new GetObjectCommand({
           Bucket: this.bucket,
-          Key: this.prefix ? `${this.prefix}/${param.key}` : param.key,
+          Key: key,
         });
-        return await getSignedUrl(this.s3Client, command, {
+        const presignedUrl = await getSignedUrl(this.s3Client, command, {
           expiresIn: param.expires,
         });
+        
+        return {
+          presignedUrl,
+          path: `${this.storageHost}/${this.bucket}/${key}`
+        };
       }
     
       async getObjectMetadata(param: {

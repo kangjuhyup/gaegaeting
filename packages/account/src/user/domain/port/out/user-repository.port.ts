@@ -5,6 +5,8 @@ import { AuthProvider, AuthProviderPrincipal } from "@core/auth";
 export abstract class UserRepositoryPort {
   abstract insertUser(user: UserEntity): Promise<UserEntity>;
   abstract selectUserFromId(id: string): Promise<UserEntity>;
+
+  abstract selectUserFromIdWithProfiles(id: string): Promise<UserEntity>;
   abstract selectUserFromPhone(phoneNumber: string): Promise<UserEntity[]>;
 
   abstract selectUserFromAuthProvider(authProviderPrincipal : AuthProviderPrincipal) : Promise<UserEntity|undefined>
@@ -12,4 +14,8 @@ export abstract class UserRepositoryPort {
   abstract hardDeleteUser(id: string): Promise<void>;
 
   abstract insertUserAttachment(userAttachment : ProfileEntity) : Promise<ProfileEntity>
+
+  abstract updateUserAttachmentActive(userId: string, no : number , active : boolean) : Promise<void>
+
+  abstract deleteUserAttachment(userId: string, no : number) : Promise<void>
 }

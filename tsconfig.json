@@ -22,7 +22,8 @@
         "@core/http/*": ["packages/core/http/src/*"],
         "@core/model/*": ["packages/core/model/src/*"],
         "@core/auth/*": ["packages/core/auth/src/*"],
-        "@core/storage/*": ["packages/core/storage/src/*"]
+        "@core/storage/*": ["packages/core/storage/src/*"],
+        "@core/logger/*": ["packages/core/logger/src/*"]
       }
     }
   }

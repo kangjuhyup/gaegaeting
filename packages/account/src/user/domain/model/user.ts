@@ -1,6 +1,7 @@
 import { PersistenceEntity } from "@core/model";
 import { UserGender, UserRegion, UserStatus } from "../enum/user.enum";
 import { AuthEntity } from "@app/auth/domain/model/auth";
+import { ProfileEntity } from "./profile";
 
 
 
@@ -8,13 +9,13 @@ interface IUser {
   email? : string;
   passwordHash?: string;
   nickname: string;
-  profiles?: string;
   gender: UserGender;
   birthDate: Date;
   region: UserRegion;
   bio?: string;
   phoneNumber?: string;
   status: UserStatus;
+  profiles? : ProfileEntity[]
 }
 
 /**
@@ -28,6 +29,9 @@ export class UserEntity extends PersistenceEntity<string, IUser> {
   }
 
   static of(param: IUser) {
+    if(param.profiles) {
+      param.profiles = param.profiles.map((profile) => profile.setPersistence(profile.id,profile.createdAt,profile.updatedAt));
+    }
     return new UserEntity(param);
   }
   
@@ -59,6 +63,38 @@ export class UserEntity extends PersistenceEntity<string, IUser> {
     return this.etc.status;
   }
 
+  get profiles() : ProfileEntity[] {
+    return this.etc.profiles;
+  }
+
+  updateInfo(param : {
+    nickname?: string;
+    gender?: UserGender;
+    region?: UserRegion;
+    bio?: string;
+  }) {
+    if(param.nickname) {
+      this.etc.nickname = param.nickname;
+    }
+    if(param.gender) {
+      this.etc.gender = param.gender;
+    }
+    if(param.region) {
+      this.etc.region = param.region;
+    }
+    if(param.bio) {
+      this.etc.bio = param.bio;
+    }
+    return this;
+  }
+
+  hasProfiles() {
+    return this.etc.profiles?.length > 0;
+  }
+
+  removeUnActiveProfiles() {
+    this.etc.profiles = this.etc.profiles.filter((profile) => profile.isActive)
+  }
 
   /**
    * 사용자가 활성 상태인지 확인

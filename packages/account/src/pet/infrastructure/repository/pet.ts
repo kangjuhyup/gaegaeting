@@ -4,6 +4,7 @@ import { PetOrmEntity } from "@core/database";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { PetOrmMapper } from "./mapper/pet-orm";
 
 @Injectable()
 export class PetOrmRepository implements PetRepositoryPort {
@@ -12,21 +13,25 @@ export class PetOrmRepository implements PetRepositoryPort {
         @InjectRepository(PetOrmEntity)
         private readonly petRepository : Repository<PetOrmEntity>
     ){}
-    insertPet(pet: PetEntity): Promise<PetEntity> {
-        throw new Error("Method not implemented.");
+    async insertPet(pet: PetEntity): Promise<PetEntity> {
+        const orm = PetOrmMapper.toOrm(pet);
+        const inserted = await this.petRepository.save(orm);
+        return PetOrmMapper.toDomain(inserted);
     }
-    selectPetFromId(id: number): Promise<PetEntity> {
-        throw new Error("Method not implemented.");
+    async selectPetFromId(id: number): Promise<PetEntity> {
+        const orm = await this.petRepository.findOneBy({ id });
+        return PetOrmMapper.toDomain(orm);
     }
-    selectPetFromUserId(userId: string): Promise<PetEntity[]> {
-        throw new Error("Method not implemented.");
+    async selectPetFromUserId(userId: string): Promise<PetEntity[]> {
+        const orm = await this.petRepository.find({ where: { userId } });
+        return orm.map(PetOrmMapper.toDomain);
     }
-    updatePet(pet: PetEntity): Promise<PetEntity> {
-        throw new Error("Method not implemented.");
+    async updatePet(pet: PetEntity): Promise<PetEntity> {
+        const orm = PetOrmMapper.toOrm(pet);
+        const updated = await this.petRepository.save(orm);
+        return PetOrmMapper.toDomain(updated);
     }
-    deletePet(id: number): Promise<void> {
-        throw new Error("Method not implemented.");
+    async deletePet(id: number): Promise<void> {
+        await this.petRepository.delete(id);
     }
-
-    
 }

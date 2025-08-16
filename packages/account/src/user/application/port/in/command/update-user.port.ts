@@ -7,7 +7,6 @@ export class UpdateUserCommand extends Command<UserEntity> {
     public readonly id: string,
     public readonly data: {
       nickname?: string;
-      profileImageUrl?: string;
       gender?: UserGender;
       region?: UserRegion;
       bio?: string;

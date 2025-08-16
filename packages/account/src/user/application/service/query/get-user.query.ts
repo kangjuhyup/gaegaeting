@@ -2,14 +2,35 @@ import { GetUserQuery } from "../../port/in/query/get-user.port";
 import { UserEntity } from "@app/user/domain/model/user";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
+import { UserStoragePort } from '../../../domain/port/out/user-storage.port';
 
 @QueryHandler(GetUserQuery)
 export class GetUserHandler implements IQueryHandler<GetUserQuery, UserEntity> {
-  constructor(private readonly userRepository: UserRepositoryPort) {}
+  
+  constructor(
+    private readonly userRepository: UserRepositoryPort,
+    private readonly userStoragePort: UserStoragePort
+  ) {}
+
   async execute(query: GetUserQuery): Promise<UserEntity> {
-    const user = await this.userRepository.selectUserFromId(query.id);
+    const user = await this.userRepository.selectUserFromIdWithProfiles(query.id);
     if (!user) {
       throw new Error("존재하지 않는 사용자입니다.");
+    }
+    if(user.hasProfiles()) {
+      await Promise.all(user.profiles.map(async (profile) => {
+        if(!profile.isActive) {
+          const hasMetadata = await this.userStoragePort.hasMetadata(user.id, profile.id.no);
+          if(hasMetadata) {
+            profile.isActive = true;
+            await this.userRepository.updateUserAttachmentActive(user.id, profile.id.no, true);
+          } else {
+            profile.isActive = false;
+            await this.userRepository.deleteUserAttachment(user.id, profile.id.no);
+          }
+        }
+        user.removeUnActiveProfiles()
+      }))
     }
     return user;
   }

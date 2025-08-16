@@ -10,6 +10,8 @@ import { AuthInternalApiAdapter } from "./adapter/auth-internal-api.adpater";
 import { AuthInternalApiPort } from "../domain/port/out/auth-internal-api.port";
 import { AuthOrmRepository } from "@app/auth/infrastructure/repository/auth.repository";
 import { AuthMapper } from "@app/auth/infrastructure/repository/mapper/auth.mapper";
+import { UserStoragePort } from "../domain/port/out/user-storage.port";
+import { UserStorageAdapter } from "./adapter/user-storage.adapter";
 
 const providers : Provider[] = [
     {
@@ -22,6 +24,10 @@ const providers : Provider[] = [
     {
         provide : AuthInternalApiPort,
         useClass : AuthInternalApiAdapter,
+    },
+    {
+        provide : UserStoragePort,
+        useClass : UserStorageAdapter,
     }
 ]
 

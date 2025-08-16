@@ -1,29 +1,29 @@
 import { PersistenceEntity } from "@core/model"
 
-export class ProfileEntity extends PersistenceEntity<number,{
-    path : string,
-    active : boolean
-}> {
+interface IProfile {
+    path : string;
+    active : boolean;
+}
 
-    private constructor(param : {
-        path : string,
-        active : boolean
-    }) {
-        super({path : param.path, active : param.active});
+export class ProfileEntity extends PersistenceEntity<{ userId : string, no : number },IProfile> {
+
+    private constructor(param : IProfile) {
+        super(param);
     }
 
-    static of(param : {
-        path : string,
-        active : boolean
-    }) {
+    static of(param : IProfile) {
         return new ProfileEntity(param);
     }
 
     get path() {
-        return this.path;
+        return this.etc.path;
     }
 
-    get active() {
-        return this.active;
+    get isActive() {
+        return this.etc.active;
+    }
+
+    set isActive(active : boolean) {
+        this.etc.active = active;
     }
 }

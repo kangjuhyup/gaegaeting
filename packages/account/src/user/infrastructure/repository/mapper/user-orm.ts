@@ -1,4 +1,5 @@
 import { UserGender, UserRegion, UserStatus } from "@app/user/domain/enum/user.enum";
+import { ProfileEntity } from "@app/user/domain/model/profile";
 import { UserEntity } from "@app/user/domain/model/user";
 import { UserOrmEntity } from "@core/database";
 import { ulid } from "ulid";
@@ -9,6 +10,8 @@ import { ulid } from "ulid";
  * ORM 엔티티와 도메인 엔티티 간의 변환을 담당하는 매퍼 클래스입니다.
  */
 export class UserOrmMapper {
+
+    profiles? : ProfileEntity[]
 
     /**
      * ORM 엔티티를 도메인 엔티티로 변환합니다.
@@ -26,6 +29,11 @@ export class UserOrmMapper {
             region: UserRegion.from(orm.region),
             phoneNumber: orm.phoneNumber,
             status: UserStatus.from(orm.status),
+            profiles : orm.attachments?.map(a => ProfileEntity.of({
+                userId : orm.id,
+                path : a.path,
+                active : a.isActive
+            }))
         }).setPersistence(orm.id,orm.createdAt,orm.updatedAt);
     }
 

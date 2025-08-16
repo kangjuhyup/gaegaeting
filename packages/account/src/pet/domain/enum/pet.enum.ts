@@ -7,7 +7,7 @@ export const PetGender = {
     MALE : { label : 'MALE' , value : 0 },
     FEMALE : { label : 'FEMALE' , value : 1 },
 
-    fromValue : (value:number) : PetGenderValue => {
+    from : (value:number) : PetGenderValue => {
         const entries = Object.entries(PetGender) as [string, PetGenderValue][];
         for (const [key, val] of entries) {
             if (key !== 'from' && val.value === value) {
@@ -29,7 +29,7 @@ export const PetSize = {
     MEDIUM : { label : 'MEDIUM' , value : 1 },
     LARGE : { label : 'LARGE' , value : 2 },
 
-    fromValue : (value:number) : PetSizeValue => {
+    from : (value:number) : PetSizeValue => {
         const entries = Object.entries(PetSize) as [string, PetSizeValue][];
         for (const [key, val] of entries) {
             if (key !== 'from' && val.value === value) {
@@ -63,7 +63,7 @@ export const PetBreed = {
     MIXED : { label : 'MIXED' , value : 13 },
     OTHER : { label : 'OTHER' , value : 14 },
 
-    fromValue : (value:number) : PetBreedValue => {
+    from : (value:number) : PetBreedValue => {
         const entries = Object.entries(PetBreed) as [string, PetBreedValue][];
         for (const [key, val] of entries) {
             if (key !== 'from' && val.value === value) {
@@ -90,14 +90,14 @@ export const PetPersonality = {
     CURIOUS : { label : 'CURIOUS' , value : 6 },
     INDEPENDENT : { label : 'INDEPENDENT' , value : 7 },
 
-    fromValue : (value:number) : PetPersonalityValue => {
-        const entries = Object.entries(PetPersonality) as [string, PetPersonalityValue][];
+    from : (value:number) : PetPersonalityValue => {
+        const entries = Object.entries(PetPersonality) as [string, any][];
         for (const [key, val] of entries) {
-            if (key !== 'from' && val.value === value) {
+            if (key !== 'from' && typeof val === 'object' && val !== null && 'value' in val && val.value === value) {
                 return val;
             }
         }
         throw new Error(`${value}에 해당하는 PetPersonality를 찾을 수 없습니다.`);
     }
-}
+} as const;
 export type PetPersonality = PetPersonalityValue;
