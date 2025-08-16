@@ -6,7 +6,7 @@ import { IsNotEmpty, IsEnum, IsNumber, Min, MinLength, IsString } from 'class-va
 export class GetUserPrincipalRequest {
 
     @ApiProperty({ 
-        enum: () => Object.entries(AuthProvider).map(([key, value]) => value), 
+        enum: () => Object.entries(AuthProvider).map(([key, value]) => key), 
         description: '소셜 로그인 제공자'
     })
     @IsNotEmpty({ message: '소셜 로그인 제공자는 필수입니다.' })

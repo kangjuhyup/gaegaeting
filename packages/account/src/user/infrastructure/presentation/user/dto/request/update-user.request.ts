@@ -1,4 +1,6 @@
+import { EnumTransformPipe } from "@app/common/pipes/enum-transform.pipe";
 import { UserGender, UserRegion } from "@app/user/domain/enum/user.enum";
+import { ApiProperty } from "@nestjs/swagger";
 import {
   IsString,
   MinLength,
@@ -8,28 +10,25 @@ import {
 } from "class-validator";
 
 export class UpdateUserBody {
-  /**
-   * 닉네임
-   */
+  
+  @ApiProperty({ description : '닉네임', required : false })
   @IsString({ message: "닉네임은 문자열이어야 합니다." })
   @MinLength(2, { message: "닉네임은 최소 2자 이상이어야 합니다." })
   @MaxLength(50, { message: "닉네임은 최대 50자까지 가능합니다." })
   @IsOptional()
   nickname?: string;
 
-  @IsEnum(UserGender, { message: "유효한 성별이 아닙니다." })
+  @ApiProperty({ description : '성별', enum : () => Object.entries(UserGender).map(([key, value]) => key) ,required : true})
+  @EnumTransformPipe(UserGender, '유효한 성별이 아닙니다.')
   @IsOptional()
   gender?: UserGender;
-  /**
-   * 지역
-   */
-  @IsEnum(UserRegion, { message: "유효한 지역이 아닙니다." })
+  
+  @ApiProperty({ description : '지역', enum : () => Object.entries(UserRegion).map(([key, value]) => key) ,required : true})
+  @EnumTransformPipe(UserRegion, '유효한 지역이 아닙니다.')
   @IsOptional()
   region?: UserRegion;
 
-  /**
-   * 자기소개
-   */
+  @ApiProperty({ description : '자기소개', required : false})
   @IsString({ message: "자기소개는 문자열이어야 합니다." })
   @IsOptional()
   bio?: string;

@@ -79,14 +79,8 @@ export class UserController {
       return UserResponse.fromDomain(user);
   }
 
-  /**
-   * 프로필 이미지 업로드 URL 생성 API
-   * @param user 
-   * @param query 
-   * @returns 
-   */
-  @Get('me/presign/:no')
-  @ApiOperation({ summary : '프로필 이미지 업로드 URL 생성' })
+  @Post('me/images/:no')
+  @ApiOperation({ summary : '프로필 이미지 추가/수정을 위한 PresignedUrl 생성' })
   @ApiResponse({ status : 200, type : () => GetPresignedUrlResponse })
   @ApiBearerAuth('access-token')
   @UseGuards(AccessGuard,UserGuard)
@@ -98,11 +92,19 @@ export class UserController {
     return GetPresignedUrlResponse.from(presignedUrl);
   }
 
-  /**
-   * 특정 사용자 조회 API
-   * @param id 사용자 ID
-   * @returns 사용자 정보
-   */
+  @Delete('me/images/:no')
+  @ApiOperation({ summary : '프로필 이미지 삭제' })
+  @ApiResponse({ status : 204, description: '이미지 삭제 성공' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AccessGuard,UserGuard)
+  async deletePresignedUrl(
+    @UserParam() user: UserPrincipal,
+    @Param() no : string
+  ) : Promise<void> {
+    // await this.commandBus.execute(new DeletePresignedCommand(user.userId,Number(no)));
+    return;
+  }
+
   @Get(":id")
   @ApiOperation({ summary : '특정 사용자 조회' })
   @ApiResponse({ status : 200, type : () => UserResponse })
@@ -111,11 +113,6 @@ export class UserController {
     return UserResponse.fromDomain(user);
   }
 
-  /**
-   * 사용자 삭제 API
-   * @param id 사용자 ID
-   * @returns 삭제 결과 (204 No Content)
-   */
   @Delete()
   @ApiOperation({ summary : '내 계정 삭제' })
   @ApiResponse({ status : 204, description: '계정 삭제 성공' })

@@ -2,9 +2,11 @@ import { Body, Controller, Get, Param, Post, Put, Delete, UseGuards, Query } fro
 import { CreatePetBody } from './dto/request/create-pet.request';
 import { PetResponse } from './dto/response/pet-response';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { GetPetsQuery } from '@app/user/application/port/in/query/get-pets.port';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AccessGuard, UserGuard, UserParam, UserPrincipal } from '@core/auth';
+import { GetPetsQuery } from '@app/pet/application/port/in/query/get-pets.port';
+import { RegisterPetCommand } from '@app/pet/application/port/in/command/register-pet.port';
+import { GetPetQuery } from '@app/pet/application/port/in/query/get-pet.port';
 
 @ApiTags('Account','Pet')
 @Controller('pets')
@@ -22,7 +24,8 @@ export class PetController {
     @UserParam() user : UserPrincipal,
     @Body() body: CreatePetBody
   ): Promise<any> {
-    return 
+    const pet = await this.commandBUs.execute(new RegisterPetCommand(body.toDomain(user.userId)));
+    return PetResponse.of(user.userId, [pet]);
   }
 
   @Get()
@@ -41,7 +44,8 @@ export class PetController {
   @ApiOperation({ summary : '특정 반려동물 조회' })
   @ApiBearerAuth('access-token')
   async findPetById(@UserParam() user : UserPrincipal, @Param('id') id: string): Promise<any> {
-    return 
+    const pet = await this.queryBus.execute(new GetPetQuery(Number(id)));
+    return PetResponse.of(user.userId, [pet]);
   }
 
   @Put(':id')
@@ -53,7 +57,6 @@ export class PetController {
     @Param('id') id: string,
     @Body() updatePetDto: any,
   ): Promise<any> {
-    return
   }
 
   @Delete(':id')
@@ -72,12 +75,13 @@ export class PetController {
   @UseGuards(AccessGuard,UserGuard)
   @Get('user/:userId')
   async findPetsByUserId(@UserParam() user : UserPrincipal, @Param('userId') userId: string): Promise<any> {
-    return
+    const pets = await this.queryBus.execute(new GetPetsQuery(userId));
+    return PetResponse.of(user.userId, pets);
   }
 
-  @Post(':id/images')
+  @Post(':id/images/:no')
   @UseGuards(AccessGuard,UserGuard)
-  @ApiOperation({ summary : '반려동물 이미지 추가'})
+  @ApiOperation({ summary : '반려동물 이미지 추가/수정을 위한 Presigned Url 조회'})
   @ApiBearerAuth('access-token')
   async addPetImage(
     @Param('id') id: string,

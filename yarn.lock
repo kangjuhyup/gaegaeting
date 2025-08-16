@@ -1146,11 +1146,13 @@ __metadata:
     "@types/supertest": "npm:^6.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
     "@typescript-eslint/parser": "npm:^6.0.0"
+    dotenv: "npm:^17.2.1"
     eslint: "npm:^8.42.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.2.1"
     eslint-plugin-unused-imports: "npm:^4.1.4"
     jest: "npm:^29.5.0"
+    jest-util: "npm:^30.0.5"
     passport-jwt: "npm:^4.0.1"
     prettier: "npm:^3.0.0"
     reflect-metadata: "npm:^0.2.0"
@@ -5502,6 +5504,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dotenv@npm:^17.2.1":
+  version: 17.2.1
+  resolution: "dotenv@npm:17.2.1"
+  checksum: 10c0/918dd2f9d8b8f86b0afabad9534793d51de3718c437f9e7b6525628cf68c1d4ae768cc37a5afff38c066f58a8ecf549f4ac6cd5617485bd328e826112cc2650a
+  languageName: node
+  linkType: hard
+
 "dunder-proto@npm:^1.0.1":
   version: 1.0.1
   resolution: "dunder-proto@npm:1.0.1"
@@ -8107,6 +8116,59 @@ __metadata:
   checksum: 10c0/b0e6e599780ce6bab49cc413eba822f7d1f0dfebd1c103eaa3785c59e43e22c59018323cf9e1708f0ef5329e94a745d163fcbb6bff8e4c6742f9be9e86f3500c
   languageName: node
   linkType: hard
+
+"match@workspace:packages/match":
+  version: 0.0.0-use.local
+  resolution: "match@workspace:packages/match"
+  dependencies:
+    "@core/auth": "npm:*"
+    "@nestjs/axios": "npm:^3.1.3"
+    "@nestjs/cli": "npm:^10.0.0"
+    "@nestjs/common": "npm:^10.0.0"
+    "@nestjs/config": "npm:^4.0.2"
+    "@nestjs/core": "npm:^10.0.0"
+    "@nestjs/cqrs": "npm:^11.0.3"
+    "@nestjs/platform-express": "npm:^10.0.0"
+    "@nestjs/schematics": "npm:^10.0.0"
+    "@nestjs/swagger": "npm:^7.4.2"
+    "@nestjs/testing": "npm:^10.0.0"
+    "@nestjs/typeorm": "npm:^11.0.0"
+    "@types/express": "npm:^4.17.17"
+    "@types/jest": "npm:^29.5.2"
+    "@types/node": "npm:^20.3.1"
+    "@types/passport-google-oauth20": "npm:^2.0.14"
+    "@types/passport-kakao": "npm:^1.0.3"
+    "@types/supertest": "npm:^6.0.0"
+    "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
+    "@typescript-eslint/parser": "npm:^6.0.0"
+    axios: "npm:^1.7.9"
+    class-transformer: "npm:^0.5.1"
+    class-validator: "npm:^0.14.1"
+    dotenv: "npm:^16.4.5"
+    eslint: "npm:^8.42.0"
+    eslint-config-prettier: "npm:^9.1.0"
+    eslint-plugin-prettier: "npm:^5.2.1"
+    eslint-plugin-unused-imports: "npm:^4.1.4"
+    jest: "npm:^29.5.0"
+    jest-util: "npm:^30.0.5"
+    joi: "npm:^17.13.3"
+    mysql2: "npm:^3.14.3"
+    prettier: "npm:^3.0.0"
+    reflect-metadata: "npm:^0.2.0"
+    rxjs: "npm:^7.8.1"
+    source-map-support: "npm:^0.5.21"
+    supertest: "npm:^6.3.3"
+    ts-jest: "npm:^29.1.0"
+    ts-loader: "npm:^9.5.1"
+    ts-mockito: "npm:^2.6.1"
+    ts-node: "npm:^10.9.1"
+    tsconfig-paths: "npm:^4.2.0"
+    tsconfig-paths-jest: "npm:^0.0.1"
+    typeorm: "npm:^0.3.25"
+    typescript: "npm:^5.8.3"
+    webpack: "npm:^5.97.1"
+  languageName: unknown
+  linkType: soft
 
 "math-intrinsics@npm:^1.1.0":
   version: 1.1.0

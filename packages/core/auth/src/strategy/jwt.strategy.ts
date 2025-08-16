@@ -17,6 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       secretOrKey: secret,
     });
+    console.log('JwtStrategy secret : ' , secret)
   }
 
   /**
@@ -25,9 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
    * @returns 인증된 사용자 정보
    */
   async validate(payload: any) {
-    // 여기서 추가적인 사용자 검증 로직을 구현할 수 있습니다.
-    // 예: 데이터베이스에서 사용자 조회, 권한 확인 등
-    
+    //TODO: 추후 payload 검증 추가로직 구현
     if (!payload) {
       throw new UnauthorizedException('유효하지 않은 토큰입니다.');
     }

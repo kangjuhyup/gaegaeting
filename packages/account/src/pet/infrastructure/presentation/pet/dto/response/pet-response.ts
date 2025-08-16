@@ -1,4 +1,4 @@
-import { PetEntity } from "@app/user/domain/model/pet"
+import { PetEntity } from "@app/pet/domain/model/pet"
 
 export class PetResponse {
     private readonly userId : string
@@ -21,25 +21,23 @@ export class PetResponse {
 }
 
 class Pet {
-    private readonly id : string
+    private readonly id : number
     private readonly name : string
     private readonly age : number
     private readonly gender : string
     private readonly breed : string
     private readonly size : string
     private readonly personalities : string[]
-    private readonly imageUrls : string[]
     private readonly description : string
 
     constructor(
-        id : string,
+        id : number,
         name : string,
         age : number,
         gender : string,
         breed : string,
         size : string,
         personalities : string[],
-        imageUrls : string[],
         description : string
     ) {
         this.id = id;
@@ -49,11 +47,10 @@ class Pet {
         this.breed = breed;
         this.size = size;
         this.personalities = personalities;
-        this.imageUrls = imageUrls;
         this.description = description;
     }
 
     static fromDomain(pet:PetEntity) {
-        return new Pet(pet.id, pet.name, pet.age, pet.gender, pet.breed, pet.size, pet.personalities, pet.imageUrls, pet.description)
+        return new Pet(pet.id, pet.name, pet.age, pet.gender.label, pet.breed.label, pet.size.label, pet.personalities.map((p) => p.label), pet.description)
     }
 }

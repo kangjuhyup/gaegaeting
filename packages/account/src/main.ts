@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-
+import * as fs from 'fs';
 /**
  * 애플리케이션 부트스트랩
  */
@@ -30,6 +30,8 @@ async function bootstrap() {
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
+  fs.writeFileSync('./swagger-spec.json', JSON.stringify(document));
+
   SwaggerModule.setup('docs', app, document);
   
   // 전역 파이프 설정 (유효성 검증)

@@ -67,13 +67,14 @@ export class SocialLoginHandler implements ICommandHandler<SocialLoginCommand, A
                 providerId: userProfile.getProviderId(),
             });
             
+            const expiresIn = this.jwtTokenService.getExpriesIn
+            console.log(expiresIn)
             // 자체 토큰 생성
             const authToken = new AuthToken({
                 accessToken,
                 refreshToken,
-                //TODO: 시간 직접입력X , 서비스에서 내려받도록
-                expiresIn : 3600, // 1시간
-                refreshTokenExpiresIn : 3600 * 24 * 7, // 7일   
+                expiresIn : expiresIn.acess, // 1시간
+                refreshTokenExpiresIn : expiresIn.refresh, // 7일   
                 tokenType : 'Bearer'
             });
             
