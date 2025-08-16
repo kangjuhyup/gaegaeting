@@ -9,6 +9,8 @@ import { RegisterPetCommand } from '@app/pet/application/port/in/command/registe
 import { GetPetQuery } from '@app/pet/application/port/in/query/get-pet.port';
 import { GetPresignedUrlResponse } from './dto/response/get-presgined.response';
 import { GeneratePetPresignedCommand } from '@app/pet/application/port/in/command/generate-pet-presigned.port';
+import { UpdatePetBody } from './dto/request/update-pet.request';
+import { UpdatePetCommand } from '@app/pet/application/port/in/command/update-pet.port';
 
 @ApiTags('Account','Pet')
 @Controller('pets')
@@ -57,8 +59,10 @@ export class PetController {
   async updatePet(
     @UserParam() user : UserPrincipal,
     @Param('id') id: string,
-    @Body() updatePetDto: any,
-  ): Promise<any> {
+    @Body() updatePetDto: UpdatePetBody,
+  ): Promise<PetResponse> {
+    const pet = await this.commandBus.execute(new UpdatePetCommand(Number(id), updatePetDto));
+    return PetResponse.of(user.userId, [pet]);
   }
 
   @Delete(':id')

@@ -3,11 +3,6 @@ import { PetPersonality } from "@app/pet/domain/enum/pet.enum";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString, MaxLength, IsOptional, IsNumber, Min, Max, IsArray, IsEnum } from "class-validator";
 
-/**
- * 강아지 업데이트 DTO
- * 
- * 강아지 정보 업데이트 요청에 필요한 데이터를 정의합니다.
- */
 export class UpdatePetBody {
   
   @ApiProperty({ description : '반려동물 이름' })

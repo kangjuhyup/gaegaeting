@@ -4,6 +4,7 @@ import { GetPetHandler } from "./service/query/get-pet.query";
 import { GetPetsHandler } from "./service/query/get-pets.query";
 import { RegisterPetHandler } from "./service/command/register-pet.command";
 import { GeneratePetPresignedUrlHandler } from "./service/command/generate-pet-presigned.command";
+import { UpdatePetHandler } from "./service/command/update-pet.command";
 
 
 const providers : Provider[] = [
@@ -13,7 +14,7 @@ const providers : Provider[] = [
     GetPetsHandler,
     // Command
     RegisterPetHandler,
-    
+    UpdatePetHandler,
     GeneratePetPresignedUrlHandler
 ]
 

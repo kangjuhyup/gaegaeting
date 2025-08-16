@@ -29,20 +29,20 @@ export class PetEntity extends PersistenceEntity<number,IPet> {
    * @param personalities 강아지 성격 특성 배열
    * @param description 강아지 설명
    */
-  updateInfo(
+  updateInfo(update : {
     name?: string,
     age?: number,
     breed?: PetBreed,
     size?: PetSize,
     personalities?: PetPersonality[],
     description?: string,
-  ): void {
-    if (name !== undefined) this.etc.name = name;
-    if (age !== undefined) this.etc.age = age;
-    if (breed !== undefined) this.etc.breed = breed;
-    if (size !== undefined) this.etc.size = size;
-    if (personalities !== undefined) this.etc.personalities = personalities;
-    if (description !== undefined) this.etc.description = description;
+  }): void {
+    if (update.name !== undefined) this.etc.name = update.name;
+    if (update.age !== undefined) this.etc.age = update.age;
+    if (update.breed !== undefined) this.etc.breed = update.breed;
+    if (update.size !== undefined) this.etc.size = update.size;
+    if (update.personalities !== undefined) this.etc.personalities = update.personalities;
+    if (update.description !== undefined) this.etc.description = update.description;
   }
 
 
