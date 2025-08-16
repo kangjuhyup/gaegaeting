@@ -7,6 +7,8 @@ import { AccessGuard, UserGuard, UserParam, UserPrincipal } from '@core/auth';
 import { GetPetsQuery } from '@app/pet/application/port/in/query/get-pets.port';
 import { RegisterPetCommand } from '@app/pet/application/port/in/command/register-pet.port';
 import { GetPetQuery } from '@app/pet/application/port/in/query/get-pet.port';
+import { GetPresignedUrlResponse } from './dto/response/get-presgined.response';
+import { GeneratePetPresignedCommand } from '@app/pet/application/port/in/command/generate-pet-presigned.port';
 
 @ApiTags('Account','Pet')
 @Controller('pets')
@@ -86,9 +88,9 @@ export class PetController {
   async addPetImage(
     @Param('id') id: string,
     @Param('no') no: string,
-    @Body() imageDto: any,
-  ): Promise<any> {
-    return
+  ): Promise<GetPresignedUrlResponse> {
+    const presigned = await this.commandBus.execute(new GeneratePetPresignedCommand(Number(id),Number(no)));
+    return GetPresignedUrlResponse.from(presigned);
   }
 
   @Delete(':id/images/:imageIndex')
