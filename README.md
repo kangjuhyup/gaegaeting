@@ -44,18 +44,28 @@
 
 ```mermaid
 sequenceDiagram
-    참가자->>+서버: GET /accounts/auth/kakao
-    서버-->>-참가자: 302 리다이렉트 (카카오 로그인 페이지)
-    참가자->>+카카오: 로그인 정보 제공
-    카카오-->>-참가자: 인증 코드 전달
-    참가자->>+서버: POST /accounts/auth/kakao/fallback
-    서버-->>-참가자: JWT 토큰 발급
-    참가자->>+서버: GET /accounts/users/me
+    actor Client as 참가자
+    participant Server as 서버
+    participant Kakao as 카카오
+    
+    Client->>+Server: GET /accounts/auth/kakao
+    Server-->>-Client: 302 리다이렉트 (카카오 로그인 페이지)
+    Client->>+Kakao: 로그인 정보 제공
+    Kakao-->>-Client: 인증 코드 전달
+    Client->>+Server: POST /accounts/auth/kakao/fallback
+    Server-->>-Client: JWT 토큰 발급
+    Client->>+Server: GET /accounts/users/me
     alt 기존 사용자
-        서버-->>-참가자: 200 OK (사용자 정보)
+        Server-->>-Client: 200 OK (사용자 정보)
     else 신규 사용자
-        서버-->>-참가자: 403 Forbidden
-        참가자->>+서버: POST /accounts/users/me (프로필 정보)
-        서버-->>-참가자: 201 Created (생성된 사용자 정보)
+        Server-->>-Client: 403 Forbidden
+        Client->>+Server: POST /accounts/users/me (프로필 정보)
+        Server-->>-Client: 201 Created (생성된 사용자 정보)
     end
 ```
+
+### 로그인 흐름 이미지
+
+![카카오 로그인 흐름](./docs/flow/login-flow.png)
+
+> 마크다운에서 Mermaid 다이어그램이 보이지 않는 경우를 대비해 이미지로도 추가했습니다.
