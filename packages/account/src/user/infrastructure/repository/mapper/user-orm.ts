@@ -1,5 +1,5 @@
 import { UserGender, UserRegion, UserStatus } from "@app/user/domain/enum/user.enum";
-import { ProfileEntity } from "@app/user/domain/model/profile";
+import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 import { UserEntity } from "@app/user/domain/model/user";
 import { UserOrmEntity } from "@core/database";
 import { ulid } from "ulid";
@@ -11,7 +11,7 @@ import { ulid } from "ulid";
  */
 export class UserOrmMapper {
 
-    profiles? : ProfileEntity[]
+    profiles? : UserProfileEntity[]
 
     /**
      * ORM 엔티티를 도메인 엔티티로 변환합니다.
@@ -29,7 +29,7 @@ export class UserOrmMapper {
             region: UserRegion.from(orm.region),
             phoneNumber: orm.phoneNumber,
             status: UserStatus.from(orm.status),
-            profiles : orm.attachments?.map(a => ProfileEntity.of({
+            profiles : orm.attachments?.map(a => UserProfileEntity.of({
                 path : a.path,
                 active : a.isActive
             }).setPersistence({ userId : orm.id, no : a.no },a.createdAt,a.updatedAt))

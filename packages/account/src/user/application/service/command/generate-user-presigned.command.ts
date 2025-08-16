@@ -1,21 +1,21 @@
-import { PresignedUrl } from "@app/user/domain/vo/presigned-url";
-import { CommandHandler, ICommandHandler, IQueryHandler } from "@nestjs/cqrs";
-import { GeneratePresignedCommand } from "../../port/in/command/generate-presigned.port";
+import { PresignedUrl } from "@app/common/vo/presigned-url";
+import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+import { GenerateUserPresignedCommand } from "../../port/in/command/generate-presigned.port";
 import { UserStoragePort } from "@app/user/domain/port/out/user-storage.port";
 import { UserRepositoryPort } from '../../../domain/port/out/user-repository.port';
-import { ProfileEntity } from "@app/user/domain/model/profile";
+import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 
-@CommandHandler(GeneratePresignedCommand)
-export class GeneratePresignedUrlHandler implements ICommandHandler<GeneratePresignedCommand,PresignedUrl> {
+@CommandHandler(GenerateUserPresignedCommand)
+export class GenerateUserPresignedUrlHandler implements ICommandHandler<GenerateUserPresignedCommand,PresignedUrl> {
 
     constructor(
         private readonly userStoragePort : UserStoragePort,
         private readonly userRepositoryPort : UserRepositoryPort
     ) {}
     
-    async execute(command: GeneratePresignedCommand): Promise<PresignedUrl> {
+    async execute(command: GenerateUserPresignedCommand): Promise<PresignedUrl> {
         const presignedUrl = await this.userStoragePort.getPresignedUrl(command.userId, command.no);
-        const profile = ProfileEntity.of({
+        const profile = UserProfileEntity.of({
             path : presignedUrl.path,
             active : false,
         });

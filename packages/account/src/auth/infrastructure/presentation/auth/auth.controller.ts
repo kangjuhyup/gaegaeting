@@ -33,7 +33,7 @@ export class AuthController {
     
     const url = await this.queryBus.execute(
       new SocialRedirectQuery(
-        providerDto.provider, 
+        providerDto.provider.value, 
         `${req.protocol}://${req.get('host')}/auth/${providerDto.provider.label.toLowerCase()}/callback`
       )
     );
@@ -82,7 +82,7 @@ export class AuthController {
   @ApiOperation({ summary : '유저 정보 획득' , description : '해당 API 는 각 서비스에서 유저정보를 획득하기 위해 사용합니다. 클라이언트에서 사용하지 않습니다.' })
   @ApiResponse({ status : 200 , type : () => GetUserPrincipalResponse ,description : '유저 정보 획득 성공'})
   async getUserPrincipal(@Param() param: GetUserPrincipalRequest) : Promise<GetUserPrincipalResponse> {
-    const userPrincipal = await this.queryBus.execute(new GetUserPrincipalQuery(param.providerType, param.providerId));
+    const userPrincipal = await this.queryBus.execute(new GetUserPrincipalQuery(param.providerType.value, param.providerId));
     return GetUserPrincipalResponse.from(userPrincipal);
   }
 

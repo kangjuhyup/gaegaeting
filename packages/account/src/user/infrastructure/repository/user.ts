@@ -5,8 +5,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { UserOrmMapper } from "./mapper/user-orm";
 import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
-import { ProfileEntity } from "@app/user/domain/model/profile";
-import { ProfileOrmMapper } from "./mapper/profile-orm";
+import { UserProfileEntity } from "@app/user/domain/model/user-profile";
+import { UserProfileOrmMapper } from "./mapper/user-profile-orm";
 import { AuthProviderPrincipal } from "@core/auth";
 
 @Injectable()
@@ -48,12 +48,12 @@ export class UserOrmRepository implements UserRepositoryPort {
         return userOrm.map(UserOrmMapper.toDomain);
     }
 
-    async selectUserFromAuthProvider(authProviderPrincipal: AuthProviderPrincipal): Promise<UserEntity | undefined> {
+    async selectUserFromAuthProvider(providerType:number,providerId:string): Promise<UserEntity | undefined> {
         const userOrm = await this.userRepository.findOne({
             where : {
                 auth : {
-                    authProvider : authProviderPrincipal.provider.value,
-                    authProviderId : authProviderPrincipal.providerId,
+                    authProvider : providerType,
+                    authProviderId : providerId,
                 }
             }
         })
@@ -73,15 +73,15 @@ export class UserOrmRepository implements UserRepositoryPort {
         await this.userRepository.delete(id);
     }
 
-    async selectUserAttachment(userId: string, no: number): Promise<ProfileEntity> {
+    async selectUserAttachment(userId: string, no: number): Promise<UserProfileEntity> {
         const userAttachmentOrm = await this.userAttachmentRepository.findOne({ where: { userId, no } });
-        return ProfileOrmMapper.toDomain(userAttachmentOrm);
+        return UserProfileOrmMapper.toDomain(userAttachmentOrm);
     }
 
-    async insertUserAttachment(userAttachment : ProfileEntity) : Promise<ProfileEntity> {
-        const userAttachmentOrm = ProfileOrmMapper.toOrm(userAttachment);
+    async insertUserAttachment(userAttachment : UserProfileEntity) : Promise<UserProfileEntity> {
+        const userAttachmentOrm = UserProfileOrmMapper.toOrm(userAttachment);
         const insertedUserAttachment = await this.userAttachmentRepository.save(userAttachmentOrm);
-        return ProfileOrmMapper.toDomain(insertedUserAttachment);
+        return UserProfileOrmMapper.toDomain(insertedUserAttachment);
     }
 
     async updateUserAttachmentActive(userId: string, no: number, active: boolean): Promise<void> {

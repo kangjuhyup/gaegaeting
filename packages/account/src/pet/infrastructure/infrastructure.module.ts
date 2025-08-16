@@ -6,12 +6,20 @@ import { StorageModule } from "@core/storage";
 import { PetRepositoryPort } from "../domain/port/out/pet-repository.port";
 import { PetOrmRepository } from "./repository/pet";
 import { PetOrmMapper } from "./repository/mapper/pet-orm";
+import { PetStoragePort } from "../domain/port/out/pet-storage.port";
+import { PetStorageAdpater } from "./adapter/pet-storage.adpater";
+import { PetProfileOrmMapper } from "./repository/mapper/pet-profile-orm";
 
 const providers : Provider[] = [
     PetOrmMapper,
+    PetProfileOrmMapper,
     {
         provide : PetRepositoryPort,
         useClass : PetOrmRepository
+    },
+    {
+        provide : PetStoragePort,
+        useClass : PetStorageAdpater
     }
 ]
 

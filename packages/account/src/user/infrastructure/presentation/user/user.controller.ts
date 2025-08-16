@@ -20,7 +20,7 @@ import { UserResponse } from "./dto/response/user.response";
 import { DeleteUserCommand } from "@app/user/application/port/in/command/delete-user.port";
 import { AccessGuard,UserGuard, UserParam, UserPrincipal, AuthProviderParam, AuthProviderPrincipal } from "@core/auth";
 import { GetPresignedUrlResponse } from "./dto/response/get-presgined.response";
-import { GeneratePresignedCommand } from "@app/user/application/port/in/command/generate-presigned.port";
+import { GenerateUserPresignedCommand } from "@app/user/application/port/in/command/generate-presigned.port";
 import { DeleteProfileImageCommand } from "@app/user/application/port/in/command/delete-profile-image.port";
 
 @ApiTags('Account','User')
@@ -52,7 +52,7 @@ export class UserController {
     @AuthProviderParam() authProvider: AuthProviderPrincipal,
     @Body() body: CreateUserBody
   ) {
-    const user = await this.commandBus.execute(new CreateUserCommand(authProvider,body.toDomain()));
+    const user = await this.commandBus.execute(new CreateUserCommand(authProvider.provider.value,authProvider.providerId,body.toDomain()));
     return UserResponse.fromDomain(user);
   }  
 
@@ -78,7 +78,7 @@ export class UserController {
     @UserParam() user: UserPrincipal,
     @Param('no') no : string
   ) : Promise<GetPresignedUrlResponse> {
-    const presignedUrl = await this.commandBus.execute(new GeneratePresignedCommand(user.userId,Number(no)));
+    const presignedUrl = await this.commandBus.execute(new GenerateUserPresignedCommand(user.userId,Number(no)));
     return GetPresignedUrlResponse.from(presignedUrl);
   }
 

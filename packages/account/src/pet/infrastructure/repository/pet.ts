@@ -5,13 +5,18 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { PetOrmMapper } from "./mapper/pet-orm";
+import { PetAttachmentOrmEntity } from "@core/database";
+import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
+import { PetProfileOrmMapper } from "./mapper/pet-profile-orm";
 
 @Injectable()
 export class PetOrmRepository implements PetRepositoryPort {
 
     constructor(
         @InjectRepository(PetOrmEntity)
-        private readonly petRepository : Repository<PetOrmEntity>
+        private readonly petRepository : Repository<PetOrmEntity>,
+        @InjectRepository(PetAttachmentOrmEntity)
+        private readonly petAttachmentRepository : Repository<PetAttachmentOrmEntity>
     ){}
     async insertPet(pet: PetEntity): Promise<PetEntity> {
         const orm = PetOrmMapper.toOrm(pet);
@@ -33,5 +38,11 @@ export class PetOrmRepository implements PetRepositoryPort {
     }
     async deletePet(id: number): Promise<void> {
         await this.petRepository.delete(id);
+    }
+
+    async insertPetAttachment(pet : PetProfileEntity) : Promise<PetProfileEntity> {
+        const orm = PetProfileOrmMapper.toOrm(pet);
+        const inserted = await this.petAttachmentRepository.save(orm);
+        return PetProfileOrmMapper.toDomain(inserted);
     }
 }

@@ -19,6 +19,6 @@ export class DeleteProfileImageHandler implements ICommandHandler<DeleteProfileI
             throw new NotFoundException('존재하지 않는 프로필 이미지 입니다.')
         }
         await this.userRepositoryPort.deleteUserAttachment(command.userId, command.no);
-        await this.userStoragePort.deletePresignedUrl(command.userId, command.no);
+        await this.userStoragePort.deleteProfileImage(command.userId, command.no);
     }
 }

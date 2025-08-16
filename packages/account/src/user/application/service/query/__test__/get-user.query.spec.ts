@@ -3,7 +3,7 @@ import { GetUserHandler } from '../get-user.query';
 import { GetUserQuery } from '@app/user/application/port/in/query/get-user.port';
 import { UserRepositoryPort } from '@app/user/domain/port/out/user-repository.port';
 import { UserStoragePort } from '@app/user/domain/port/out/user-storage.port';
-import { ProfileEntity } from '@app/user/domain/model/profile';
+import { UserProfileEntity } from '@app/user/domain/model/user-profile';
 import { UserGender, UserRegion, UserStatus } from '@app/user/domain/enum/user.enum';
 import { mockUserRepositoryPort, mockUserStoragePort } from '../../__test__/mock';
 
@@ -23,11 +23,11 @@ describe('GetUserHandler 단위 테스트', () => {
         // withProfiles가 true면 프로필을 생성하고, false면 프로필 없이 생성
         const profiles = withProfiles 
             ? [
-                ProfileEntity.of({
+                UserProfileEntity.of({
                     path: 'test-path-1',
                     active: false
                 }).setPersistence({ userId, no: 1 }, mockDate, mockDate),
-                ProfileEntity.of({
+                UserProfileEntity.of({
                     path: 'test-path-2',
                     active: true
                 }).setPersistence({ userId, no: 2 }, mockDate, mockDate)
@@ -87,7 +87,7 @@ describe('GetUserHandler 단위 테스트', () => {
                 bio: '안녕하세요',
                 status: UserStatus.ACTIVE,
                 profiles: [
-                    ProfileEntity.of({
+                    UserProfileEntity.of({
                         path: 'test-path-2',
                         active: true // 활성 상태인 프로필만 있음
                     }).setPersistence({ userId, no: 2 }, mockDate, mockDate)

@@ -1,16 +1,16 @@
-import { ProfileEntity } from "@app/user/domain/model/profile";
+import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 import { UserAttachmentOrmEntity } from "@core/database";
 
-export class ProfileOrmMapper {
+export class UserProfileOrmMapper {
 
-    static toDomain(orm : UserAttachmentOrmEntity) : ProfileEntity {
-        return ProfileEntity.of({
+    static toDomain(orm : UserAttachmentOrmEntity) : UserProfileEntity {
+        return UserProfileEntity.of({
             path : orm.path,
             active : orm.isActive
         }).setPersistence({ userId : orm.userId, no : orm.no },orm.createdAt,orm.updatedAt)
     }
 
-    static toOrm(domain : ProfileEntity) : UserAttachmentOrmEntity {
+    static toOrm(domain : UserProfileEntity) : UserAttachmentOrmEntity {
         const orm = new UserAttachmentOrmEntity()
         orm.userId = domain.id.userId
         orm.no = domain.id.no

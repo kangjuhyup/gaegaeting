@@ -3,7 +3,7 @@ import { CreateUserHandler } from "./service/command/create-user.command";
 import { UpdateUserHandler } from "./service/command/update-user.command";
 import { GetUserHandler } from "./service/query/get-user.query";
 import { UserInfraStructureModule } from "../infrastructure/infrastructure.module";
-import { GeneratePresignedUrlHandler } from "./service/command/generate-presigned.command";
+import { GenerateUserPresignedUrlHandler } from "./service/command/generate-user-presigned.command";
 
 
 const providers : Provider[] = [
@@ -14,7 +14,7 @@ const providers : Provider[] = [
     // Command
     CreateUserHandler,
     UpdateUserHandler,
-    GeneratePresignedUrlHandler,
+    GenerateUserPresignedUrlHandler,
 ]
 
 @Module({

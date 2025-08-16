@@ -1,5 +1,5 @@
 import { UserStoragePort } from "@app/user/domain/port/out/user-storage.port";
-import { PresignedUrl } from "@app/user/domain/vo/presigned-url";
+import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { StorageService } from "@core/storage";
 import { Injectable } from "@nestjs/common";
 
@@ -17,7 +17,7 @@ export class UserStorageAdapter implements UserStoragePort {
         return PresignedUrl.from(result, 3600);
     }
 
-    async deletePresignedUrl(userId: string, no : number): Promise<void> {
+    async deleteProfileImage(userId: string, no : number): Promise<void> {
         await this.storageService.deleteObject({
             key : `${userId}-${no}`
         });

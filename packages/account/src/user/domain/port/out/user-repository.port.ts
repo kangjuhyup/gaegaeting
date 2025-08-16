@@ -1,5 +1,5 @@
 import { UserEntity } from "@app/user/domain/model/user";
-import { ProfileEntity } from "../../model/profile";
+import { UserProfileEntity } from "../../model/user-profile";
 
 export abstract class UserRepositoryPort {
   abstract insertUser(user: UserEntity): Promise<UserEntity>;
@@ -12,8 +12,8 @@ export abstract class UserRepositoryPort {
   abstract updateUser(user: UserEntity): Promise<UserEntity>;
   abstract hardDeleteUser(id: string): Promise<void>;
 
-  abstract selectUserAttachment(userId: string, no : number) : Promise<ProfileEntity>
-  abstract insertUserAttachment(userAttachment : ProfileEntity) : Promise<ProfileEntity>
+  abstract selectUserAttachment(userId: string, no : number) : Promise<UserProfileEntity>
+  abstract insertUserAttachment(userAttachment : UserProfileEntity) : Promise<UserProfileEntity>
 
   abstract updateUserAttachmentActive(userId: string, no : number , active : boolean) : Promise<void>
 

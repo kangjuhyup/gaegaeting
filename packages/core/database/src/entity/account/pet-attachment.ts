@@ -1,8 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { PetOrmEntity } from "./pet";
+import { BaseEntity } from "../base";
 
 @Entity('pet_attachment')
-export class PetAttachmentOrmEntity {
+export class PetAttachmentOrmEntity extends BaseEntity {
     @PrimaryColumn({type: 'int', name : "pet_id"})
     petId : number;
     @PrimaryColumn({ type : 'int', name : 'no', default : 0 })

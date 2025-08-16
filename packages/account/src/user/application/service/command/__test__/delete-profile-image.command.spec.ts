@@ -1,7 +1,7 @@
 import { DeleteProfileImageHandler } from '../delete-profile-image.command';
 import { DeleteProfileImageCommand } from '@app/user/application/port/in/command/delete-profile-image.port';
 import { NotFoundException } from '@nestjs/common';
-import { ProfileEntity } from '@app/user/domain/model/profile';
+import { UserProfileEntity } from '@app/user/domain/model/user-profile';
 import { mockUserRepositoryPort, mockUserStoragePort } from '../../__test__/mock';
 
 describe('DeleteProfileImageHandler 단위 테스트', () => {
@@ -29,12 +29,12 @@ describe('DeleteProfileImageHandler 단위 테스트', () => {
         
         // 저장소 메서드가 호출되지 않았는지 확인
         expect(mockUserRepositoryPort.deleteUserAttachment).not.toHaveBeenCalled();
-        expect(mockUserStoragePort.deletePresignedUrl).not.toHaveBeenCalled();
+        expect(mockUserStoragePort.deleteProfileImage).not.toHaveBeenCalled();
     });
     
     it('존재하는 프로필 이미지인 경우 성공적으로 삭제한다', async () => {
         // Given
-        const mockProfile = ProfileEntity.of({
+        const mockProfile = UserProfileEntity.of({
             path: 'test-path',
             active: true
         });
@@ -45,6 +45,6 @@ describe('DeleteProfileImageHandler 단위 테스트', () => {
         
         // Then
         expect(mockUserRepositoryPort.deleteUserAttachment).toHaveBeenCalledWith(userId, profileNo);
-        expect(mockUserStoragePort.deletePresignedUrl).toHaveBeenCalledWith(userId, profileNo);
+        expect(mockUserStoragePort.deleteProfileImage).toHaveBeenCalledWith(userId, profileNo);
     });
 });

@@ -1,4 +1,4 @@
-import { PresignedUrl } from "@app/user/domain/vo/presigned-url";
+import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class GetPresignedUrlResponse {

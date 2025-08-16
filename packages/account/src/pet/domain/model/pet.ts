@@ -1,6 +1,6 @@
 import { PersistenceEntity } from '@core/model';
-import { ulid } from 'ulid';
 import { PetGender, PetBreed, PetSize, PetPersonality } from '../enum/pet.enum';
+import { PetProfileEntity } from './pet-profile';
 
 interface IPet {
   name: string;
@@ -11,6 +11,7 @@ interface IPet {
   personalities: PetPersonality[];
   description: string;
   userId: string;
+  profiles? : PetProfileEntity[]
 }
 
 export class PetEntity extends PersistenceEntity<number,IPet> {

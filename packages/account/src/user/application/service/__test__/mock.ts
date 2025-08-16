@@ -19,7 +19,7 @@ export const mockUserRepositoryPort = {
         
 export const mockUserStoragePort = {
             getPresignedUrl: jest.fn(),
-            deletePresignedUrl: jest.fn(),
+            deleteProfileImage: jest.fn(),
             hasMetadata: jest.fn()
         } as jest.Mocked<UserStoragePort>;
 

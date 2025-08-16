@@ -1,7 +1,7 @@
 import { PersistenceEntity } from "@core/model";
 import { UserGender, UserRegion, UserStatus } from "../enum/user.enum";
 import { AuthEntity } from "@app/auth/domain/model/auth";
-import { ProfileEntity } from "./profile";
+import { UserProfileEntity } from "./user-profile";
 
 
 
@@ -15,7 +15,7 @@ interface IUser {
   bio?: string;
   phoneNumber?: string;
   status: UserStatus;
-  profiles? : ProfileEntity[]
+  profiles? : UserProfileEntity[]
 }
 
 /**
@@ -63,7 +63,7 @@ export class UserEntity extends PersistenceEntity<string, IUser> {
     return this.etc.status;
   }
 
-  get profiles() : ProfileEntity[] {
+  get profiles() : UserProfileEntity[] {
     return this.etc.profiles;
   }
 
