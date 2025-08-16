@@ -1,12 +1,38 @@
 <!doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>API</title>
-    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+  <meta charset="utf-8" />
+  <title>Swagger UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Swagger UI CSS (CDN) -->
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
+  <style>
+    html, body { margin:0; height:100%; }
+    #swagger-ui { height:100%; }
+  </style>
 </head>
 <body>
-    <redoc spec-url="https://kangjuhyup.github.io/gaegaeting/docs/account/swagger-spec.json"></redoc>
+  <div id="swagger-ui"></div>
+
+  <!-- Swagger UI JS (CDN) -->
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.ui = SwaggerUIBundle({
+      url: "https://kangjuhyup.github.io/gaegaeting/docs/account/swagger-spec.json?v=1",
+
+      dom_id: "#swagger-ui",
+      deepLinking: true,
+      docExpansion: "none",           // 초기엔 접어서 표시
+      tryItOutEnabled: true,          // Try it out 버튼 활성화
+      layout: "BaseLayout",
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
+      // 베어러 토큰 유지(페이지 새로고침해도 보관)
+      persistAuthorization: true
+    });
+  </script>
 </body>
 </html>
-    
