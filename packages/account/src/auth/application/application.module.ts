@@ -3,6 +3,8 @@ import { SocialLoginHandler } from "./service/command/social-login.command";
 import { SocialRedirectHandler } from "./service/query/social-redirect.query";
 import { AuthInfraStructureModule } from "../infrastructure/infrastructure.module";
 import { GetUserPrincipalHandler } from "./service/query/get-user-principal.query";
+import { AuthTokenService } from "./service/auth-token.service";
+import { SocialLoginByTokenHandler } from "./service/command/social-login-by-token.command";
 
 const providers : Provider[] = [
      // Query
@@ -12,7 +14,10 @@ const providers : Provider[] = [
 
      // Command
      SocialLoginHandler,
-
+     SocialLoginByTokenHandler,
+     
+     // Service
+     AuthTokenService,
 ]
 
 @Module({

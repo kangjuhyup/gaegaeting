@@ -12,7 +12,9 @@ import { GetUserPrincipalRequest } from './dto/request/get-user-principal.reques
 import { GetUserPrincipalResponse } from './dto/response/get-user-principal.response';
 import { GetUserPrincipalQuery } from '@app/auth/application/port/query/get-user-principal.port';
 import { AuthProvider } from '@core/auth';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiProperty, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SocialLoginNativeBody } from './dto/request/social-native.request';
+import { SocialLoginByTokenCommand } from '@app/auth/application/port/command/social-login-by-token.port';
 
 @ApiTags('Account','Auth')
 @Controller('auth')
@@ -102,6 +104,41 @@ export class AuthController {
           providerDto.provider,
           callbackDto.code,
           callbackDto.state
+        )
+      );
+
+      // 인증 토큰 가져오기
+      const token = result.getAuthToken();
+      res.cookie('accessToken', token.getAccessToken(), {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: token.getExpiresIn(),
+      });
+      res.cookie('refreshToken', token.getRefreshToken(), {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: token.getRefreshTokenExpiresIn(),
+      });
+      
+      res.json(LoginResponse.from(result));
+  }
+
+  @Post(':provider/native')
+  @ApiOperation({ summary : '소셜 로그인 (네이티브 방식)'})
+  @ApiResponse({ status : 200 , type : () => LoginResponse ,description : '소셜로그인 성공'})
+  async socialLoginNative(
+    @Param('provider') provider: AuthProvider,
+    @Body() body : SocialLoginNativeBody,
+    @Res() res: Response,
+  ): Promise<void> {
+      
+      // 소셜 로그인 커맨드 실행
+      const result = await this.commandBus.execute(
+        new SocialLoginByTokenCommand(
+          provider,
+          body.toAuthToken()
         )
       );
 
