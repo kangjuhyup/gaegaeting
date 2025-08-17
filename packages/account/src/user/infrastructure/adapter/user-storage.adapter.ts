@@ -1,4 +1,4 @@
-import { UserStoragePort } from "@app/user/domain/port/out/user-storage.port";
+import { UserStoragePort } from "@app/user/domain/port/user-storage.port";
 import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { StorageService } from "@core/storage";
 import { Injectable } from "@nestjs/common";

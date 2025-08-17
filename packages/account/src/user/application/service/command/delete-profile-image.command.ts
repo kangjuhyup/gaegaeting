@@ -1,8 +1,8 @@
 import { CommandHandler } from "@nestjs/cqrs";
-import { DeleteProfileImageCommand } from "../../port/in/command/delete-profile-image.port";
+import { DeleteProfileImageCommand } from "../../port/command/delete-profile-image.port";
 import { ICommandHandler } from "@nestjs/cqrs";
-import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
-import { UserStoragePort } from "@app/user/domain/port/out/user-storage.port";
+import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
+import { UserStoragePort } from "@app/user/domain/port/user-storage.port";
 import { NotFoundException } from "@nestjs/common";
 
 @CommandHandler(DeleteProfileImageCommand)

@@ -1,4 +1,4 @@
-import { AuthInternalApiPort } from "@app/user/domain/port/out/auth-internal-api.port";
+import { AuthInternalApiPort } from "@app/user/domain/port/auth-internal-api.port";
 import { AuthProviderPrincipal } from "@core/auth";
 import { Injectable } from "@nestjs/common";
 import { AuthOrmRepository } from '../../../auth/infrastructure/repository/auth.repository';

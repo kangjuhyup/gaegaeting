@@ -13,15 +13,15 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagg
 import { CreateUserBody } from "./dto/request/create-user.request";
 import { UpdateUserBody } from "./dto/request/update-user.request";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { CreateUserCommand } from "@app/user/application/port/in/command/create-user.port";
-import { UpdateUserCommand } from "@app/user/application/port/in/command/update-user.port";
-import { GetUserQuery } from "@app/user/application/port/in/query/get-user.port";
+import { CreateUserCommand } from "@app/user/application/port/command/create-user.port";
+import { UpdateUserCommand } from "@app/user/application/port/command/update-user.port";
+import { GetUserQuery } from "@app/user/application/port/query/get-user.port";
 import { UserResponse } from "./dto/response/user.response";
-import { DeleteUserCommand } from "@app/user/application/port/in/command/delete-user.port";
+import { DeleteUserCommand } from "@app/user/application/port/command/delete-user.port";
 import { AccessGuard,UserGuard, UserParam, UserPrincipal, AuthProviderParam, AuthProviderPrincipal } from "@core/auth";
 import { GetPresignedUrlResponse } from "./dto/response/get-presgined.response";
-import { GenerateUserPresignedCommand } from "@app/user/application/port/in/command/generate-presigned.port";
-import { DeleteProfileImageCommand } from "@app/user/application/port/in/command/delete-profile-image.port";
+import { GenerateUserPresignedCommand } from "@app/user/application/port/command/generate-presigned.port";
+import { DeleteProfileImageCommand } from "@app/user/application/port/command/delete-profile-image.port";
 
 @ApiTags('Account','User')
 @Controller("users")

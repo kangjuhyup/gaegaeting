@@ -1,8 +1,8 @@
 import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { GenerateUserPresignedCommand } from "../../port/in/command/generate-presigned.port";
-import { UserStoragePort } from "@app/user/domain/port/out/user-storage.port";
-import { UserRepositoryPort } from '../../../domain/port/out/user-repository.port';
+import { GenerateUserPresignedCommand } from "../../port/command/generate-presigned.port";
+import { UserStoragePort } from "@app/user/domain/port/user-storage.port";
+import { UserRepositoryPort } from '../../../domain/port/user-repository.port';
 import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 
 @CommandHandler(GenerateUserPresignedCommand)

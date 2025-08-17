@@ -1,8 +1,8 @@
 
-import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
+import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { UserEntity } from "@app/user/domain/model/user";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { UpdateUserCommand } from "../../port/in/command/update-user.port";
+import { UpdateUserCommand } from "../../port/command/update-user.port";
 
 @CommandHandler(UpdateUserCommand)
 export class UpdateUserHandler implements ICommandHandler<UpdateUserCommand> {

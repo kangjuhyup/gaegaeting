@@ -1,8 +1,8 @@
 import { UserEntity } from '@app/user/domain/model/user';
 import { GetUserHandler } from '../get-user.query';
-import { GetUserQuery } from '@app/user/application/port/in/query/get-user.port';
-import { UserRepositoryPort } from '@app/user/domain/port/out/user-repository.port';
-import { UserStoragePort } from '@app/user/domain/port/out/user-storage.port';
+import { GetUserQuery } from '@app/user/application/port/query/get-user.port';
+import { UserRepositoryPort } from '@app/user/domain/port/user-repository.port';
+import { UserStoragePort } from '@app/user/domain/port/user-storage.port';
 import { UserProfileEntity } from '@app/user/domain/model/user-profile';
 import { UserGender, UserRegion, UserStatus } from '@app/user/domain/enum/user.enum';
 import { mockUserRepositoryPort, mockUserStoragePort } from '../../__test__/mock';

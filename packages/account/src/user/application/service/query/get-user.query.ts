@@ -1,8 +1,8 @@
-import { GetUserQuery } from "../../port/in/query/get-user.port";
+import { GetUserQuery } from "../../port/query/get-user.port";
 import { UserEntity } from "@app/user/domain/model/user";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
-import { UserStoragePort } from '../../../domain/port/out/user-storage.port';
+import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
+import { UserStoragePort } from '../../../domain/port/user-storage.port';
 
 @QueryHandler(GetUserQuery)
 export class GetUserHandler implements IQueryHandler<GetUserQuery, UserEntity> {

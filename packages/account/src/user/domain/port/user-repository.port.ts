@@ -1,5 +1,5 @@
 import { UserEntity } from "@app/user/domain/model/user";
-import { UserProfileEntity } from "../../model/user-profile";
+import { UserProfileEntity } from "../model/user-profile";
 
 export abstract class UserRepositoryPort {
   abstract insertUser(user: UserEntity): Promise<UserEntity>;

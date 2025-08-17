@@ -1,5 +1,5 @@
 import { DeleteProfileImageHandler } from '../delete-profile-image.command';
-import { DeleteProfileImageCommand } from '@app/user/application/port/in/command/delete-profile-image.port';
+import { DeleteProfileImageCommand } from '@app/user/application/port/command/delete-profile-image.port';
 import { NotFoundException } from '@nestjs/common';
 import { UserProfileEntity } from '@app/user/domain/model/user-profile';
 import { mockUserRepositoryPort, mockUserStoragePort } from '../../__test__/mock';

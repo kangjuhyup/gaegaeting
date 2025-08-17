@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { CreateUserCommand } from "../../port/in/command/create-user.port";
-import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
+import { CreateUserCommand } from "../../port/command/create-user.port";
+import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { UserEntity } from "@app/user/domain/model/user";
-import { AuthInternalApiPort } from "@app/user/domain/port/out/auth-internal-api.port";
+import { AuthInternalApiPort } from "@app/user/domain/port/auth-internal-api.port";
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand, UserEntity> {

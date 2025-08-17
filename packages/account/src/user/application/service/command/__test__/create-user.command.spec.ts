@@ -1,10 +1,10 @@
-import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
+import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { mockAuthInternalApiPort, mockUserRepositoryPort } from "../../__test__/mock"
 import { UserGender, UserRegion, UserStatus } from "@app/user/domain/enum/user.enum";
 import { UserEntity } from "@app/user/domain/model/user";
 import { CreateUserHandler } from "../create-user.command";
-import { AuthInternalApiPort } from "@app/user/domain/port/out/auth-internal-api.port";
-import { CreateUserCommand } from "@app/user/application/port/in/command/create-user.port";
+import { AuthInternalApiPort } from "@app/user/domain/port/auth-internal-api.port";
+import { CreateUserCommand } from "@app/user/application/port/command/create-user.port";
 
 describe('CreateUserHanlder 단위 테스트', () => {
 

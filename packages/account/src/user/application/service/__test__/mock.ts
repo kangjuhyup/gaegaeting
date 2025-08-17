@@ -1,6 +1,6 @@
-import { AuthInternalApiPort } from "@app/user/domain/port/out/auth-internal-api.port";
-import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
-import { UserStoragePort } from "@app/user/domain/port/out/user-storage.port";
+import { AuthInternalApiPort } from "@app/user/domain/port/auth-internal-api.port";
+import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
+import { UserStoragePort } from "@app/user/domain/port/user-storage.port";
 
 export const mockUserRepositoryPort = {
             selectUserFromIdWithProfiles: jest.fn(),

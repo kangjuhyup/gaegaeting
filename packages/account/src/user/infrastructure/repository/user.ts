@@ -4,7 +4,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { UserOrmMapper } from "./mapper/user-orm";
-import { UserRepositoryPort } from "@app/user/domain/port/out/user-repository.port";
+import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 import { UserProfileOrmMapper } from "./mapper/user-profile-orm";
 import { AuthProviderPrincipal } from "@core/auth";
