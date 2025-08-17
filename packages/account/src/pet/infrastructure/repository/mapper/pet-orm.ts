@@ -15,7 +15,9 @@ export class PetOrmMapper {
             size: PetSize.from(orm.size),
             personalities: orm.personalities.map(p => PetPersonality.from(Number(p))),
             description: orm.description,
-            userId: orm.userId
+            userId: orm.userId,
+            certificationCode : orm.certificationCode,
+            certification : orm.certification
         }).setPersistence(orm.id,orm.createdAt,orm.updatedAt);
     }
 

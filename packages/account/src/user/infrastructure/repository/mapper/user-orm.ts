@@ -23,6 +23,7 @@ export class UserOrmMapper {
         if (!orm) return null;
         
         return UserEntity.of({
+            name : orm.name,
             nickname: orm.nickname,
             gender: UserGender.from(orm.gender),
             birthDate: orm.birthDate,

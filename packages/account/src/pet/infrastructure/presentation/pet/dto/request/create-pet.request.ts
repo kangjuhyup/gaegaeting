@@ -53,7 +53,8 @@ export class CreatePetBody {
       size : this.size,
       personalities : this.personalities,
       description : this.description,
-      userId : userId
+      userId : userId,
+      certification : false,
     })
   }
 }

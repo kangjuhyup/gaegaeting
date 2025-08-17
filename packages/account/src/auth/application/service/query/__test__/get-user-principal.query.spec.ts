@@ -1,5 +1,5 @@
 import { GetUserPrincipalHandler } from '../get-user-principal.query';
-import { GetUserPrincipalQuery } from '@app/auth/application/port/query/get-user-princial.port';
+import { GetUserPrincipalQuery } from '@app/auth/application/port/query/get-user-principal.port';
 import { AuthRepositoryPort } from '@app/auth/domain/port/auth-repository.port';
 import { UserPrincipal } from '@core/auth';
 import { mockAuthRepositoryPort } from '../../__test__/mock';
@@ -11,6 +11,7 @@ describe('GetUserPrincipalHandler 단위 테스트', () => {
     const mockProviderType = 1; // 예시 provider type
     const mockProviderId = 'test-provider-id';
     const mockUserPrincipal: UserPrincipal = {
+        name : 'test',
         userId: 'user-id-123',
         nickname: '테스트 사용자',
         birth : '2000-01-01',

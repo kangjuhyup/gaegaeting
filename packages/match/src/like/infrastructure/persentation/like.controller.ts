@@ -1,7 +1,8 @@
 import { Controller, Post, Param, Delete, Get } from "@nestjs/common";
 import { UserParam, UserPrincipal } from "@core/auth";
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Match','Like')
 @Controller('like')
 export class LikeController {
 

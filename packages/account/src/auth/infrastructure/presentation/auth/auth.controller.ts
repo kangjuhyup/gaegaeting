@@ -10,7 +10,7 @@ import { LoginResponse } from './dto/response/login.response';
 import { SocialProviderDto } from './dto/request/social-provider.dto';
 import { GetUserPrincipalRequest } from './dto/request/get-user-principal.request';
 import { GetUserPrincipalResponse } from './dto/response/get-user-principal.response';
-import { GetUserPrincipalQuery } from '@app/auth/application/port/query/get-user-princial.port';
+import { GetUserPrincipalQuery } from '@app/auth/application/port/query/get-user-principal.port';
 import { AuthProvider } from '@core/auth';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 

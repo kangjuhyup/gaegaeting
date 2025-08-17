@@ -1,7 +1,8 @@
 import { Controller, Get, Param, Post, Put } from "@nestjs/common";
 import { UserParam, UserPrincipal } from "@core/auth";
-import { ApiOperation } from "@nestjs/swagger";
+import { ApiOperation, ApiTags } from "@nestjs/swagger";
 
+@ApiTags('Match','Feed')
 @Controller('feed')
 export class FeedController {
 

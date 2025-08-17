@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { GetUserPrincipalQuery } from "../../port/query/get-user-princial.port";
+import { GetUserPrincipalQuery } from "../../port/query/get-user-principal.port";
 import { UserPrincipal } from "@core/auth";
 import { AuthRepositoryPort } from "@app/auth/domain/port/auth-repository.port";
 
