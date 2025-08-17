@@ -7,27 +7,47 @@
 [API Document 보러가기](https://kangjuhyup.github.io/gaegaeting/docs/#/)
 
 ## 🏗️ 바운디드 컨텍스트 구조
+```mermaid
+graph TD
+  direction LR
 
-### 🔐 Account
-| 모듈 | 설명 |
-|------|------|
-| **auth** | 소셜 로그인 및 인증 관리 |
-| **user** | 사용자 프로필 및 계정 관리 |
-| **pet** | 반려동물 정보 관리 |
+  %% 공유 버스(유저 키/캐시)
+  BUS[[UserId / Profile Cache]]
 
-### 💞 Match
-| 모듈 | 설명 |
-|------|------|
-| **feed** | 매칭 피드 표시 및 관리 |
-| **like** | 좋아요 기능 |
-| **report** | 다시보지 않기 기능 |
+  %% Account 내부
+  subgraph Account[Account]
+    direction TB
+    A[Account]
+    A2[user]
+    A1[auth]
+    A3[pet]
+  end
 
-### 💬 Chat
-> 현재 구성 중입니다
+  %% Match
+  subgraph Match[Match]
+    direction TB
+    B[Match]
+    B1[location]
+    B2[feed]
+    B3[like]
+    B4[pair]
+  end
 
-### 💰 Payment
-> 현재 구성 중입니다
+  %% Chat
+  subgraph Chat[Chat]
+    direction TB
+    C1[room]
+    C2[talk]
+  end
 
+  %% Account(User) → BUS 동기화
+  A2 -. "publish UserUpdated" .-> BUS
+
+  %% 각 컨텍스트는 BUS를 통해 식별자/프로필 캐시 사용
+  BUS --> Match
+  BUS --> Chat
+  B4 --> C1
+```
 ## 로그인
 ### 🔄 로그인 플로우
 
