@@ -69,6 +69,17 @@ export class PetOrmEntity extends BaseEntity {
   description?: string;
 
   /**
+   * 반려동물 등록 번호
+   */
+  @Column({ type : 'char', nullable: true, name : 'certification_code'})
+  certificationCode? : string;
+  /**
+   * 반려동물 등록 인증 여부
+   */
+  @Column({ type: 'boolean', default : false , nullable : false, name : 'certification'})
+  certification : boolean
+
+  /**
    * 소유자 사용자 ID
    */
   @Column({ type: 'char', length: 26, name: 'user_id' })

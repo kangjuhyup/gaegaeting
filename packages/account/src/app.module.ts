@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { validationSchema } from './auth/config/env.config';
+import { validationSchema } from './config/env.config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { JwtAuthModule } from '@core/auth';
 import { DatabaseModule, DatabaseSchema } from '@core/database';
+import { HttpModule } from '@core/http';
 
 @Module({
   imports: [
@@ -29,8 +30,11 @@ import { DatabaseModule, DatabaseSchema } from '@core/database';
       [DatabaseSchema.USER],
   ),
     // CQRS
-    CqrsModule.forRoot({
-      
+    CqrsModule.forRoot({}),
+    // Http
+    HttpModule.forRoot({
+      timeout : 5000,
+      retryCount : 3,
     }),
     // 인증 모듈
     JwtAuthModule.forRootAsync({

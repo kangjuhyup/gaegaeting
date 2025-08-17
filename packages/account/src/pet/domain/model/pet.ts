@@ -11,6 +11,8 @@ interface IPet {
   personalities: PetPersonality[];
   description: string;
   userId: string;
+  certificationCode? : string;
+  certification : boolean;
   profiles? : PetProfileEntity[]
 }
 
@@ -36,6 +38,8 @@ export class PetEntity extends PersistenceEntity<number,IPet> {
     size?: PetSize,
     personalities?: PetPersonality[],
     description?: string,
+    certificationCode?: string,
+    certification?: boolean,
   }): void {
     if (update.name !== undefined) this.etc.name = update.name;
     if (update.age !== undefined) this.etc.age = update.age;
@@ -43,6 +47,12 @@ export class PetEntity extends PersistenceEntity<number,IPet> {
     if (update.size !== undefined) this.etc.size = update.size;
     if (update.personalities !== undefined) this.etc.personalities = update.personalities;
     if (update.description !== undefined) this.etc.description = update.description;
+    if (update.certificationCode !== undefined) this.etc.certificationCode = update.certificationCode;
+    if (update.certification !== undefined) this.etc.certification = update.certification;
+  }
+
+  successCert() {
+    this.etc.certification = true;
   }
 
 
@@ -55,4 +65,6 @@ export class PetEntity extends PersistenceEntity<number,IPet> {
   get personalities(): PetPersonality[] { return [...this.etc.personalities]; }
   get description(): string { return this.etc.description; }
   get userId(): string { return this.etc.userId; }
+  get certificationCode() : string { return this.etc.certificationCode; }
+  get isCertificated() : boolean { return this.etc.certification }
 }

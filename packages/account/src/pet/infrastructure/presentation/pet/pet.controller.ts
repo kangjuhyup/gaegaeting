@@ -28,7 +28,7 @@ export class PetController {
     @UserParam() user : UserPrincipal,
     @Body() body: CreatePetBody
   ): Promise<any> {
-    const pet = await this.commandBus.execute(new RegisterPetCommand(body.toDomain(user.userId)));
+    const pet = await this.commandBus.execute(new RegisterPetCommand(user,body.toDomain(user.userId)));
     return PetResponse.of(user.userId, [pet]);
   }
 

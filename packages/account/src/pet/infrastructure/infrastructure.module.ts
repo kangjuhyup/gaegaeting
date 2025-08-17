@@ -9,6 +9,9 @@ import { PetOrmMapper } from "./repository/mapper/pet-orm";
 import { PetStoragePort } from "../domain/port/out/pet-storage.port";
 import { PetStorageAdpater } from "./adapter/pet-storage.adpater";
 import { PetProfileOrmMapper } from "./repository/mapper/pet-profile-orm";
+import { HttpModule } from "@core/http";
+import { PetCertificationPort } from "../domain/port/out/pet-certification.port";
+import { PetCertificationAdapter } from "./adapter/pet-certification.adapter";
 
 const providers : Provider[] = [
     PetOrmMapper,
@@ -20,11 +23,19 @@ const providers : Provider[] = [
     {
         provide : PetStoragePort,
         useClass : PetStorageAdpater
+    },
+    {
+        provide : PetCertificationPort,
+        useClass : PetCertificationAdapter
     }
 ]
 
 @Module({
     imports : [
+        HttpModule.forService('Account-Pet', {
+            timeout : 5000,
+            retryCount : 3,
+        }),
         StorageModule.forRootAsync({
             imports : [
                 ConfigModule
