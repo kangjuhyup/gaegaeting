@@ -53,7 +53,7 @@ graph TD
 
 > 현재 본인인증을 제공하지 않습니다.  
 > 각 소셜로 로그인 할 경우 각각 계정이 생성됩니다.
-```
+```mermaid
 sequenceDiagram
   autonumber
   actor User as 사용자(앱/웹 브라우저)
