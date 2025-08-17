@@ -1,5 +1,6 @@
 import { PetRepositoryPort } from "@app/pet/domain/port/out/pet-repository.port";
 import { PetStoragePort } from "@app/pet/domain/port/out/pet-storage.port";
+import { PetCertificationPort } from "@app/pet/domain/port/out/pet-certification.port";
 
 export const mockPetStoragePort = {
     getPresignedUrl : jest.fn(),
@@ -15,3 +16,7 @@ export const mockPetRepositoryPort = {
     updatePet : jest.fn(),
     deletePet : jest.fn()
 } as jest.Mocked<PetRepositoryPort>
+
+export const mockPetCertificationPort = {
+    checkCertifiaction : jest.fn()
+} as jest.Mocked<PetCertificationPort>

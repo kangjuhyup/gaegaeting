@@ -35,6 +35,7 @@ describe('GetUserHandler 단위 테스트', () => {
             : undefined;
             
         const user = UserEntity.of({
+            name : '테스트유저',
             email: 'test@example.com',
             nickname: '테스트유저',
             gender: UserGender.MALE,
@@ -79,6 +80,7 @@ describe('GetUserHandler 단위 테스트', () => {
             // Given
             // 활성 상태인 프로필만 있는 유저 생성
             const mockUser = UserEntity.of({
+                name : '테스트유저',
                 email: 'test@example.com',
                 nickname: '테스트유저',
                 gender: UserGender.MALE,

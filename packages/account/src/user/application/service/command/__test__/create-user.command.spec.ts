@@ -24,6 +24,7 @@ describe('CreateUserHanlder 단위 테스트', () => {
     it('이미 존재하는 사용자라면 에러를 던진다.', async () => {
         // Given
         const existsUser = UserEntity.of({
+            name : 'test-nickname',
             nickname: 'test-nickname',
             gender: UserGender.MALE,
             birthDate: new Date(),
@@ -39,6 +40,7 @@ describe('CreateUserHanlder 단위 테스트', () => {
                 0,
                 'test-provider-id',
                 UserEntity.of({
+                    name : 'test-nickname',
                     nickname: 'test-nickname',
                     gender: UserGender.MALE,
                     birthDate: new Date(),
@@ -53,6 +55,7 @@ describe('CreateUserHanlder 단위 테스트', () => {
     it('존재하지 않는 사용자라면 UserEntity를 저장 후 AuthEntity 를 업데이트한다.', async () => {
         // Given
         const newUser = UserEntity.of({
+            name : 'new-user',
             nickname: 'new-user',
             gender: UserGender.FEMALE,
             birthDate: new Date(),
@@ -62,6 +65,7 @@ describe('CreateUserHanlder 단위 테스트', () => {
         });
         
         const savedUser = UserEntity.of({
+            name : 'new-user',
             nickname: 'new-user',
             gender: UserGender.FEMALE,
             birthDate: new Date(),

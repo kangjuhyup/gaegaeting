@@ -37,6 +37,7 @@ describe('UpdateUserHandler 단위 테스트', () => {
     it('존재하는 유저일 경우 값 업데이트', async () => {
         // Given
         const existingUser = UserEntity.of({
+            name : '기존 닉네임',
             nickname: '기존 닉네임',
             gender: UserGender.MALE,
             birthDate: mockDate,
@@ -45,6 +46,7 @@ describe('UpdateUserHandler 단위 테스트', () => {
         }).setPersistence(userId, mockDate, mockDate);
         
         const updatedUser = UserEntity.of({
+            name : '기존 닉네임',
             nickname: '새로운 닉네임',
             gender: UserGender.MALE,
             birthDate: mockDate,
