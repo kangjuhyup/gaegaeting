@@ -2,13 +2,17 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Swagger UI</title>
+  <title>개개팅 API 문서</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Swagger UI CSS (CDN) -->
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css" />
   <style>
     html, body { margin:0; height:100%; }
     #swagger-ui { height:100%; }
+    .topbar { display: none; }
+    .swagger-ui .info .title { font-size: 2.5em; }
+    .swagger-ui .info .title small { background-color: #4990e2; }
+    .swagger-ui .scheme-container { padding: 15px 0; }
   </style>
 </head>
 <body>
@@ -19,22 +23,23 @@
   <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
   <script>
     window.ui = SwaggerUIBundle({
-      url: [
-        "https://kangjuhyup.github.io/gaegaeting/docs/account/swagger-spec.json",
-        "https://kangjuhyup.github.io/gaegaeting/docs/match/swagger-spec.json"
+      urls: [
+        { name: "계정 API", url: "https://kangjuhyup.github.io/gaegaeting/docs/account/swagger-spec.json" },
+        { name: "매칭 API", url: "https://kangjuhyup.github.io/gaegaeting/docs/match/swagger-spec.json" }
       ],
       dom_id: "#swagger-ui",
       deepLinking: true,
       docExpansion: "none",           // 초기엔 접어서 표시
       tryItOutEnabled: true,          // Try it out 버튼 활성화
       layout: "BaseLayout",
+      displayOperationId: false,
+      filter: true,                   // 검색 필터 활성화
       presets: [
         SwaggerUIBundle.presets.apis,
         SwaggerUIStandalonePreset
       ],
       // 베어러 토큰 유지(페이지 새로고침해도 보관)
       persistAuthorization: true
-    });
   </script>
 </body>
 </html>
