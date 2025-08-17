@@ -1,4 +1,4 @@
-import { AuthRepositoryPort } from "@app/auth/domain/port/out/auth-repository.port";
+import { AuthRepositoryPort } from "@app/auth/domain/port/auth-repository.port";
 import { AuthEntity } from "@app/auth/domain/model/auth";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';

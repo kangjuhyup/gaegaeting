@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SocialLoginHandler } from '../social-login.command';
-import { SocialLoginCommand } from '@app/auth/application/port/in/command/social-login.port';
-import { AuthRepositoryPort } from '@app/auth/domain/port/out/auth-repository.port';
-import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
-import { JwtPort } from '@app/auth/domain/port/out/jwt.port';
+import { SocialLoginCommand } from '@app/auth/application/port/command/social-login.port';
+import { AuthRepositoryPort } from '@app/auth/domain/port/auth-repository.port';
+import { SocialAuthProviderPort } from '@app/auth/domain/port/social-auth-provider.port';
+import { JwtPort } from '@app/auth/domain/port/jwt.port';
 import { AuthProvider } from '@core/auth';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { AuthEntity } from '@app/auth/domain/model/auth';

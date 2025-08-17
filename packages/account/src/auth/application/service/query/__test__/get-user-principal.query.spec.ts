@@ -1,6 +1,6 @@
 import { GetUserPrincipalHandler } from '../get-user-principal.query';
-import { GetUserPrincipalQuery } from '@app/auth/application/port/in/query/get-user-princial.port';
-import { AuthRepositoryPort } from '@app/auth/domain/port/out/auth-repository.port';
+import { GetUserPrincipalQuery } from '@app/auth/application/port/query/get-user-princial.port';
+import { AuthRepositoryPort } from '@app/auth/domain/port/auth-repository.port';
 import { UserPrincipal } from '@core/auth';
 import { mockAuthRepositoryPort } from '../../__test__/mock';
 

@@ -1,5 +1,5 @@
 import { Logger, Module, Provider } from "@nestjs/common";
-import { AuthRepositoryPort } from "../domain/port/out/auth-repository.port";
+import { AuthRepositoryPort } from "../domain/port/auth-repository.port";
 import { AuthOrmRepository } from "./repository/auth.repository";
 import { AuthController } from "./presentation/auth/auth.controller";
 import { GoogleAuthAdapter } from "./adapter/google-auth.adapter";
@@ -9,7 +9,7 @@ import { AuthMapper } from "./repository/mapper/auth.mapper";
 import { DatabaseModule, DatabaseSchema } from "@core/database";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { HttpModule } from "@core/http";
-import { JwtPort } from "../domain/port/out/jwt.port";
+import { JwtPort } from "../domain/port/jwt.port";
 import { JwtAdpater } from "./adapter/jwt.adapter";
 
 const providers : Provider[] = [

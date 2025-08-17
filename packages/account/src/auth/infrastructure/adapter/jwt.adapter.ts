@@ -1,4 +1,4 @@
-import { JwtPort } from "@app/auth/domain/port/out/jwt.port";
+import { JwtPort } from "@app/auth/domain/port/jwt.port";
 import { JwtTokenService } from "@core/auth";
 import { Injectable } from "@nestjs/common";
 
