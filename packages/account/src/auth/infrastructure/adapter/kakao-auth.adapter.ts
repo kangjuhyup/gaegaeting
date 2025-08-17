@@ -4,7 +4,7 @@ import { FetchHttpClient } from '@core/http';
 import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
 import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { SocialAuthProviderPort } from '@app/auth/domain/port/out/social-auth-provider.port';
-import { ENV_KEY } from '../../config/env.config';
+import { ENV_KEY } from '../../../config/env.config';
 import { AuthProvider } from '@core/auth';
 
 /**

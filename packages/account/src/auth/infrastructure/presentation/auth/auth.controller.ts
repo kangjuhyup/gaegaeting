@@ -5,7 +5,7 @@ import { SocialRedirectQuery } from '@app/auth/application/port/in/query/social-
 import { SocialLoginCommand } from '@app/auth/application/port/in/command/social-login.port';
 import { SocialCallbackDto } from './dto/request/social-callback.dto';
 import { ConfigService } from '@nestjs/config';
-import { ENV_KEY } from '../../../config/env.config';
+import { ENV_KEY } from '../../../../config/env.config';
 import { LoginResponse } from './dto/response/login.response';
 import { SocialProviderDto } from './dto/request/social-provider.dto';
 import { GetUserPrincipalRequest } from './dto/request/get-user-principal.request';

@@ -15,10 +15,11 @@ export const envSpec = {
   GOOGLE_CLIENT_ID: { joi: Joi.string().required() },
   GOOGLE_CLIENT_SECRET: { joi: Joi.string().allow('', null) },
   DATABASE_HOST: { joi: Joi.string().required() },
-  DATABASE_PORT: { joi: Joi.number().default(5432) },
+  DATABASE_PORT: { joi: Joi.number().required() },
   DATABASE_USERNAME: { joi: Joi.string().required() },
   DATABASE_PASSWORD: { joi: Joi.string().required() },
   DATABASE_NAME: { joi: Joi.string().required() },
+  PUBLIC_DATA_API_KEY: { joi: Joi.string().required() }
 } as const;
 
 // 2) 타입과 상수 자동 추출
