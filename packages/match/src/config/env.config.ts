@@ -7,19 +7,11 @@ export const envSpec = {
   JWT_SECRET: { joi: Joi.string().required() },
   JWT_ACCESS_EXPIRATION: { joi: Joi.string().default('1h') },
   JWT_REFRESH_EXPIRATION: { joi: Joi.string().default('30d') },
-  KAKAO_CLIENT_ID: { joi: Joi.string().required() },
-  KAKAO_CLIENT_SECRET: { joi: Joi.string().required() },
-  KAKAO_API_KEY : { joi : Joi.string().required() },
-  NAVER_CLIENT_ID: { joi: Joi.string().required() },
-  NAVER_CLIENT_SECRET: { joi: Joi.string().allow('', null) },
-  GOOGLE_CLIENT_ID: { joi: Joi.string().required() },
-  GOOGLE_CLIENT_SECRET: { joi: Joi.string().allow('', null) },
   DATABASE_HOST: { joi: Joi.string().required() },
   DATABASE_PORT: { joi: Joi.number().required() },
   DATABASE_USERNAME: { joi: Joi.string().required() },
   DATABASE_PASSWORD: { joi: Joi.string().required() },
-  ACCOUNT_DATABASE_NAME: { joi: Joi.string().required() },
-  PUBLIC_DATA_API_KEY: { joi: Joi.string().required() }
+  MATCH_DATABASE_NAME: { joi: Joi.string().required() }
 } as const;
 
 // 2) 타입과 상수 자동 추출
