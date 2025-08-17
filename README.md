@@ -53,14 +53,51 @@ graph TD
 
 > 현재 본인인증을 제공하지 않습니다.  
 > 각 소셜로 로그인 할 경우 각각 계정이 생성됩니다.
+```
+sequenceDiagram
+  autonumber
+  actor User as 사용자(앱/웹 브라우저)
+  participant API as Accounts API
+  participant SOCIAL as Social Provider
 
-![로그인 플로우](./docs/flow/login.drawio)
+  %% 1) 로그인 시작: 우리 API가 소셜 /authorize 로 리다이렉트
+  User->>API: GET /accounts/auth/{provider}
+  API-->>User: 302 Location: SOCIAL /oauth/authorize?client_id&redirect_uri&response_type=code&scope&state&code_challenge
 
-### 🔗 로그인 API 흐름
+  %% 2) 사용자는 소셜에서 로그인 후, 소셜이 우리 콜백으로 리다이렉트
+  User->>SOCIAL: GET /oauth/authorize ... (로그인/동의)
+  SOCIAL-->>User: 302 Location: /accounts/auth/{provider}/callback?code=...&state=...
 
-| 순서 | 작업 | 엔드포인트 | 설명 |
-|:---:|------|------|------|
-| 1 | **로그인 요청** | `GET /accounts/auth/{provider}` | 사용자를 소셜 로그인 페이지로 리다이렉트합니다. |
-| 2 | **콜백 처리** | `POST /accounts/auth/{provider}/fallback` | 소셜 로그인 후 콜백을 처리하여 토큰을 발급합니다. |
-| 3 | **사용자 정보 조회** | `GET /accounts/users/me` | 현재 로그인한 사용자 정보를 조회합니다.<br>**주의**: 403 에러 반환 시 계정 생성이 필요합니다. |
-| 4 | **계정 생성** | `POST /accounts/users/me` | 사용자 계정을 생성합니다. |
+  %% 3) 콜백: 표준은 GET (code, state)
+  User->>API: GET /accounts/auth/{provider}/callback?code&state
+
+  %% 4) 서버-서버 토큰 교환 (PKCE면 code_verifier 포함)
+  API->>SOCIAL: POST /oauth/token { grant_type=authorization_code, code, redirect_uri, client_id, (client_secret|code_verifier) }
+  SOCIAL-->>API: 200 { access_token, id_token?, refresh_token? }
+
+  %% 5) (OIDC 또는 provider API) 사용자 정보 조회
+  API->>SOCIAL: GET /userinfo (또는 /me)
+  SOCIAL-->>API: 200 { sub/providerId, name?, email?, ... }
+
+  %% 6) 우리 서비스 토큰 발급 및 응답
+  API-->>User: 200 { accessToken, refreshToken, expiresIn, isNew? }
+
+  %% 7) 내 프로필 조회/생성 절차
+  User->>API: GET /accounts/users/me (Authorization: Bearer)
+  alt 가입/프로필 존재
+    API-->>User: 200 UserProfile
+  else 미가입 또는 미완료 프로필
+    API-->>User: 403 (또는 404/204 정책에 따라)
+    User->>API: POST /accounts/users/me { 필수 프로필 필드 }
+    API-->>User: 201 UserProfile
+    User->>API: GET /accounts/users/me
+    API-->>User: 200 UserProfile
+  end
+
+  %% 오류 분기 (참고)
+  alt state 불일치(CSRF 방어)
+    API-->>User: 400 Invalid state
+  else 토큰 교환 실패
+    API-->>User: 502 Token exchange failed
+  end
+```
