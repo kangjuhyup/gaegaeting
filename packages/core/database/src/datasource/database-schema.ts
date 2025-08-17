@@ -1,9 +1,10 @@
 import { UserOrmEntity } from "../entity/account/user";
 import { PetOrmEntity } from "../entity/account/pet";
-import { AuthOrmEntity, PetAttachmentOrmEntity, UserAttachmentOrmEntity } from "@app/entity";
+import { AuthOrmEntity, FeedItemOrmEntity, FeedOrmEntity, LikeOrmEntity, LocationOrmEntity, MainAreaOrmEntity, PairOrmEntity, PetAttachmentOrmEntity, UserAttachmentOrmEntity } from "@app/entity";
 
 export const DatabaseSchema = {
   USER: "USER",
+  MATCH: "MATCH"
 } as const;
 
 export type DatabaseSchema =
@@ -17,7 +18,7 @@ export type DatabaseSchema =
 export function getEntitiesBySchema(schema: DatabaseSchema[]): any[] {
   const entityMap = {
     [DatabaseSchema.USER]: [UserOrmEntity, PetOrmEntity, AuthOrmEntity, UserAttachmentOrmEntity, PetAttachmentOrmEntity],
-    // 다른 스키마에 따른 엔티티들을 추가할 수 있습니다.
+    [DatabaseSchema.MATCH]: [PairOrmEntity, LikeOrmEntity, FeedOrmEntity, FeedItemOrmEntity, LocationOrmEntity, MainAreaOrmEntity],
   };
 
   // 중복 엔티티 제거를 위해 Set 사용
