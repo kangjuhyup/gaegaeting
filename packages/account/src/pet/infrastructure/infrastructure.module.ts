@@ -3,14 +3,14 @@ import { Module, Provider } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { PetController } from "../../pet/infrastructure/presentation/pet/pet.controller";
 import { StorageModule } from "@core/storage";
-import { PetRepositoryPort } from "../domain/port/out/pet-repository.port";
+import { PetRepositoryPort } from "../domain/port/pet-repository.port";
 import { PetOrmRepository } from "./repository/pet";
 import { PetOrmMapper } from "./repository/mapper/pet-orm";
-import { PetStoragePort } from "../domain/port/out/pet-storage.port";
+import { PetStoragePort } from "../domain/port/pet-storage.port";
 import { PetStorageAdpater } from "./adapter/pet-storage.adpater";
 import { PetProfileOrmMapper } from "./repository/mapper/pet-profile-orm";
 import { HttpModule } from "@core/http";
-import { PetCertificationPort } from "../domain/port/out/pet-certification.port";
+import { PetCertificationPort } from "../domain/port/pet-certification.port";
 import { PetCertificationAdapter } from "./adapter/pet-certification.adapter";
 
 const providers : Provider[] = [

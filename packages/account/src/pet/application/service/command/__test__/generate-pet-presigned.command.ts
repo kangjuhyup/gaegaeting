@@ -1,8 +1,8 @@
-import { PetRepositoryPort } from "@app/pet/domain/port/out/pet-repository.port"
-import { PetStoragePort } from "@app/pet/domain/port/out/pet-storage.port"
+import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port"
+import { PetStoragePort } from "@app/pet/domain/port/pet-storage.port"
 import { GeneratePetPresignedUrlHandler } from '../generate-pet-presigned.command';
 import { mockPetRepositoryPort, mockPetStoragePort } from "../../__test__/mock";
-import { GeneratePetPresignedCommand } from "@app/pet/application/port/in/command/generate-pet-presigned.port";
+import { GeneratePetPresignedCommand } from "@app/pet/application/port/command/generate-pet-presigned.port";
 import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
 

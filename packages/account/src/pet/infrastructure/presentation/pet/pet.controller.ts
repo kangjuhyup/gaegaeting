@@ -4,13 +4,13 @@ import { PetResponse } from './dto/response/pet-response';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AccessGuard, UserGuard, UserParam, UserPrincipal } from '@core/auth';
-import { GetPetsQuery } from '@app/pet/application/port/in/query/get-pets.port';
-import { RegisterPetCommand } from '@app/pet/application/port/in/command/register-pet.port';
-import { GetPetQuery } from '@app/pet/application/port/in/query/get-pet.port';
+import { GetPetsQuery } from '@app/pet/application/port/query/get-pets.port';
+import { RegisterPetCommand } from '@app/pet/application/port/command/register-pet.port';
+import { GetPetQuery } from '@app/pet/application/port/query/get-pet.port';
 import { GetPresignedUrlResponse } from './dto/response/get-presgined.response';
-import { GeneratePetPresignedCommand } from '@app/pet/application/port/in/command/generate-pet-presigned.port';
+import { GeneratePetPresignedCommand } from '@app/pet/application/port/command/generate-pet-presigned.port';
 import { UpdatePetBody } from './dto/request/update-pet.request';
-import { UpdatePetCommand } from '@app/pet/application/port/in/command/update-pet.port';
+import { UpdatePetCommand } from '@app/pet/application/port/command/update-pet.port';
 
 @ApiTags('Account','Pet')
 @Controller('pets')

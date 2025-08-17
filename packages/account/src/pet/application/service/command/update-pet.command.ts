@@ -1,9 +1,9 @@
 import { CommandHandler } from "@nestjs/cqrs";
-import { UpdatePetCommand } from "../../port/in/command/update-pet.port";
-import { PetRepositoryPort } from "@app/pet/domain/port/out/pet-repository.port";
+import { UpdatePetCommand } from "../../port/command/update-pet.port";
+import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port";
 import { ICommandHandler } from "@nestjs/cqrs";
 import { PetEntity } from "@app/pet/domain/model/pet";
-import { PetCertificationPort } from "@app/pet/domain/port/out/pet-certification.port";
+import { PetCertificationPort } from "@app/pet/domain/port/pet-certification.port";
 
 @CommandHandler(UpdatePetCommand)
 export class UpdatePetHandler implements ICommandHandler<UpdatePetCommand> {

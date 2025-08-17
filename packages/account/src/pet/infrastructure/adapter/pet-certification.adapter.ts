@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PetCertificationPort } from "@app/pet/domain/port/out/pet-certification.port";
+import { PetCertificationPort } from "@app/pet/domain/port/pet-certification.port";
 import { FetchHttpClient } from "@core/http";
 import { ConfigService } from "@nestjs/config";
 import { PetCeritifcationResponse } from "./dto/pet-certification.dto";

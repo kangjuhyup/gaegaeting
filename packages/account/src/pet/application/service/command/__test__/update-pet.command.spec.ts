@@ -1,5 +1,5 @@
 import { UpdatePetHandler } from '../update-pet.command';
-import { UpdatePetCommand } from '../../../port/in/command/update-pet.port';
+import { UpdatePetCommand } from '../../../port/command/update-pet.port';
 import { PetEntity } from '@app/pet/domain/model/pet';
 import { UserPrincipal } from '@core/auth';
 import { PetBreed, PetGender, PetPersonality, PetSize } from '@app/pet/domain/enum/pet.enum';

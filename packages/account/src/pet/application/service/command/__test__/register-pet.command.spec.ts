@@ -1,5 +1,5 @@
 import { RegisterPetHandler } from '../register-pet.command';
-import { RegisterPetCommand } from '../../../port/in/command/register-pet.port';
+import { RegisterPetCommand } from '../../../port/command/register-pet.port';
 import { PetEntity } from '@app/pet/domain/model/pet';
 import { UserPrincipal } from '@core/auth';
 import { PetBreed, PetGender, PetPersonality, PetSize } from '@app/pet/domain/enum/pet.enum';

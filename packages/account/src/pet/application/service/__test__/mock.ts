@@ -1,6 +1,6 @@
-import { PetRepositoryPort } from "@app/pet/domain/port/out/pet-repository.port";
-import { PetStoragePort } from "@app/pet/domain/port/out/pet-storage.port";
-import { PetCertificationPort } from "@app/pet/domain/port/out/pet-certification.port";
+import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port";
+import { PetStoragePort } from "@app/pet/domain/port/pet-storage.port";
+import { PetCertificationPort } from "@app/pet/domain/port/pet-certification.port";
 
 export const mockPetStoragePort = {
     getPresignedUrl : jest.fn(),

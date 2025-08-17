@@ -1,7 +1,7 @@
 import { CommandHandler } from "@nestjs/cqrs";
-import { GeneratePetPresignedCommand } from "../../port/in/command/generate-pet-presigned.port";
-import { PetStoragePort } from "@app/pet/domain/port/out/pet-storage.port";
-import { PetRepositoryPort } from "@app/pet/domain/port/out/pet-repository.port";
+import { GeneratePetPresignedCommand } from "../../port/command/generate-pet-presigned.port";
+import { PetStoragePort } from "@app/pet/domain/port/pet-storage.port";
+import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port";
 import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { ICommandHandler } from "@nestjs/cqrs";
 import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";

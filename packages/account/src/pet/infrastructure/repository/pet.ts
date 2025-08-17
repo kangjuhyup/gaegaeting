@@ -1,5 +1,5 @@
 import { PetEntity } from "@app/pet/domain/model/pet";
-import { PetRepositoryPort } from "@app/pet/domain/port/out/pet-repository.port";
+import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port";
 import { PetOrmEntity } from "@core/database";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";

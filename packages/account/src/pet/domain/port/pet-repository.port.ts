@@ -1,5 +1,5 @@
-import { PetEntity } from "../../model/pet";
-import { PetProfileEntity } from "../../model/pet-profile";
+import { PetEntity } from "../model/pet";
+import { PetProfileEntity } from "../model/pet-profile";
 
 export abstract class PetRepositoryPort {
     abstract insertPet(pet : PetEntity) : Promise<PetEntity>
