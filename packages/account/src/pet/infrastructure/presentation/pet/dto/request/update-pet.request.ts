@@ -28,4 +28,9 @@ export class UpdatePetBody {
   @IsString({ message: '설명은 문자열이어야 합니다.' })
   @IsOptional()
   description?: string;
+
+  @ApiProperty({ description : '반려동물 등록번호'})
+  @IsString({ message: '등록번호는 문자열이어야 합니다.' })
+  @IsOptional()
+  certificationCode?: string;
 }

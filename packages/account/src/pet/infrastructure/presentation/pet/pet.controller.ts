@@ -61,7 +61,7 @@ export class PetController {
     @Param('id') id: string,
     @Body() updatePetDto: UpdatePetBody,
   ): Promise<PetResponse> {
-    const pet = await this.commandBus.execute(new UpdatePetCommand(Number(id), updatePetDto));
+    const pet = await this.commandBus.execute(new UpdatePetCommand(Number(id), user, updatePetDto));
     return PetResponse.of(user.userId, [pet]);
   }
 

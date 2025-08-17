@@ -3,11 +3,13 @@ import { UpdatePetCommand } from "../../port/in/command/update-pet.port";
 import { PetRepositoryPort } from "@app/pet/domain/port/out/pet-repository.port";
 import { ICommandHandler } from "@nestjs/cqrs";
 import { PetEntity } from "@app/pet/domain/model/pet";
+import { PetCertificationPort } from "@app/pet/domain/port/out/pet-certification.port";
 
 @CommandHandler(UpdatePetCommand)
 export class UpdatePetHandler implements ICommandHandler<UpdatePetCommand> {
     constructor(
         private readonly petRepository: PetRepositoryPort,
+        private readonly petCeritifcationPort : PetCertificationPort,
     ) {}
 
     async execute(command: UpdatePetCommand): Promise<PetEntity> {
@@ -15,7 +17,14 @@ export class UpdatePetHandler implements ICommandHandler<UpdatePetCommand> {
         if (!pet) {
             throw new Error('반려동물을 찾을 수 없습니다.');
         }
-        pet.updateInfo(command.data);
+        if(command.data.certificationCode) {
+            const isCertificated = await this.petCeritifcationPort.checkCertifiaction(command.user.name, command.data.certificationCode);
+            if(!isCertificated){
+                throw new Error('등록번호와 등록증명이 일치하지 않습니다.');
+            }
+            pet.successCert();
+        }
+        pet.updateInfo(command.data)
         await this.petRepository.updatePet(pet);
         return pet;
     }
