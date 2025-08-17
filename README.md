@@ -2,6 +2,10 @@
 
 ![개개팅 로고](./docs/flow/logo.png)
 
+## 📚 API 문서
+
+[API Document 보러가기](https://kangjuhyup.github.io/gaegaeting/docs/#/)
+
 ## 🏗️ 바운디드 컨텍스트 구조
 
 ### 🔐 Account

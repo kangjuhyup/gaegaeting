@@ -2,7 +2,7 @@ import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
 
 @Entity('location')
 @Index('ix_lat_lng', ['latitude', 'longitude'])
-@Index('spx_location_point', { spatial: true })
+@Index('spx_location_point', ['locationPoint'], { spatial: true })
 export class LocationOrmEntity {
   @PrimaryColumn({ type: 'char', length: 26, name: 'user_id' })
   userId: string;
@@ -23,7 +23,7 @@ export class LocationOrmEntity {
   @Column({
     type: 'point',
     srid: 4326,
-    asExpression: 'ST_SRID(POINT(longitude, latitude), 4326)',
+    asExpression: "ST_GeomFromText(CONCAT('POINT(', longitude, ' ', latitude, ')'), 4326)",
     generatedType: 'STORED',
     name: 'location_point',
   })

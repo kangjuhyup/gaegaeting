@@ -18,7 +18,7 @@ export const envSpec = {
   DATABASE_PORT: { joi: Joi.number().required() },
   DATABASE_USERNAME: { joi: Joi.string().required() },
   DATABASE_PASSWORD: { joi: Joi.string().required() },
-  ACCOUNT_DATABASE_NAME: { joi: Joi.string().required() },
+  DATABASE_NAME: { joi: Joi.string().default('ggt_account') },
   PUBLIC_DATA_API_KEY: { joi: Joi.string().required() }
 } as const;
 
