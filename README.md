@@ -1,6 +1,6 @@
-# 개개팅 (GaeGaeTing) 서비스 문서
+# ![개개팅 로고](./docs//logo.png) 개개팅
 
-![개개팅 로고](./docs/flow/logo.png)
+
 
 ## 📚 API 문서
 
