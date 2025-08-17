@@ -10,16 +10,17 @@ import {
   IsString,
   MinLength,
   MaxLength,
-  IsEnum,
-  IsDateString,
   IsOptional,
   IsPhoneNumber,
   IsDate,
-  IsIn,
-  ValidateBy,
 } from "class-validator";
 
 export class CreateUserBody {
+
+  @ApiProperty({ description: '이름', required : true})
+  @IsString()
+  @IsNotEmpty()
+  name : string;
 
   @ApiProperty({ description : '이메일 주소', required : false})
   @IsEmail({}, { message: "유효한 이메일 형식이 아닙니다." })
@@ -70,6 +71,7 @@ export class CreateUserBody {
   toDomain(): UserEntity {
     return UserEntity.of({
       passwordHash: this.password,
+      name : this.name,
       nickname: this.nickname,
       gender: this.gender,
       birthDate: this.birthDate,

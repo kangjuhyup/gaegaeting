@@ -6,6 +6,7 @@ import { UserProfileEntity } from "./user-profile";
 
 
 interface IUser {
+  name : string;  
   email? : string;
   passwordHash?: string;
   nickname: string;
@@ -35,6 +36,10 @@ export class UserEntity extends PersistenceEntity<string, IUser> {
     return new UserEntity(param);
   }
   
+  get name(): string {
+    return this.etc.name;
+  }
+
   get email(): string {
     return this.etc.email;
   }

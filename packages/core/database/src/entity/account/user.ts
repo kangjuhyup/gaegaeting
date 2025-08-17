@@ -21,6 +21,11 @@ export class UserOrmEntity extends BaseEntity{
   id: string = ulid();
 
   /**
+   * 사용자 이름
+   */
+  @Column({ type : 'varchar', length: 50, nullable : false, name: 'name' })
+  name : string;
+  /**
    * 이메일
    */
   @Column({ type: 'varchar', length: 255, unique: true, name: 'email', nullable : true })
