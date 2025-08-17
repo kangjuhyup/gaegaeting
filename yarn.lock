@@ -8254,6 +8254,7 @@ __metadata:
   dependencies:
     "@core/auth": "npm:*"
     "@core/database": "npm:*"
+    "@core/model": "npm:*"
     "@nestjs/axios": "npm:^3.1.3"
     "@nestjs/cli": "npm:^10.0.0"
     "@nestjs/common": "npm:^10.0.0"

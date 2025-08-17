@@ -4,8 +4,8 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 @Index('uq_main_area_code', ['code'], { unique: true })
 @Index('ix_main_area_parent', ['parentCode'])
 export class MainAreaOrmEntity {
-  @PrimaryGeneratedColumn({ name: 'id' })
-  id: number;
+  @PrimaryGeneratedColumn({ name: 'user_id' })
+  userId: string;
 
   /** 행정/내부 코드 (예: SEOUL-GANGNAM) */
   @Column({ type: 'varchar', length: 64, nullable: false, name: 'code' })

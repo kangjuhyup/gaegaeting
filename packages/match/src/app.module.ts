@@ -5,7 +5,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { DatabaseModule, DatabaseSchema } from '@core/database';
 import { validationSchema } from './config/env.config';
 import { LikeApplicationModule } from "./like/application/like.application.module";
-import { PairApplicationModule } from "./\bpair/applicatoin/pair.application.module";
+import { PairApplicationModule } from "./pair/applicatoin/pair.application.module";
 import { FeedApplicationModule } from "./feed/application/feed.application.module";
 import { LocationApplicationModule } from "./location/application/location.application.module";
 

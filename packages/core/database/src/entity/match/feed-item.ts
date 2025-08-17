@@ -3,14 +3,14 @@ import { FeedOrmEntity } from './feed';
 
 @Entity('feed_item')
 @Index('ix_fi_state_exp', ['state', 'expiresAt'])
-@Index('ix_fi_candidate', ['userId']) // 후보(노출될) 유저 기준 조회/중복체크
+@Index('ix_fi_candidate', ['targetUserId']) // 후보(노출될) 유저 기준 조회/중복체크
 export class FeedItemOrmEntity {
   @PrimaryGeneratedColumn({ name: 'id' })
   id: number;
 
   /** 후보(노출될) 유저 ID */
-  @Column({ type: 'char', length: 26, nullable: false, name: 'user_id' })
-  userId: string;
+  @Column({ type: 'char', length: 26, nullable: false, name: 'target_user_id' })
+  targetUserId: string;
 
   /** 소속 배치 */
   @Column({ type: 'int', nullable: false, name: 'feed_id' })
