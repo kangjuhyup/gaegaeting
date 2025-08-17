@@ -33,6 +33,7 @@ export class AuthOrmRepository implements AuthRepositoryPort {
         if(ormEntity.user) {
             return {
                 userId : ormEntity.user.id,
+                name : ormEntity.user.name,
                 nickname : ormEntity.user.nickname,
                 birth : ormEntity.user.birthDate.toString(),
                 region : ormEntity.user.region,
