@@ -104,7 +104,7 @@ sequenceDiagram
 ```
 
 ### 파일업로드 플로우
-```
+```mermaid
 sequenceDiagram
   autonumber
   participant Client
