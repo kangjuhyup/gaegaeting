@@ -23,8 +23,10 @@
     "composite": true,
     "paths": {
       "@app/*": ["./src/*"],
-      "@auth/*": ["./src/auth/*"],
-      "@user/*": ["./src/user/*"]
+      "@location/*": ["./src/location/*"],
+      "@pair/*": ["./src/pair/*"],
+      "@like/*": ["./src/like/*"],
+      "@feed/*": ["./src/feed/*"],
     }
   }
 }
