@@ -15,6 +15,10 @@ export class FeedItemEntity extends PersistenceEntity<number,IFeedItem> {
         super(param)
     }
 
+    static of(param:IFeedItem) {
+        return new FeedItemEntity(param)
+    }
+
     get targetUserId() {
         return this.etc.targetUserId
     }
