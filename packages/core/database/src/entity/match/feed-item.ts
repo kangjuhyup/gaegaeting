@@ -1,10 +1,11 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { FeedOrmEntity } from './feed';
+import { BaseEntity } from '../base';
 
 @Entity('feed_item')
 @Index('ix_fi_state_exp', ['state', 'expiresAt'])
 @Index('ix_fi_candidate', ['targetUserId']) // 후보(노출될) 유저 기준 조회/중복체크
-export class FeedItemOrmEntity {
+export class FeedItemOrmEntity extends BaseEntity{
   @PrimaryGeneratedColumn({ name: 'id' })
   id: number;
 
