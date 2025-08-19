@@ -1,5 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { LikeOrmEntity } from './like';
+import { BaseEntity } from '../base';
 
 @Entity('pair')
 @Unique('uq_match_pair_active', ['leftUserId', 'rightUserId', 'active']) // 같은 쌍의 열린 매치 1건
@@ -7,7 +8,7 @@ import { LikeOrmEntity } from './like';
 @Index('ix_match_right_active', ['rightUserId', 'active', 'id'])
 @Index('ix_match_like_a', ['likeAId'])
 @Index('ix_match_like_b', ['likeBId'])
-export class PairOrmEntity {
+export class PairOrmEntity extends BaseEntity {
   @PrimaryGeneratedColumn({ name: 'id' })
   id: number;
 

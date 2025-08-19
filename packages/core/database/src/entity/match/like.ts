@@ -1,11 +1,12 @@
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { PairOrmEntity } from './pair';
+import { BaseEntity } from '../base';
 
 @Entity('like')
 @Unique('uq_like_edge', ['likerId', 'likeeId'])                  // 중복 Like 방지(멱등)
 @Index('ix_like_inbox', ['likeeId', 'active', 'id'])             // 나를 좋아한 사람 목록
 @Index('ix_like_outbox', ['likerId', 'active', 'id'])            // 내가 좋아한 목록
-export class LikeOrmEntity {
+export class LikeOrmEntity extends BaseEntity {
   @PrimaryGeneratedColumn({ name: 'id' })
   id: number;
 

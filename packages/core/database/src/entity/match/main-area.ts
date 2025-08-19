@@ -1,9 +1,10 @@
 import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity } from '../base';
 
 @Entity('main_area')
 @Index('uq_main_area_code', ['code'], { unique: true })
 @Index('ix_main_area_parent', ['parentCode'])
-export class MainAreaOrmEntity {
+export class MainAreaOrmEntity extends BaseEntity {
   @PrimaryGeneratedColumn({ name: 'user_id' })
   userId: string;
 

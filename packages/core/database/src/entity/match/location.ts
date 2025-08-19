@@ -1,9 +1,10 @@
 import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
+import { BaseEntity } from '../base';
 
 @Entity('location')
 @Index('ix_lat_lng', ['latitude', 'longitude'])
 @Index('spx_location_point', ['locationPoint'], { spatial: true })
-export class LocationOrmEntity {
+export class LocationOrmEntity extends BaseEntity {
   @PrimaryColumn({ type: 'char', length: 26, name: 'user_id' })
   userId: string;
 
