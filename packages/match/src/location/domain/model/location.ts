@@ -4,7 +4,6 @@ import { PersistenceEntity } from "@core/model";
  * Location 도메인 모델 인터페이스
  */
 interface ILocation {
-    userId: string;
     latitude: number;
     longitude: number;
     city?: string;
@@ -47,6 +46,10 @@ export class LocationEntity extends PersistenceEntity<string, ILocation> {
      */
     get district(): string | undefined {
         return this.etc.district;
+    }
+
+    static of(param:ILocation) : LocationEntity {
+        return new LocationEntity(param);
     }
 
     /**

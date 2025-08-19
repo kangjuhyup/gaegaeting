@@ -11,4 +11,20 @@ export class MainAreaEntity extends PersistenceEntity<string,IMainArea> {
     constructor(param:IMainArea) {
         super(param)
     }
+
+    get code() {
+        return this.etc.code;
+    }
+
+    get name() {
+        return this.etc.name;
+    }
+
+    get parentCode() {
+        return this.etc.parentCode;
+    }
+
+    static of(param : IMainArea) : MainAreaEntity {
+        return new MainAreaEntity(param);
+    }
 }
