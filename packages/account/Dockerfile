@@ -47,11 +47,5 @@ COPY --from=builder /app/packages/core ./packages/core
 ENV NODE_ENV=production
 RUN yarn workspaces focus account --production
 
-# 환경 변수 설정
-ENV PORT=3000
-
-# 헬스체크를 위한 포트 노출
-EXPOSE 3000
-
 # 애플리케이션 실행
 CMD ["node", "packages/account/dist/src/main.js"]
