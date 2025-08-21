@@ -24,9 +24,11 @@ export class LocationOrmEntity extends BaseEntity {
   @Column({
     type: 'point',
     srid: 4326,
-    asExpression: "ST_GeomFromText(CONCAT('POINT(', longitude, ' ', latitude, ')'), 4326)",
+    asExpression: 'ST_SRID(POINT(longitude, latitude), 4326)',
     generatedType: 'STORED',
     name: 'location_point',
+    insert: false,
+    update: false,
   })
   locationPoint?: any;
 }

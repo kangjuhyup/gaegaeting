@@ -85,6 +85,30 @@ services:
       retries: 10
     networks: [knet]
 
+  account:
+    image: ghcr.io/kangjuhyup/gaegaeting/account:latest   
+    container_name: ggt-account
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./env/account.env                      
+    networks: [knet]
+
+  match:
+    image: ghcr.io/kangjuhyup/gaegaeting/match:latest     
+    container_name: ggt-match
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "4001:4001"
+    env_file:
+      - ./env/match.env                        
+    networks: [knet]
+
 networks:
   knet:
     driver: bridge

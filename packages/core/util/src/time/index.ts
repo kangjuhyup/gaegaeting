@@ -1,1 +1,1 @@
-export * from "./kr.date";
+export * from "./date";

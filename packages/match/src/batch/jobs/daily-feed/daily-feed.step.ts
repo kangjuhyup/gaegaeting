@@ -3,12 +3,14 @@ import { DataSource } from "typeorm"
 import { DailyFeedReader } from "./daily-feed.reader"
 import { DailyFeedProcessor } from "./daily-feed.processor"
 import { DailyFeedWriter } from "./daily-feed.writer"
+import { YYYYMMDD } from "@core/util"
 
-export const dailyFeedStep = (ds : DataSource, date : string, slot : 1|2|3) => {
+export const dailyFeedStep = (ds : DataSource, date : YYYYMMDD, slot : 1|2|3) => {
+    const em = ds.createEntityManager();
     return new Step(
-        new DailyFeedReader(ds,1000),
-        new DailyFeedProcessor(ds, date, slot),
-        new DailyFeedWriter(ds, date, slot, new Date(date + 'T' + slot * 2 * 60 * 60 * 1000)),
+        new DailyFeedReader(em,1000),
+        new DailyFeedProcessor(em, date, slot),
+        new DailyFeedWriter(em, date, slot, date.add(1, 'day').toDate()),
         { name : `daily_feed_${slot}` , chunkSize : 200}
     )
 }

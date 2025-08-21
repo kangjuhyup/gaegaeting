@@ -2,15 +2,9 @@ import { CreateDateColumn, UpdateDateColumn } from "typeorm";
 
 export class BaseEntity {
 
-  /**
-   * 생성일시
-   */
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', default: () => 'CURRENT_TIMESTAMP(6)' })
   createdAt: Date;
-
-  /**
-   * 수정일시
-   */
-  @UpdateDateColumn({ name: 'updated_at' })
+  
+  @UpdateDateColumn({ name: 'updated_at', default: () => 'CURRENT_TIMESTAMP(6)', onUpdate: 'CURRENT_TIMESTAMP(6)' })
   updatedAt: Date;
 }

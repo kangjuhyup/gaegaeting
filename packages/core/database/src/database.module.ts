@@ -61,6 +61,7 @@ export class DatabaseModule {
               "DATABASE_SYNCHRONIZE",
               false,
             ),
+            legacySpatialSupport: false,
           }),
           inject: [ConfigService],
         }),

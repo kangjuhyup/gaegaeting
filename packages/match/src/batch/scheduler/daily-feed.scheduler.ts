@@ -1,6 +1,7 @@
 import { Cron } from "@nestjs/schedule";
 import { DataSource } from "typeorm";
 import { dailyFeedJob } from "../jobs/daily-feed/daily-feed.job";
+import { KrDateClass, YYYYMMDD } from "@core/util";
 
 export class DailyFeedScheduler {
 
@@ -24,7 +25,7 @@ export class DailyFeedScheduler {
     }
 
     private async runSlot(slot : 1|2|3) {
-        const date = new Date().toISOString().slice(0, 10);
-        await dailyFeedJob(this.ds,date,slot).run();
+        const date = KrDateClass.toYYYYMMDD();
+        await dailyFeedJob(this.ds, date, slot).run();
     }
 }
