@@ -111,35 +111,33 @@ jobs:
             export DOPPLER_TOKEN="${DOPPLER_TOKEN}"
 
             # --- 3) env 파일 생성 위치
-            APP_DIR=$(dirname "${DOCKER_COMPOSE_REMOTE_PATH}")
-
             echo "[DEBUG] APP_DIR=${DOCKER_COMPOSE_REMOTE_PATH}"
-            mkdir -p "${APP_DIR}/env"
+            mkdir -p "${DOCKER_COMPOSE_REMOTE_PATH}/env"
 
             # account
             if [ -n "${DOPPLER_PROJECT:-}" ]; then
-              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${APP_DIR}/env/account.env"
+              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/account.env"
             else
-              doppler secrets download --project app --config account-prd --format docker --no-file > "${APP_DIR}/env/account.env"
+              doppler secrets download --project app --config account-prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/account.env"
             fi
 
             # match
             if [ -n "${DOPPLER_PROJECT:-}" ]; then
-              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${APP_DIR}/env/match.env"
+              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match.env"
             else
-              doppler secrets download --project app --config match-prd --format docker --no-file > "${APP_DIR}/env/match.env"
+              doppler secrets download --project app --config match-prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match.env"
             fi
 
             # match-batch
             if [ -n "${DOPPLER_PROJECT:-}" ]; then
-              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${APP_DIR}/env/match-batch.env"
+              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match-batch.env"
             else
-              doppler secrets download --project app --config match-batch-prd --format docker --no-file > "${APP_DIR}/env/match-batch.env"
+              doppler secrets download --project app --config match-batch-prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match-batch.env"
             fi
 
             # --- 4) 최신 이미지 pull & 재기동
-            docker compose -f "${DOCKER_COMPOSE_REMOTE_PATH}" pull
-            docker compose -f "${DOCKER_COMPOSE_REMOTE_PATH}" up -d
+            docker compose -f "${DOCKER_COMPOSE_REMOTE_PATH}/docker-compose.yml" pull
+            docker compose -f "${DOCKER_COMPOSE_REMOTE_PATH}//docker-compose.yml" up -d
 
             # (선택) 오래된 dangling 이미지/레이어 정리
             docker image prune -f || true
