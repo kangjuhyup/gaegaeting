@@ -26,14 +26,14 @@ jobs:
             context: .
             dockerfile: packages/account/Dockerfile
             image: account
-          - name: match
-            context: .
-            dockerfile: packages/match/Dockerfile
-            image: match
-          - name: match-batch
-            context: .
-            dockerfile: packages/match/Dockerfile.batch
-            image: match-batch
+          # - name: match
+          #   context: .
+          #   dockerfile: packages/match/Dockerfile
+          #   image: match
+          # - name: match-batch
+          #   context: .
+          #   dockerfile: packages/match/Dockerfile.batch
+          #   image: match-batch
 
     steps:
       - uses: actions/checkout@v4
@@ -52,29 +52,29 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # # monorepo라면 루트에서 의존성 캐시
-      # - name: Yarn install (for copy/build steps inside Docker if needed)
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 20
-      #     cache: 'yarn'
-      # - run: yarn install --immutable
+      - name: Yarn install (for copy/build steps inside Docker if needed)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
 
-      # - name: Build & Push ${{ matrix.name }}
-      #   uses: docker/build-push-action@v6
-      #   with:
-      #     context: ${{ matrix.context }}
-      #     file: ${{ matrix.dockerfile }}
-      #     push: true
-      #     platforms: linux/amd64,linux/arm64
-      #     tags: |
-      #       ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:latest
-      #       ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ github.sha }}
-      #     labels: |
-      #       org.opencontainers.image.source=${{ github.repository }}
-      #       org.opencontainers.image.revision=${{ github.sha }}
-      #     # ⚠️ build-time 시크릿이 필요하다면 아래 secrets 블록과 Dockerfile의 --mount=type=secret 사용
-      #     # secrets: |
-      #     #   id=doppler,env=DOPPLER_TOKEN
+      - name: Build & Push ${{ matrix.name }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          # ⚠️ build-time 시크릿이 필요하다면 아래 secrets 블록과 Dockerfile의 --mount=type=secret 사용
+          # secrets: |
+          #   id=doppler,env=DOPPLER_TOKEN
 
   deploy:
     runs-on: ubuntu-latest
