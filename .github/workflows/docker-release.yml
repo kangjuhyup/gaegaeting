@@ -51,30 +51,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # monorepo라면 루트에서 의존성 캐시
-      - name: Yarn install (for copy/build steps inside Docker if needed)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'yarn'
-      - run: yarn install --immutable
+      # # monorepo라면 루트에서 의존성 캐시
+      # - name: Yarn install (for copy/build steps inside Docker if needed)
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: 20
+      #     cache: 'yarn'
+      # - run: yarn install --immutable
 
-      - name: Build & Push ${{ matrix.name }}
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ github.sha }}
-          labels: |
-            org.opencontainers.image.source=${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-          # ⚠️ build-time 시크릿이 필요하다면 아래 secrets 블록과 Dockerfile의 --mount=type=secret 사용
-          # secrets: |
-          #   id=doppler,env=DOPPLER_TOKEN
+      # - name: Build & Push ${{ matrix.name }}
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: ${{ matrix.context }}
+      #     file: ${{ matrix.dockerfile }}
+      #     push: true
+      #     platforms: linux/amd64,linux/arm64
+      #     tags: |
+      #       ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:latest
+      #       ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ github.sha }}
+      #     labels: |
+      #       org.opencontainers.image.source=${{ github.repository }}
+      #       org.opencontainers.image.revision=${{ github.sha }}
+      #     # ⚠️ build-time 시크릿이 필요하다면 아래 secrets 블록과 Dockerfile의 --mount=type=secret 사용
+      #     # secrets: |
+      #     #   id=doppler,env=DOPPLER_TOKEN
 
   deploy:
     runs-on: ubuntu-latest
@@ -98,7 +98,7 @@ jobs:
           DOPPLER_PROJECT: ${{ vars.DOPPLER_PROJECT }}
           DOCKER_COMPOSE_REMOTE_PATH: ${{ vars.DOCKER_COMPOSE_REMOTE_PATH }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${SSH_USER}@${SSH_HOST} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i key.pem ${SSH_USER}@${SSH_HOST} << EOF
             set -euo pipefail
 
             # --- 1) Docker 로그인 (GHCR)
@@ -111,33 +111,33 @@ jobs:
             export DOPPLER_TOKEN="${DOPPLER_TOKEN}"
 
             # --- 3) env 파일 생성 위치
-            APP_DIR=$(dirname "${DOCKER_COMPOSE_REMOTE_PATH}")
-            mkdir -p "${APP_DIR}/env"
+            echo "[DEBUG] APP_DIR=${DOCKER_COMPOSE_REMOTE_PATH}"
+            mkdir -p "${DOCKER_COMPOSE_REMOTE_PATH}/env"
 
             # account
             if [ -n "${DOPPLER_PROJECT:-}" ]; then
-              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${APP_DIR}/env/account.env"
+              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/account.env"
             else
-              doppler secrets download --project app --config account-prd --format docker --no-file > "${APP_DIR}/env/account.env"
+              doppler secrets download --project app --config account-prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/account.env"
             fi
 
             # match
             if [ -n "${DOPPLER_PROJECT:-}" ]; then
-              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${APP_DIR}/env/match.env"
+              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match.env"
             else
-              doppler secrets download --project app --config match-prd --format docker --no-file > "${APP_DIR}/env/match.env"
+              doppler secrets download --project app --config match-prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match.env"
             fi
 
             # match-batch
             if [ -n "${DOPPLER_PROJECT:-}" ]; then
-              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${APP_DIR}/env/match-batch.env"
+              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match-batch.env"
             else
-              doppler secrets download --project app --config match-batch-prd --format docker --no-file > "${APP_DIR}/env/match-batch.env"
+              doppler secrets download --project app --config match-batch-prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match-batch.env"
             fi
 
             # --- 4) 최신 이미지 pull & 재기동
-            docker compose -f "${DOCKER_COMPOSE_REMOTE_PATH}" pull
-            docker compose -f "${DOCKER_COMPOSE_REMOTE_PATH}" up -d
+            docker-compose -f "${DOCKER_COMPOSE_REMOTE_PATH}/docker-compose.yml" pull
+            docker-compose -f "${DOCKER_COMPOSE_REMOTE_PATH}//docker-compose.yml" up -d
 
             # (선택) 오래된 dangling 이미지/레이어 정리
             docker image prune -f || true
