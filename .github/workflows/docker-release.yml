@@ -96,6 +96,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
           DOPPLER_PROJECT: ${{ vars.DOPPLER_PROJECT }}
+          DOCKER_COMPOSE_REMOTE_PATH: ${{ vars.DOCKER_COMPOSE_REMOTE_PATH }}
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ${SSH_USER}@${SSH_HOST} << EOF
             set -euo pipefail
