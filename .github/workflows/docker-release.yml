@@ -136,8 +136,8 @@ jobs:
             fi
 
             # --- 4) 최신 이미지 pull & 재기동
-            docker compose -f "${DOCKER_COMPOSE_REMOTE_PATH}/docker-compose.yml" pull
-            docker compose -f "${DOCKER_COMPOSE_REMOTE_PATH}//docker-compose.yml" up -d
+            docker-compose -f "${DOCKER_COMPOSE_REMOTE_PATH}/docker-compose.yml" pull
+            docker-compose -f "${DOCKER_COMPOSE_REMOTE_PATH}//docker-compose.yml" up -d
 
             # (선택) 오래된 dangling 이미지/레이어 정리
             docker image prune -f || true
