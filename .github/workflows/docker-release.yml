@@ -112,6 +112,8 @@ jobs:
 
             # --- 3) env 파일 생성 위치
             APP_DIR=$(dirname "${DOCKER_COMPOSE_REMOTE_PATH}")
+
+            echo "[DEBUG] APP_DIR=$APP_DIR"
             mkdir -p "${APP_DIR}/env"
 
             # account
