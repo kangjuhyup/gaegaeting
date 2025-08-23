@@ -1,0 +1,29 @@
+{
+    "include": ["./src"],
+    "extends" : "../../../tsconfig.json",
+    "compilerOptions": {
+      "outDir": "./dist",
+      "module": "commonjs",
+      "declaration": true,
+      "removeComments": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "allowSyntheticDefaultImports": true,
+      "target": "ES2021",
+      "sourceMap": true,
+      "incremental": true,
+      "skipLibCheck": true,
+      "strictNullChecks": false,
+      "noImplicitAny": false,
+      "strictBindCallApply": false,
+      "forceConsistentCasingInFileNames": false,
+      "noFallthroughCasesInSwitch": false,
+      "baseUrl": "./",
+      "moduleResolution": "node",
+      "composite": true,
+      "paths": {
+        "@app/*": ["./src/*"]
+      }
+    }
+}
+  
