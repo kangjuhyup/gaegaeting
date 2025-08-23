@@ -7,7 +7,6 @@ import { UserOrmMapper } from "./mapper/user-orm";
 import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 import { UserProfileOrmMapper } from "./mapper/user-profile-orm";
-import { AuthProviderPrincipal } from "@core/auth";
 
 @Injectable()
 export class UserOrmRepository implements UserRepositoryPort {

@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { PetController } from "../../pet/infrastructure/presentation/pet/pet.controller";
 import { StorageModule } from "@core/storage";
 import { PetRepositoryPort } from "../domain/port/pet-repository.port";
-import { PetOrmRepository } from "./repository/pet";
+import { PetOrmRepository } from "./repository/pet.orm.repository";
 import { PetOrmMapper } from "./repository/mapper/pet-orm";
 import { PetStoragePort } from "../domain/port/pet-storage.port";
 import { PetStorageAdpater } from "./adapter/pet-storage.adpater";

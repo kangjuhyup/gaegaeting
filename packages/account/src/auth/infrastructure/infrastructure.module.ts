@@ -1,6 +1,6 @@
 import { Logger, Module, Provider } from "@nestjs/common";
 import { AuthRepositoryPort } from "../domain/port/auth-repository.port";
-import { AuthOrmRepository } from "./repository/auth.repository";
+import { AuthOrmRepository } from "./repository/auth.orm.repository";
 import { AuthController } from "./presentation/auth/auth.controller";
 import { GoogleAuthAdapter } from "./adapter/google-auth.adapter";
 import { KakaoAuthAdapter } from "./adapter/kakao-auth.adapter";
