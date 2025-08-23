@@ -1421,6 +1421,8 @@ __metadata:
     "@types/node": "npm:^20.3.1"
     "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
     "@typescript-eslint/parser": "npm:^6.0.0"
+    class-transformer: "npm:^0.5.1"
+    class-validator: "npm:^0.14.2"
     eslint: "npm:^8.42.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.2.1"
@@ -1438,6 +1440,8 @@ __metadata:
     typescript: "npm:^5.8.3"
     webpack: "npm:^5.97.1"
   peerDependencies:
+    class-transformer: ^0.5.1
+    class-validator: ^0.14.2
     rxjs: ^7.8.1
     tslib: ^2.7.0
   languageName: unknown
@@ -4265,6 +4269,7 @@ __metadata:
     "@core/logger": "npm:*"
     "@core/model": "npm:*"
     "@core/storage": "npm:*"
+    "@core/util": "npm:*"
     "@nestjs/axios": "npm:^3.1.3"
     "@nestjs/cli": "npm:^10.0.0"
     "@nestjs/common": "npm:^10.0.0"
@@ -5073,7 +5078,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-validator@npm:^0.14.1":
+"class-validator@npm:^0.14.1, class-validator@npm:^0.14.2":
   version: 0.14.2
   resolution: "class-validator@npm:0.14.2"
   dependencies:
@@ -8290,6 +8295,7 @@ __metadata:
   dependencies:
     "@core/auth": "npm:*"
     "@core/database": "npm:*"
+    "@core/http": "npm:*"
     "@core/model": "npm:*"
     "@core/util": "npm:*"
     "@nestjs/axios": "npm:^3.1.3"

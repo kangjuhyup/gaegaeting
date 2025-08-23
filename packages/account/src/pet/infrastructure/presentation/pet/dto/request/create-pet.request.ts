@@ -1,4 +1,4 @@
-import { EnumTransformPipe } from "@app/common/pipes/enum-transform.pipe";
+import { EnumTransformPipe } from "@core/util";
 import { PetGender, PetBreed, PetSize, PetPersonality } from "@app/pet/domain/enum/pet.enum";
 import { PetEntity } from "@app/pet/domain/model/pet";
 import { ApiProperty } from "@nestjs/swagger";

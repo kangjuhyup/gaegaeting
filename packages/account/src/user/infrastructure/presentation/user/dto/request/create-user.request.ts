@@ -3,7 +3,7 @@ import { UserGender, UserRegion, UserStatus } from "@app/user/domain/enum/user.e
 import { UserEntity } from "@app/user/domain/model/user";
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { EnumTransformPipe } from "@app/common/pipes/enum-transform.pipe";
+import { EnumTransformPipe } from "@core/util";
 import {
   IsEmail,
   IsNotEmpty,

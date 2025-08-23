@@ -1,4 +1,4 @@
-import { EnumTransformPipe } from "@app/common/pipes/enum-transform.pipe";
+import { EnumTransformPipe } from "@core/util";
 import { UserGender, UserRegion } from "@app/user/domain/enum/user.enum";
 import { ApiProperty } from "@nestjs/swagger";
 import {

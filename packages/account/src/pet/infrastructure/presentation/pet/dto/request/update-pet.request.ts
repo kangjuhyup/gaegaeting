@@ -1,4 +1,4 @@
-import { EnumTransformPipe } from "@app/common/pipes/enum-transform.pipe";
+import { EnumTransformPipe } from "@core/util";
 import { PetPersonality } from "@app/pet/domain/enum/pet.enum";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString, MaxLength, IsOptional, IsNumber, Min, Max, IsArray, IsEnum } from "class-validator";
