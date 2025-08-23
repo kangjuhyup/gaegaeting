@@ -24,7 +24,8 @@
         "@core/auth/*": ["packages/core/auth/src/*"],
         "@core/storage/*": ["packages/core/storage/src/*"],
         "@core/logger/*": ["packages/core/logger/src/*"],
-        "@core/util/*": ["packages/core/util/src/*"]
+        "@core/util/*": ["packages/core/util/src/*"],
+        "@core/kafka/*": ["packages/core/kafka/src/*"]
       }
     }
   }

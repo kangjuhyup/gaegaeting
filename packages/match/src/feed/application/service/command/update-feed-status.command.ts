@@ -4,12 +4,15 @@ import { FeedRepositoryPort } from "@app/feed/domain/port/feed.repository.port";
 import { FeedItemEntity } from "@app/feed/domain/model/feed-item";
 import { FeedItemRepositoryPort } from "@app/feed/domain/port/feed-item.repository.port";
 import { FeedItemStatus } from "@app/feed/domain/enum/feed-item-status.enum";
+import { MessageRouter } from "../../service/message-router";
+import { Topics } from "../../topic";
 
 @CommandHandler(UpdateFeedItemStatusCommand)
 export class UpdateFeedItemStatusHandler implements ICommandHandler<UpdateFeedItemStatusCommand, FeedItemEntity> {
     
     constructor(
-        private readonly feedItemRepository : FeedItemRepositoryPort
+        private readonly feedItemRepository : FeedItemRepositoryPort,
+        private readonly messageRouter : MessageRouter
     ) {}
     
     async execute(command: UpdateFeedItemStatusCommand): Promise<FeedItemEntity> {
@@ -23,11 +26,12 @@ export class UpdateFeedItemStatusHandler implements ICommandHandler<UpdateFeedIt
                 break;
             case FeedItemStatus.LIKE:
                 feedItem.setLike()
+                await this.messageRouter.sendMessage(Topics.MATCH_FEED_LIKE_V1,feedItem)
                 break;
             case FeedItemStatus.PASS:
                 feedItem.setPass()
                 break;
         }
-        return this.feedItemRepository.updateFeedItem(feedItem)
+        return await this.feedItemRepository.updateFeedItem(feedItem)
     }
 }

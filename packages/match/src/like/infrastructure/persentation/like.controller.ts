@@ -7,16 +7,6 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 @UseGuards(AccessGuard,UserGuard) // 컨트롤러 전체에 가드 설정 
 export class LikeController {
 
-    @Post(':feedItemId')
-    @ApiOperation({ summary : 'Like 전송'})
-    @ApiBearerAuth('access-token')
-    async like(
-        @UserParam() user : UserPrincipal,
-        @Param('feedItemId') feedItemId : string
-    ) {
-        
-    }
-
     @Delete(':id')
     @ApiOperation({ summary : '기존 Like 취소'})
     @ApiBearerAuth('access-token')
