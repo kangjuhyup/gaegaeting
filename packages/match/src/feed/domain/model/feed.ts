@@ -1,9 +1,10 @@
 import { PersistenceEntity }from '@core/model'
 import { FeedItemEntity } from './feed-item';
+import { YYYYMMDD } from '@core/util';
 
 interface IFeed {
     userId : string;
-    date : string;
+    date : YYYYMMDD;
     slot : number;
     items? : FeedItemEntity[]
 }

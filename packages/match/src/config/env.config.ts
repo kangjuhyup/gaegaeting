@@ -12,6 +12,7 @@ export const envSpec = {
   DATABASE_USERNAME: { joi: Joi.string().required() },
   DATABASE_PASSWORD: { joi: Joi.string().required() },
   DATABASE_NAME: { joi: Joi.string().default('ggt_match') },
+  USER_SERVICE_HOST : { joi : Joi.string().required() }
 } as const;
 
 // 2) 타입과 상수 자동 추출

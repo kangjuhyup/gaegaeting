@@ -37,5 +37,5 @@ export class FeedItemOrmEntity extends BaseEntity{
 
   @ManyToOne(() => FeedOrmEntity, (feed) => feed.items, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'feed_id' })
-  feed!: FeedOrmEntity;
+  feed: FeedOrmEntity;
 }

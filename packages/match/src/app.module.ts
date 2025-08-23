@@ -8,6 +8,7 @@ import { LikeApplicationModule } from "./like/application/like.application.modul
 import { PairApplicationModule } from "./pair/applicatoin/pair.application.module";
 import { FeedApplicationModule } from "./feed/application/feed.application.module";
 import { LocationApplicationModule } from "./location/application/location.application.module";
+import { HttpModule } from "@core/http";
 
 @Module({
     imports : [
@@ -46,6 +47,10 @@ import { LocationApplicationModule } from "./location/application/location.appli
                 };
             },
         }),
+        HttpModule.forRoot({
+            timeout : 5000,
+            retryCount : 3,
+          }),
         LocationApplicationModule,
         FeedApplicationModule,
         LikeApplicationModule,
