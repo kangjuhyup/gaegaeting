@@ -20,6 +20,9 @@ export class UserResponse {
   @ApiProperty({ description: '전화번호' })
   private readonly phoneNumber: string;
 
+  @ApiProperty({ description : '프로필이미지' })
+  private readonly profileImages : string[]
+
   constructor(
     id: string,
     nickname: string,
@@ -27,6 +30,7 @@ export class UserResponse {
     region: string,
     bio: string,
     phoneNumber: string,
+    profileImages? : string[],
   ) {
     this.id = id;
     this.nickname = nickname;
@@ -34,6 +38,7 @@ export class UserResponse {
     this.region = region;
     this.bio = bio;
     this.phoneNumber = phoneNumber;
+    this.profileImages = profileImages;
   }
 
   static fromDomain(user: UserEntity): UserResponse {
@@ -44,6 +49,7 @@ export class UserResponse {
       user.region.label,
       user.bio,
       user.phoneNumber,
+      user.profiles?.map((p) => p.path)
     );
   }
 }

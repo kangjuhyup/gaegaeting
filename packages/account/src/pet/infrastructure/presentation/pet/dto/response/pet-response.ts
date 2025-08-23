@@ -29,6 +29,7 @@ class Pet {
     private readonly size : string
     private readonly personalities : string[]
     private readonly description : string
+    private readonly profileImages? : string[]
 
     constructor(
         id : number,
@@ -38,7 +39,8 @@ class Pet {
         breed : string,
         size : string,
         personalities : string[],
-        description : string
+        description : string,
+        profileImages? : string[]
     ) {
         this.id = id;
         this.name = name;
@@ -48,9 +50,10 @@ class Pet {
         this.size = size;
         this.personalities = personalities;
         this.description = description;
+        this.profileImages = profileImages;
     }
 
     static fromDomain(pet:PetEntity) {
-        return new Pet(pet.id, pet.name, pet.age, pet.gender.label, pet.breed.label, pet.size.label, pet.personalities.map((p) => p.label), pet.description)
+        return new Pet(pet.id, pet.name, pet.age, pet.gender.label, pet.breed.label, pet.size.label, pet.personalities.map((p) => p.label), pet.description, pet.profile?.map((p) => p.path))
     }
 }

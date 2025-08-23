@@ -67,4 +67,5 @@ export class PetEntity extends PersistenceEntity<number,IPet> {
   get userId(): string { return this.etc.userId; }
   get certificationCode() : string { return this.etc.certificationCode; }
   get isCertificated() : boolean { return this.etc.certification }
+  get profile() : PetProfileEntity[] { return this.etc.profiles; }
 }
