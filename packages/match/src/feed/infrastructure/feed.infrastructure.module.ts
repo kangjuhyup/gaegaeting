@@ -13,6 +13,10 @@ import { FeedItemOrmRepository } from "./repository/feed-item.orm.repository";
 import { FeedItemOrmMapper } from "./repository/mapper/feed-item-orm.mapper";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { KafkaProducerModule } from "@core/kafka";
+import { EventPublisherPort } from "../domain/port/event-publisher.port";
+import { EventPublisherAdapter } from "./adapter/event-publisher.adapter";
+import { KafkaProducerPort } from "../domain/port/kafka-producer.port";
+import { KafkaProducerAdapter } from "./adapter/kafka-producer.adapter";
 
 const providers : Provider[] = [
     FeedOrmMapper,
@@ -32,12 +36,23 @@ const providers : Provider[] = [
     {
         provide : UserApiPort,
         useClass : UserApiAdapter
+    },
+    {
+        provide : EventPublisherPort,
+        useClass : EventPublisherAdapter
+    },
+    {
+        provide : KafkaProducerPort,
+        useClass : KafkaProducerAdapter
     }
 ]
 
 @Module({
     imports : [
-        HttpModule.forService('FeedService'),
+        HttpModule.forService('Match-Feed', {
+            timeout : 5000,
+            retryCount : 3,
+        }),
         EventEmitterModule.forRoot(),
         KafkaProducerModule.forRoot({
             clientId: 'feed-service',

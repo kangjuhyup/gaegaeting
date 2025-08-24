@@ -19,7 +19,7 @@ export class KafkaProducerModule {
         const providers : Provider[] = [
             {
                 provide : KafkaProducerService,
-                useFactory : (options : KafkaModuleOptions) => new KafkaProducerService(options),
+                useFactory : () => new KafkaProducerService(options),
             }
         ]
         return {

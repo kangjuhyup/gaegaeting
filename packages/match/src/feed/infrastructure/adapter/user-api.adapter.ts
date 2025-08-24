@@ -2,12 +2,12 @@ import { ENV_KEY } from "@app/config/env.config";
 import { User } from "@app/feed/domain/model/vo/user";
 import { UserApiPort } from "@app/feed/domain/port/user-api.port";
 import { FetchHttpClient } from "@core/http";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
 @Injectable()
 export class UserApiAdapter implements UserApiPort {
     constructor(
-        private readonly fetchClient : FetchHttpClient
+        @Inject('HTTP_CLIENT_MATCH-FEED') private readonly fetchClient : FetchHttpClient
     ) {}
 
     async getUser(userId:string) : Promise<User> {

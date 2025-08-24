@@ -2,13 +2,13 @@ import { ENV_KEY } from "@app/config/env.config";
 import { Pet } from "@app/feed/domain/model/vo/pet";
 import { PetApiPort } from "@app/feed/domain/port/pet-api.port";
 import { FetchHttpClient } from "@core/http";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
 @Injectable()
 export class PetApiAdpater implements PetApiPort {
 
     constructor(
-        private readonly httpClient : FetchHttpClient
+        @Inject('HTTP_CLIENT_MATCH-FEED') private readonly httpClient : FetchHttpClient
     ){}
     
     async getPetsFromUser(userId:string) : Promise<Pet[]> {

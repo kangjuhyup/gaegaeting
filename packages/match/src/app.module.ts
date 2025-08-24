@@ -29,7 +29,12 @@ import { HttpModule } from "@core/http";
             inject : [ConfigService]
         },
             [DatabaseSchema.MATCH],
-        ),// 인증 모듈
+        ),
+        HttpModule.forRoot({
+            timeout : 5000,
+            retryCount : 3,
+          }),
+        // 인증 모듈
         JwtAuthModule.forRootAsync({
             imports : [ConfigModule],
             inject : [ConfigService],
@@ -47,10 +52,6 @@ import { HttpModule } from "@core/http";
                 };
             },
         }),
-        HttpModule.forRoot({
-            timeout : 5000,
-            retryCount : 3,
-          }),
         LocationApplicationModule,
         FeedApplicationModule,
         LikeApplicationModule,
