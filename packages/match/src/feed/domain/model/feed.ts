@@ -6,6 +6,7 @@ interface IFeed {
     userId : string;
     date : YYYYMMDD;
     slot : number;
+    expiresAt : Date;
     items? : FeedItemEntity[]
 }
 
@@ -29,6 +30,10 @@ export class FeedEntity extends PersistenceEntity<number, IFeed> {
 
     get slot(){
         return this.etc.slot
+    }
+
+    get expiresAt(){
+        return this.etc.expiresAt
     }
 
     get items(){

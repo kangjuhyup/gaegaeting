@@ -3,9 +3,9 @@ import { SaveLikeCommand } from "../../port/command/save-like.port";
 import { LikeEntity } from "@app/like/domain/model/like";
 import { LikeRepositoryPort } from "@app/like/domain/port/like.repository.port";
 import { Topics } from "@app/common/topic";
-import { KafkaProducerPort } from "@app/feed/domain/port/kafka-producer.port";
+import { KafkaProducerPort } from "@app/like/domain/port/kafka-producer.port";
 import { MatchPairCreatedV1Payload, NotificationFcmSendV1Payload } from "@app/common/payload";
-import { EventPublisherPort } from "@app/feed/domain/port/event-publisher.port";
+import { EventPublisherPort } from "@app/like/domain/port/event-publisher.port";
 
 @CommandHandler(SaveLikeCommand)
 export class SaveLikeHandler implements ICommandHandler<SaveLikeCommand,LikeEntity> {

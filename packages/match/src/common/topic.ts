@@ -5,6 +5,7 @@ export const Topics = {
     MATCH_FEED_LIKE_V1 : 'match.feed.like.v1',
     NOTIFICATION_FCM_SEND_V1 : 'notification.fcm.send.v1',
     MATCH_PAIR_CREATED_V1 : 'match.pair.created.v1',
+    MATCH_PAIR_REPORTED_V1 : 'match.pair.reported.v1',
     CHAT_ROOM_CREATED_V1 : 'chat.room.created.v1',
 } as const;
 
@@ -16,4 +17,5 @@ export interface TopicPayloadMap {
     [Topics.NOTIFICATION_FCM_SEND_V1]: NotificationFcmSendV1Payload;
     [Topics.MATCH_PAIR_CREATED_V1]: MatchPairCreatedV1Payload; // 추후 정의 필요
     [Topics.CHAT_ROOM_CREATED_V1]: any; // 추후 정의 필요
+    [Topics.MATCH_PAIR_REPORTED_V1]: any;
 }

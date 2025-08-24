@@ -5,10 +5,11 @@ import { LikeRepositoryPort } from '@app/like/domain/port/like.repository.port';
 import { ForbiddenException } from '@nestjs/common';
 import { LikeEntity } from '@app/like/domain/model/like';
 import { UserPrincipal } from '@core/auth';
+import { mockLikeRepository } from '../../__test__/mock';
 
 describe('CancelLikeHandler 단위 테스트', () => {
   let handler: CancelLikeHandler;
-  let likeRepositoryPort: jest.Mocked<LikeRepositoryPort>;
+  let likeRepositoryPort
 
   // 테스트용 모의 객체 및 데이터
   const mockUser = {
@@ -39,14 +40,7 @@ describe('CancelLikeHandler 단위 테스트', () => {
 
   beforeEach(async () => {
     // 모의 객체 설정
-    likeRepositoryPort = {
-      selectLikeFromId: jest.fn(),
-      updateLike: jest.fn(),
-      saveLike: jest.fn(),
-      selectLikeInFromUserId: jest.fn(),
-      selectLikeOutFromUserId: jest.fn()
-    } as jest.Mocked<LikeRepositoryPort>;
-
+    likeRepositoryPort = mockLikeRepository
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CancelLikeHandler,

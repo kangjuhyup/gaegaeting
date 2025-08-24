@@ -5,12 +5,24 @@ import { LikeOrmRepository } from "./adapter/outbound/persistence/like.orm.repos
 import { LikeOrmMapper } from "./adapter/outbound/persistence/mapper/like-orm.mapper";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { KafkaProducerModule } from "@core/kafka";
+import { KafkaProducerPort } from "../domain/port/kafka-producer.port";
+import { KafkaProducerAdapter } from "./adapter/outbound/event/kafka-producer.adapter";
+import { EventPublisherPort } from "../domain/port/event-publisher.port";
+import { EventPublisherAdapter } from "./adapter/outbound/event/event-publisher.adapter";
 
 const providers : Provider[] = [
     LikeOrmMapper,
     {
         provide : LikeRepositoryPort,
         useClass : LikeOrmRepository
+    },
+    {
+        provide : KafkaProducerPort,
+        useClass : KafkaProducerAdapter
+    },
+    {
+        provide : EventPublisherPort,
+        useClass : EventPublisherAdapter
     }
 ]
 

@@ -9,8 +9,6 @@ interface IFeedItem {
     state : number;
     showAt? : Date | null;
     actionAt? : Date | null;
-    expiresAt? : Date | null;
-
     location? : LocationEntity
     mainArea? : MainAreaEntity
 }
@@ -70,10 +68,6 @@ export class FeedItemEntity extends PersistenceEntity<number,IFeedItem> {
 
     get actionAt() {
         return this.etc.actionAt
-    }
-
-    get expiresAt() {
-        return this.etc.expiresAt
     }
 
     setDelivery() {
