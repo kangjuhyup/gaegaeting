@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { JwtAuthModule } from '@core/auth';
 import { DatabaseModule, DatabaseSchema } from '@core/database';
 import { HttpModule } from '@core/http';
+import { PetModule } from './pet/pet.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { HttpModule } from '@core/http';
     // 도메인 모듈
     UserModule,
     AuthModule,
+    PetModule
   ],
 })
 export class AppModule {}
