@@ -1,6 +1,5 @@
 import { FeedItemRepositoryPort } from "@app/feed/domain/port/feed-item.repository.port";
 import { FeedRepositoryPort } from "@app/feed/domain/port/feed.repository.port";
-import { MessageRouter } from "../message-router";
 import { UserApiPort } from "@app/feed/domain/port/user-api.port";
 import { PetApiPort } from "@app/feed/domain/port/pet-api.port";
 

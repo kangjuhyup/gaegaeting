@@ -1,13 +1,14 @@
 import { MessageRouter, RouteRule, RouteTarget } from '../message-router';
 import { EventPublisherPort } from '@app/feed/domain/port/event-publisher.port';
 import { KafkaProducerPort } from '@app/feed/domain/port/kafka-producer.port';
-import { Topics } from '../../topic';
+import { TopicPayloadMap, Topics } from '../../../../common/topic';
+import { MatchFeedLikeV1Payload } from '@app/common/payload';
 
 // 목 객체 클래스
 class MockEventPublisher implements EventPublisherPort {
   publishCalls: { topic: string; payload: any }[] = [];
   
-  async publish(topic: string, payload: any): Promise<void> {
+  async publish<T extends Topics>(topic: T, payload: TopicPayloadMap[T]): Promise<void> {
     this.publishCalls.push({ topic, payload });
   }
 }
@@ -15,7 +16,7 @@ class MockEventPublisher implements EventPublisherPort {
 class MockKafkaProducer implements KafkaProducerPort {
   produceCalls: { topic: string; payload: any }[] = [];
   
-  async produce(topic: string, payload: any): Promise<void> {
+  async produce<T extends Topics>(topic: T, payload: TopicPayloadMap[T]): Promise<void> {
     this.produceCalls.push({ topic, payload });
   }
 }
@@ -59,7 +60,7 @@ describe('MessageRouter 단위 테스트', () => {
     const topic = Topics.MATCH_FEED_LIKE_V1;
     
     // When
-    await messageRouter.sendMessage(topic, mockPayload);
+    await messageRouter.sendMessage(topic, new MatchFeedLikeV1Payload('','',0));
     
     // Then
     expect(eventPublisher.publishCalls.length).toBe(1);

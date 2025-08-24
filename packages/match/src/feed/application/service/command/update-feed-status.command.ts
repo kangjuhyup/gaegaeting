@@ -5,7 +5,8 @@ import { FeedItemEntity } from "@app/feed/domain/model/feed-item";
 import { FeedItemRepositoryPort } from "@app/feed/domain/port/feed-item.repository.port";
 import { FeedItemStatus } from "@app/feed/domain/enum/feed-item-status.enum";
 import { MessageRouter } from "../../service/message-router";
-import { Topics } from "../../topic";
+import { Topics } from "../../../../common/topic";
+import { MatchFeedLikeV1Payload } from "@app/common/payload";
 
 @CommandHandler(UpdateFeedItemStatusCommand)
 export class UpdateFeedItemStatusHandler implements ICommandHandler<UpdateFeedItemStatusCommand, FeedItemEntity> {
@@ -26,8 +27,7 @@ export class UpdateFeedItemStatusHandler implements ICommandHandler<UpdateFeedIt
                 break;
             case FeedItemStatus.LIKE:
                 feedItem.setLike()
-                await this.messageRouter.sendMessage(Topics.MATCH_FEED_LIKE_V1,feedItem)
-                await this.messageRouter.sendMessage(Topics.NOTIFICATION_FCM_SEND_V1,{ target : feedItem.targetUserId , type : 'LIKE' })
+                await this.messageRouter.sendMessage(Topics.MATCH_FEED_LIKE_V1,new MatchFeedLikeV1Payload(command.user.userId,feedItem.targetUserId,feedItem.id))
                 break;
             case FeedItemStatus.PASS:
                 feedItem.setPass()

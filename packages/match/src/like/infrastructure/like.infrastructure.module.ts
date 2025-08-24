@@ -1,11 +1,37 @@
 import { Module, Provider } from "@nestjs/common";
-import { LikeController } from "./persentation/like.controller";
+import { LikeController } from "./adapter/inbound/http/like.controller";
+import { LikeRepositoryPort } from "../domain/port/like.repository.port";
+import { LikeOrmRepository } from "./adapter/outbound/persistence/like.orm.repository";
+import { LikeOrmMapper } from "./adapter/outbound/persistence/mapper/like-orm.mapper";
+import { EventEmitterModule } from "@nestjs/event-emitter";
+import { KafkaProducerModule } from "@core/kafka";
 
-const providers : Provider[] = []
+const providers : Provider[] = [
+    LikeOrmMapper,
+    {
+        provide : LikeRepositoryPort,
+        useClass : LikeOrmRepository
+    }
+]
 
 @Module({
+    imports : [
+        EventEmitterModule.forRoot(),
+        KafkaProducerModule.forRoot({
+            clientId: "like-service",
+            brokers: ['localhost:9092'],
+            ssl: false,
+            sasl: null,
+            allowAutoTopicCreation: true,
+            defaultHeaders: {
+                'Content-Type': 'application/json',
+            },
+        })
+    ],
     controllers: [
         LikeController
-    ]
+    ],
+    providers,
+    exports : providers
 })
 export class LikeInfrastructureModule{}

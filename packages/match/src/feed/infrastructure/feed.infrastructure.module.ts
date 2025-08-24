@@ -1,22 +1,22 @@
 import { Module, Provider } from "@nestjs/common";
-import { FeedController } from "./persentation/feed.controller";
+import { FeedController } from "./adapter/inbound/http/feed.controller";
 import { FeedRepositoryPort } from "../domain/port/feed.repository.port";
 import { PetApiPort } from "../domain/port/pet-api.port";
-import { PetApiAdpater } from "./adapter/pet-api.adapter";
+import { PetApiAdpater } from "./adapter/outbound/api/pet-api.adapter";
 import { HttpModule } from "@core/http";
 import { UserApiPort } from "../domain/port/user-api.port";
-import { UserApiAdapter } from "./adapter/user-api.adapter";
-import { FeedOrmMapper } from "./repository/mapper/feed-orm.mapper";
-import { FeedOrmRepository } from "./repository/feed.orm.repository";
+import { UserApiAdapter } from "./adapter/outbound/api/user-api.adapter";
+import { FeedOrmMapper } from "./adapter/outbound/persistence/mapper/feed-orm.mapper";
+import { FeedOrmRepository } from "./adapter/outbound/persistence/feed.orm.repository";
 import { FeedItemRepositoryPort } from "../domain/port/feed-item.repository.port";
-import { FeedItemOrmRepository } from "./repository/feed-item.orm.repository";
-import { FeedItemOrmMapper } from "./repository/mapper/feed-item-orm.mapper";
+import { FeedItemOrmRepository } from "./adapter/outbound/persistence/feed-item.orm.repository";
+import { FeedItemOrmMapper } from "./adapter/outbound/persistence/mapper/feed-item-orm.mapper";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { KafkaProducerModule } from "@core/kafka";
 import { EventPublisherPort } from "../domain/port/event-publisher.port";
-import { EventPublisherAdapter } from "./adapter/event-publisher.adapter";
+import { EventPublisherAdapter } from "./adapter/outbound/event/event-publisher.adapter";
 import { KafkaProducerPort } from "../domain/port/kafka-producer.port";
-import { KafkaProducerAdapter } from "./adapter/kafka-producer.adapter";
+import { KafkaProducerAdapter } from "./adapter/outbound/event/kafka-producer.adapter";
 
 const providers : Provider[] = [
     FeedOrmMapper,

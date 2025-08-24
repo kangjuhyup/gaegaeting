@@ -32,4 +32,8 @@ export class LikeEntity extends PersistenceEntity<number,ILike> {
     get active() {
         return this.etc.active
     }
+
+    cancel() {
+        this.etc.active = false
+    }
 }

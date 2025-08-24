@@ -5,7 +5,7 @@ import { MessageRouter } from '../../message-router';
 import { UpdateFeedItemStatusCommand } from '../../../port/command/update-feed-status.port';
 import { FeedItemStatus } from '@app/feed/domain/enum/feed-item-status.enum';
 import { FeedItemEntity } from '@app/feed/domain/model/feed-item';
-import { Topics } from '../../../topic';
+import { Topics } from '../../../../../common/topic';
 import { UserPrincipal } from '@core/auth';
 import { mockFeedItemRepositoryPort, mockFeedRepsitoryPort } from '../../__test__/mock';
 import { FeedRepositoryPort } from '@app/feed/domain/port/feed.repository.port';

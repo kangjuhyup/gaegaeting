@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Topics } from "../topic";
+import { TopicPayloadMap, Topics } from "../../../common/topic";
 import { KafkaProducerPort } from "@app/feed/domain/port/kafka-producer.port";
 import { EventPublisherPort } from "@app/feed/domain/port/event-publisher.port";
 
@@ -22,7 +22,12 @@ export class MessageRouter {
         private readonly kafkaProducer : KafkaProducerPort
     ){}
 
-    async sendMessage(topic: Topics, payload: any): Promise<void> {
+    /**
+     * 토픽과 페이로드를 매칭하여 메시지를 전송합니다.
+     * @param topic 메시지 토픽
+     * @param payload 토픽에 매칭되는 페이로드
+     */
+    async sendMessage<T extends Topics>(topic: T, payload: TopicPayloadMap[T]): Promise<void> {
         const target = this.resolve(topic);
         if (target === 'event') {
           await this.eventPublisher.publish(topic, payload);
