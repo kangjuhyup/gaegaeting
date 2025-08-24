@@ -17,6 +17,7 @@ const providers : Provider[] = [
                     rules : [
                         { match: { prefix: 'match.' }, target: 'event' },
                         { match: { prefix: 'chat.' }, target: 'kafka' },
+                        { match: { prefix: 'notification.' }, target: 'kafka' },
                     ],
                     default : 'event',
                 },

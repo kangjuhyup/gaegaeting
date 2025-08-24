@@ -1,7 +1,7 @@
 import { AuthProvider } from '@core/auth';
+import { EnumTransformPipe } from '@core/util';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
-import { EnumTransformPipe } from '@app/common/pipes/enum-transform.pipe';
 
 export class SocialProviderDto {
   @ApiProperty({ 

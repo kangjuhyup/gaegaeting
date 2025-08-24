@@ -1,16 +1,14 @@
 import { Logger, Module, Provider } from "@nestjs/common";
 import { AuthRepositoryPort } from "../domain/port/auth-repository.port";
-import { AuthOrmRepository } from "./repository/auth.orm.repository";
-import { AuthController } from "./presentation/auth/auth.controller";
-import { GoogleAuthAdapter } from "./adapter/google-auth.adapter";
-import { KakaoAuthAdapter } from "./adapter/kakao-auth.adapter";
-import { NaverAuthAdapter } from "./adapter/naver-auth.adapter";
-import { AuthMapper } from "./repository/mapper/auth.mapper";
-import { DatabaseModule, DatabaseSchema } from "@core/database";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { AuthOrmRepository } from "./adapter/outbound/presistence/auth.orm.repository";
+import { AuthController } from "./adapter/inbound/http/auth/auth.controller";
+import { GoogleAuthAdapter } from "./adapter/outbound/api/google-auth.adapter";
+import { KakaoAuthAdapter } from "./adapter/outbound/api/kakao-auth.adapter";
+import { NaverAuthAdapter } from "./adapter/outbound/api/naver-auth.adapter";
+import { AuthMapper } from "./adapter/outbound/presistence/mapper/auth.mapper";
 import { HttpModule } from "@core/http";
 import { JwtPort } from "../domain/port/jwt.port";
-import { JwtAdpater } from "./adapter/jwt.adapter";
+import { JwtAdpater } from "./adapter/outbound/jwt.adapter";
 
 const providers : Provider[] = [
     // 매퍼 클래스

@@ -27,6 +27,7 @@ export class UpdateFeedItemStatusHandler implements ICommandHandler<UpdateFeedIt
             case FeedItemStatus.LIKE:
                 feedItem.setLike()
                 await this.messageRouter.sendMessage(Topics.MATCH_FEED_LIKE_V1,feedItem)
+                await this.messageRouter.sendMessage(Topics.NOTIFICATION_FCM_SEND_V1,{ target : feedItem.targetUserId , type : 'LIKE' })
                 break;
             case FeedItemStatus.PASS:
                 feedItem.setPass()

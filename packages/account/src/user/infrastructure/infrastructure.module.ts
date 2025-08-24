@@ -2,16 +2,16 @@ import { DatabaseModule, DatabaseSchema } from "@core/database";
 import { Module, Provider } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UserRepositoryPort } from "../domain/port/user-repository.port";
-import { UserOrmRepository } from "./repository/user.orm.repository";
-import { UserController } from "./presentation/user/user.controller";
-import { PetController } from "../../pet/infrastructure/presentation/pet/pet.controller";
+import { UserOrmRepository } from "./adapter/outbound/persistence/user.orm.repository";
+import { UserController } from "./adapter/inbound/http/user/user.controller";
+import { PetController } from "../../pet/infrastructure/adapter/inbound/http/pet/pet.controller";
 import { StorageModule } from "@core/storage";
-import { AuthInternalApiAdapter } from "./adapter/auth-internal-api.adpater";
+import { AuthInternalApiAdapter } from "./adapter/outbound/api/auth-internal-api.adpater";
 import { AuthInternalApiPort } from "../domain/port/auth-internal-api.port";
-import { AuthOrmRepository } from "@app/auth/infrastructure/repository/auth.orm.repository";
-import { AuthMapper } from "@app/auth/infrastructure/repository/mapper/auth.mapper";
+import { AuthOrmRepository } from "@app/auth/infrastructure/adapter/outbound/presistence/auth.orm.repository";
+import { AuthMapper } from "@app/auth/infrastructure/adapter/outbound/presistence/mapper/auth.mapper";
 import { UserStoragePort } from "../domain/port/user-storage.port";
-import { UserStorageAdapter } from "./adapter/user-storage.adapter";
+import { UserStorageAdapter } from "./adapter/outbound/api/user-storage.adapter";
 
 const providers : Provider[] = [
     {

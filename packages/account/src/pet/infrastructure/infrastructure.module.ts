@@ -1,17 +1,17 @@
 import { DatabaseModule, DatabaseSchema } from "@core/database";
 import { Module, Provider } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { PetController } from "../../pet/infrastructure/presentation/pet/pet.controller";
+import { PetController } from "./adapter/inbound/http/pet/pet.controller";
 import { StorageModule } from "@core/storage";
 import { PetRepositoryPort } from "../domain/port/pet-repository.port";
-import { PetOrmRepository } from "./repository/pet.orm.repository";
-import { PetOrmMapper } from "./repository/mapper/pet-orm";
+import { PetOrmRepository } from "./adapter/outbound/persistence/pet.orm.repository";
+import { PetOrmMapper } from "./adapter/outbound/persistence/mapper/pet-orm";
 import { PetStoragePort } from "../domain/port/pet-storage.port";
-import { PetStorageAdpater } from "./adapter/pet-storage.adpater";
-import { PetProfileOrmMapper } from "./repository/mapper/pet-profile-orm";
+import { PetStorageAdpater } from "./adapter/outbound/api/pet-storage.adpater";
+import { PetProfileOrmMapper } from "./adapter/outbound/persistence/mapper/pet-profile-orm";
 import { HttpModule } from "@core/http";
 import { PetCertificationPort } from "../domain/port/pet-certification.port";
-import { PetCertificationAdapter } from "./adapter/pet-certification.adapter";
+import { PetCertificationAdapter } from "./adapter/outbound/api/pet-certification.adapter";
 
 const providers : Provider[] = [
     PetOrmMapper,
