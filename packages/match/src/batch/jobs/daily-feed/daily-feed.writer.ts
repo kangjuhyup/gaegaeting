@@ -32,6 +32,7 @@ export class DailyFeedWriter implements ItemWriter<Candidate> {
               userId: viewerId,
               date: dateStr,
               slot: this.slot,
+              expiresAt: this.slotExpiresAt,
               createdAt: now,
               updatedAt: now,
             })),
@@ -62,7 +63,6 @@ export class DailyFeedWriter implements ItemWriter<Candidate> {
               feedId,
               targetUserId,
               state: 1,
-              expiresAt: this.slotExpiresAt,
               createdAt: now,
               updatedAt: now,
             });

@@ -60,7 +60,7 @@ export const createTestDataSource = async (): Promise<DataSource> => {
     database: 'ggt_test',
     entities: [PairOrmEntity, LikeOrmEntity, FeedOrmEntity, FeedItemOrmEntity, LocationOrmEntity, MainAreaOrmEntity],
     synchronize: true, // 테스트를 위해 스키마 동기화 활성화
-    dropSchema: true,
+    // dropSchema: true,
     legacySpatialSupport: false,
   });
 

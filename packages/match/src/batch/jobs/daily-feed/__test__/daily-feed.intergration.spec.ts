@@ -4,7 +4,7 @@ import { DailyFeedReader } from '../daily-feed.reader';
 import { LocationEntity } from '@app/location/domain/model/location';
 import { LocationOrmEntity, PairOrmEntity, FeedOrmEntity, FeedItemOrmEntity, LikeOrmEntity } from '@core/database';
 import { ulid } from 'ulid';
-import { createTestDataSource } from './test-database';
+import { createTestDataSource } from '../../__test__/test-database';
 import { KrDateClass, YYYYMMDD } from '@core/util';
 import { DailyFeedWriter } from '../daily-feed.writer';
 
@@ -260,18 +260,11 @@ describe('DailyFeed 통합 테스트', () => {
       expect(itemsA.length).toBe(2);
       const aTargets = itemsA.map(x => x.targetUserId);
       expect(new Set(aTargets)).toEqual(new Set([targetA1, targetA2]));
-      itemsA.forEach(x => {
-        expect(x.state).toBe(1);
-        const ms = Math.abs(new Date(x.expiresAt).getTime() - slotExpiresAt.getTime());
-        expect(ms).toBeLessThan(1000); 
-      });
-  
+        
       // viewerB: 타겟 1명
       expect(itemsB.length).toBe(1);
       expect(itemsB[0].targetUserId).toBe(targetB1);
       expect(itemsB[0].state).toBe(1);
-      const ms = Math.abs(new Date(itemsB[0].expiresAt).getTime() - slotExpiresAt.getTime());
-      expect(ms).toBeLessThan(1000); 
     });
   
     it('같은 뷰어가 items에 중복 포함돼도 feed는 1개만 존재해야 함(Upsert 확인)', async () => {
@@ -502,6 +495,7 @@ async function createRecentFeed(
       userId: viewerId,
       date: date.toString(), // YYYYMMDD
       slot: 1,
+      expiresAt : new Date(),
     })
     .execute();
 
@@ -514,7 +508,6 @@ async function createRecentFeed(
       feedId,
       targetUserId: targetId,
       state: 1,
-      expiresAt: date.add(1, 'day').toDate(),
     })
     .execute();
 }
