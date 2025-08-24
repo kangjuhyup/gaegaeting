@@ -3,7 +3,6 @@ import { FeedOrmEntity } from './feed';
 import { BaseEntity } from '../base';
 
 @Entity('feed_item')
-@Index('ix_fi_state_exp', ['state', 'expiresAt'])
 @Index('ix_fi_candidate', ['targetUserId']) // 후보(노출될) 유저 기준 조회/중복체크
 @Index('ix_fi_feed_target', ['feedId', 'targetUserId']) // 7일 중복 체크
 @Unique('uq_fi_feed_user', ['feedId','targetUserId']) // 중복 방지 유니크
@@ -30,10 +29,6 @@ export class FeedItemOrmEntity extends BaseEntity{
   /** LIKE/PASS/REPORT 등 액션 시각 */
   @Column({ type: 'datetime', nullable: true, name: 'action_at' })
   actionAt?: Date | null;
-
-  /** 슬롯 만료 시각(다음 슬롯 전) */
-  @Column({ type: 'datetime', nullable: false, name: 'expires_at' })
-  expiresAt: Date;
 
   @ManyToOne(() => FeedOrmEntity, (feed) => feed.items, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'feed_id' })
