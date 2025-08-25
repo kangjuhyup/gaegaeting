@@ -1,10 +1,12 @@
 import { UserOrmEntity } from "../entity/account/user";
 import { PetOrmEntity } from "../entity/account/pet";
 import { AuthOrmEntity, FeedItemOrmEntity, FeedOrmEntity, LikeOrmEntity, LocationOrmEntity, MainAreaOrmEntity, PairOrmEntity, PetAttachmentOrmEntity, UserAttachmentOrmEntity } from "@app/entity";
+import { ConversationOrmEntity, ParticipantOrmEntity, MessageOrmEntity, MessageAttachmentOrmEntity, MessageReceiptOrmEntity, MessageReactionOrmEntity } from "@app/entity/chat";
 
 export const DatabaseSchema = {
   USER: "USER",
-  MATCH: "MATCH"
+  MATCH: "MATCH",
+  CHAT : "CHAT",
 } as const;
 
 export type DatabaseSchema =
@@ -19,9 +21,10 @@ export function getEntitiesBySchema(schema: DatabaseSchema[]): any[] {
   const entityMap = {
     [DatabaseSchema.USER]: [UserOrmEntity, PetOrmEntity, AuthOrmEntity, UserAttachmentOrmEntity, PetAttachmentOrmEntity],
     [DatabaseSchema.MATCH]: [PairOrmEntity, LikeOrmEntity, FeedOrmEntity, FeedItemOrmEntity, LocationOrmEntity, MainAreaOrmEntity],
+    [DatabaseSchema.CHAT]: [ConversationOrmEntity, ParticipantOrmEntity, MessageOrmEntity, MessageAttachmentOrmEntity, MessageReceiptOrmEntity, MessageReactionOrmEntity],
   };
 
-  // 중복 엔티티 제거를 위해 Set 사용
+  // 중복 엔티티  제거를 위해 Set 사용
   const entitySet = new Set<any>();
   
   schema.forEach(s => {
