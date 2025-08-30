@@ -28,3 +28,6 @@ mariadb
 mysql
 
 docker-compose.release.yml
+
+# Claude Code documentation (auto-generated)
+CLAUDE.md
