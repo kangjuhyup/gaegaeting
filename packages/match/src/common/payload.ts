@@ -75,3 +75,27 @@ export class MatchPairCreatedV1Payload {
         return this._likeBId;
     }
 }
+
+export class ChatRoomCreatedV1Payload {
+    private readonly _leftUserId : string;
+    private readonly _rightUserId : string;
+    private readonly _pairId : number;
+
+    constructor(leftUserId : string, rightUserId : string, pairId : number) {
+        this._leftUserId = leftUserId;
+        this._rightUserId = rightUserId;
+        this._pairId = pairId;
+    }
+
+    get leftUserId() : string {
+        return this._leftUserId;
+    }
+
+    get rightUserId() : string {
+        return this._rightUserId;
+    }
+
+    get pairId() : number {
+        return this._pairId;
+    }
+}
