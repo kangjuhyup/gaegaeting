@@ -42,8 +42,8 @@ class FeedItemResponse {
             item.detail.user.id,
             item.detail.user.nickname,
             item.detail.user.profile,
-            item.detail.pets ? item.detail.pets[0].id : undefined,
-            item.detail.pets ? item.detail.pets[0].profileImages[0] : undefined
+            item.detail.pets && item.detail.pets.length > 0 ? item.detail.pets[0].id : undefined,
+            item.detail.pets && item.detail.pets.length > 0 && item.detail.pets[0].profileImages && item.detail.pets[0].profileImages.length > 0 ? item.detail.pets[0].profileImages[0] : undefined
         )
     }
 }

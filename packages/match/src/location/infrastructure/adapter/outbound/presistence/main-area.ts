@@ -20,8 +20,9 @@ export class MainAreaOrmRepository implements MainAreaRepositoryPort {
         return MainAreaOrmMapper.toDomain(insertedMainArea);
     }
     
-    async selectMainAreaFromUserId(userId: string): Promise<MainAreaEntity> {
+    async selectMainAreaFromUserId(userId: string): Promise<MainAreaEntity | null> {
         const orm = await this.mainAreaRepository.findOneBy({ userId });
+        if(!orm) return; 
         return MainAreaOrmMapper.toDomain(orm);
     }
 }

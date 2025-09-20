@@ -12,6 +12,11 @@ export class SetMainAreaHandler implements ICommandHandler<SetMainAreaCommand,Ma
     ) {}
 
     async execute(command: SetMainAreaCommand): Promise<MainAreaEntity> {
-        return await this.mainAreaRepositoryPort.saveMainArea(command.mainArea)
+        const mainArea = new MainAreaEntity({
+            code : command.code,
+            name : command.name,
+            parentCode : command.parentCode
+        },command.user.userId)
+        return await this.mainAreaRepositoryPort.saveMainArea(mainArea)
     }
 }

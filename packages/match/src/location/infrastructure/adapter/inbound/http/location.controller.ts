@@ -26,7 +26,7 @@ export class LocationController {
         @UserParam() user : UserPrincipal,
         @Body() body : SetMainAreaBody
     ) {
-        await this.commandBus.execute(new SetMainAreaCommand(user,body.toModel()))
+        await this.commandBus.execute(new SetMainAreaCommand(user,body.code,body.name,body.parentCode))
         return true;
     }
 

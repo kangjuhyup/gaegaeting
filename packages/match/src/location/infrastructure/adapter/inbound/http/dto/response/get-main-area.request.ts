@@ -9,14 +9,18 @@ export class GetMainAreaResponse {
     @ApiProperty({ description : '지역이름' })
     private readonly name : string;
 
-    @ApiProperty({ description : '지역상위코드' })
-    private readonly parentCode : string;
+    @ApiProperty({ description : '지역상위코드', nullable: true })
+    private readonly parentCode? : string;
 
     constructor(
         code : string,
         name : string,
         parentCode : string,
-    ) {}
+    ) {
+        this.code = code;
+        this.name = name;
+        this.parentCode = parentCode;
+    }
 
     static fromModel(model:MainAreaEntity) : GetMainAreaResponse {
         return new GetMainAreaResponse(model.code,model.name,model.parentCode)

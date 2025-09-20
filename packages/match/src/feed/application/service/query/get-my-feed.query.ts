@@ -19,14 +19,26 @@ export class GetMyFeedHandler implements IQueryHandler<GetMyFeedQuery,FeedEntity
     async execute(query: GetMyFeedQuery): Promise<FeedEntity[]> {
         const date = YYYYMMDD.today()
         const feedList = await this.feedRepository.getMyFeedWithItems(query.user.userId,date)    
-        await Promise.all(feedList.map(async feed => {
-            feed.items?.forEach(async item => {
-                const user = await this.userApiPort.getUser(item.targetUserId);
-                const pet = await this.petApiPort.getPetsFromUser(item.targetUserId)
-                item.detail = new ItemDetail(user,pet)
-            })
-        }))
-        return feedList
+        const feedWithUserPetList = await Promise.all(feedList.map(async feed => {
+            if (feed.items) {
+                feed.items = await Promise.all(feed.items.map(async item => {
+                    try {
+                        const user = await this.userApiPort.getUser(item.targetUserId);
+                        const pet = await this.petApiPort.getPetsFromUser(item.targetUserId);
+                        if (user && pet) {
+                            item.detail = new ItemDetail(user, pet);
+                        }
+                        return item;
+                    } catch (error) {
+                        console.error(`Error fetching user/pet data for ${item.targetUserId}:`, error);
+                        return item;
+                    }
+                }));
+            }
+            return feed;
+        }));
+        
+        return feedWithUserPetList;
     }
     
     

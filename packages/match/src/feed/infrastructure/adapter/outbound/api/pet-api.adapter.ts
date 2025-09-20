@@ -25,8 +25,9 @@ export class PetApiAdpater implements PetApiPort {
                 description : string,
                 profileImages? : string[],
             }[]
-        }>(`${ENV_KEY.USER_SERVICE_HOST}/pets/user/${userId}`);
-        
+        }>(`http://localhost:3000/pets/internal/user/${userId}`).catch(err => {
+            throw err;
+        });
         return response.data.pets.map((pet) => new Pet(pet.id,pet.name,pet.age,pet.gender,pet.breed,pet.size,pet.personalities,pet.description,pet.profileImages));
     }
 }

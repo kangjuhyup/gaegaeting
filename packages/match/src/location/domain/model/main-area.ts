@@ -8,8 +8,8 @@ interface IMainArea {
 
 export class MainAreaEntity extends PersistenceEntity<string,IMainArea> {
 
-    constructor(param:IMainArea) {
-        super(param)
+    constructor(param:IMainArea,userId?:string) {
+        super(param,userId)
     }
 
     get code() {

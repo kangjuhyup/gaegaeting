@@ -19,7 +19,7 @@ export class UserApiAdapter implements UserApiPort {
             bio: string,
             phoneNumber: string,
             profileImages? : string[],
-        }>(`${ENV_KEY.USER_SERVICE_HOST}/users/${userId}`);
+        }>(`http://localhost:3000/users/${userId}`);
         return new User(
             response.data.id,
             response.data.nickname,

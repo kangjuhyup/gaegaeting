@@ -9,6 +9,8 @@ import { PairApplicationModule } from "./pair/applicatoin/pair.application.modul
 import { FeedApplicationModule } from "./feed/application/feed.application.module";
 import { LocationApplicationModule } from "./location/application/location.application.module";
 import { HttpModule } from "@core/http";
+import { HttpLoggerModule } from "@core/logger";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 
 @Module({
     imports : [
@@ -20,6 +22,11 @@ import { HttpModule } from "@core/http";
               abortEarly: false,
             },
           }),
+        // HTTP 로깅
+        HttpLoggerModule.forRoot({
+            name: 'Match-API',
+            level: process.env.LOG_LEVEL || 'info',
+        }),
         CqrsModule.forRoot(),
             // DATABASE
         DatabaseModule.forRootAsync({
@@ -52,6 +59,8 @@ import { HttpModule } from "@core/http";
                 };
             },
         }),
+        EventEmitterModule.forRoot(),
+        
         LocationApplicationModule,
         FeedApplicationModule,
         LikeApplicationModule,

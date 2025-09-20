@@ -27,6 +27,7 @@ export class UpdateFeedItemStatusHandler implements ICommandHandler<UpdateFeedIt
                 break;
             case FeedItemStatus.LIKE:
                 feedItem.setLike()
+                console.log('sendMessage')
                 await this.messageRouter.sendMessage(Topics.MATCH_FEED_LIKE_V1,new MatchFeedLikeV1Payload(command.user.userId,feedItem.targetUserId,feedItem.id))
                 break;
             case FeedItemStatus.PASS:

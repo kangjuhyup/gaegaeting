@@ -1,6 +1,7 @@
 import { FeedEntity } from "@app/feed/domain/model/feed";
 import { FeedOrmEntity } from "@core/database";
 import { YYYYMMDD } from "@core/util";
+import { FeedItemOrmMapper } from "./feed-item-orm.mapper";
 
 export class FeedOrmMapper {
 
@@ -9,6 +10,8 @@ export class FeedOrmMapper {
             userId: orm.userId,
             date: new YYYYMMDD(orm.date),
             slot: orm.slot,
+            expiresAt : orm.expiresAt,
+            items : orm.items.map((item) => FeedItemOrmMapper.toDomain(item))
         }).setPersistence(orm.id,orm.createdAt,orm.updatedAt)
     }
 

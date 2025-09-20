@@ -6,7 +6,9 @@ export class SetMainAreaCommand extends Command<MainAreaEntity> {
 
     constructor(
         public readonly user : UserPrincipal,
-        public readonly mainArea : MainAreaEntity
+        public readonly code : string,
+        public readonly name : string,
+        public readonly parentCode? : string
     ) {
         super();
     }

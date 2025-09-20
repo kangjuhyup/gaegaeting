@@ -9,6 +9,7 @@ import { KafkaProducerPort } from "../domain/port/kafka-producer.port";
 import { KafkaProducerAdapter } from "./adapter/outbound/event/kafka-producer.adapter";
 import { EventPublisherPort } from "../domain/port/event-publisher.port";
 import { EventPublisherAdapter } from "./adapter/outbound/event/event-publisher.adapter";
+import { LikeEventHandler } from "./adapter/inbound/event/like.handler";
 
 const providers : Provider[] = [
     LikeOrmMapper,
@@ -23,12 +24,12 @@ const providers : Provider[] = [
     {
         provide : EventPublisherPort,
         useClass : EventPublisherAdapter
-    }
+    },
+    LikeEventHandler
 ]
 
 @Module({
     imports : [
-        EventEmitterModule.forRoot(),
         KafkaProducerModule.forRoot({
             clientId: "like-service",
             brokers: ['localhost:9092'],
@@ -41,7 +42,7 @@ const providers : Provider[] = [
         })
     ],
     controllers: [
-        LikeController
+        LikeController,
     ],
     providers,
     exports : providers

@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 // 1) envSpec만 한 군데서 관리
 export const envSpec = {
   NODE_ENV: { joi: Joi.string().valid('development', 'production', 'test').default('development') },
-  PORT: { joi: Joi.number().default(4000) },
+  PORT: { joi: Joi.number().default(3001) },
   JWT_SECRET: { joi: Joi.string().required() },
   JWT_ACCESS_EXPIRATION: { joi: Joi.string().default('1h') },
   JWT_REFRESH_EXPIRATION: { joi: Joi.string().default('30d') },
@@ -12,7 +12,7 @@ export const envSpec = {
   DATABASE_USERNAME: { joi: Joi.string().required() },
   DATABASE_PASSWORD: { joi: Joi.string().required() },
   DATABASE_NAME: { joi: Joi.string().default('ggt_match') },
-  USER_SERVICE_HOST : { joi : Joi.string().required() },
+  ACCOUNT_SERVICE_HOST : { joi : Joi.string().required().default('http://localhost:3000') },
   KAFKA_BROKERS : { joi : Joi.string().default('localhost:9092') },
 } as const;
 

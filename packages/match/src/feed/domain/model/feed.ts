@@ -20,6 +20,10 @@ export class FeedEntity extends PersistenceEntity<number, IFeed> {
         return new FeedEntity(param);
     }
 
+    set items(items : FeedItemEntity[]) {
+        this.etc.items = items
+    }
+
     get userId(){
         return this.etc.userId
     }
