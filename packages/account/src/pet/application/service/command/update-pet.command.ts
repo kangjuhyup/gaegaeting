@@ -4,6 +4,7 @@ import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port";
 import { ICommandHandler } from "@nestjs/cqrs";
 import { PetEntity } from "@app/pet/domain/model/pet";
 import { PetCertificationPort } from "@app/pet/domain/port/pet-certification.port";
+import { Transactional } from "@core/database";
 
 @CommandHandler(UpdatePetCommand)
 export class UpdatePetHandler implements ICommandHandler<UpdatePetCommand> {
@@ -12,6 +13,7 @@ export class UpdatePetHandler implements ICommandHandler<UpdatePetCommand> {
         private readonly petCeritifcationPort : PetCertificationPort,
     ) {}
 
+    @Transactional()
     async execute(command: UpdatePetCommand): Promise<PetEntity> {
         const pet = await this.petRepository.selectPetFromId(command.id);
         if (!pet) {

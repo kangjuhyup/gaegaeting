@@ -5,6 +5,7 @@ import { AuthEntity } from "@app/auth/domain/model/auth";
 import { SocialAuthProviderPort } from '@app/auth/domain/port/social-auth-provider.port';
 import { AuthProvider } from '@core/auth';
 import { AuthTokenService } from '../../service/auth-token.service';
+import { Transactional } from "@core/database";
 
 /**
  * 소셜 로그인 커맨드 핸들러    
@@ -37,6 +38,7 @@ export class SocialLoginHandler implements ICommandHandler<SocialLoginCommand, A
      * @param command 소셜 로그인 커맨드
      * @returns 인증 엔티티
      */
+    @Transactional()
     async execute(command: SocialLoginCommand): Promise<AuthEntity> {
         const { code, state } = command;
         

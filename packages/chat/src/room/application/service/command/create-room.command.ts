@@ -3,6 +3,7 @@ import { CreateRoomCommand } from "../../port/command/create-room.port";
 import { RoomEntity, RoomType } from "@app/room/domain/model/room";
 import { RoomRepositoryPort } from "@app/room/domain/port/room-repository.port";
 import { MemberEntity, MemberRole } from "@app/room/domain/model/member";
+import { Transactional } from "@core/database";
 
 @CommandHandler(CreateRoomCommand)
 export class CreateRoomHandler implements ICommandHandler<CreateRoomCommand, RoomEntity> {
@@ -10,6 +11,7 @@ export class CreateRoomHandler implements ICommandHandler<CreateRoomCommand, Roo
     private readonly roomRepository: RoomRepositoryPort
   ) {}
 
+  @Transactional()
   async execute(command: CreateRoomCommand): Promise<RoomEntity> {
     // Check if direct room already exists between users
     if (!command.title) {

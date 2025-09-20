@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { CancelLikeCommand } from "../../port/command/cancel-like.port";
 import { LikeRepositoryPort } from "@app/like/domain/port/like.repository.port";
 import { ForbiddenException } from "@nestjs/common";
+import { Transactional } from "@core/database";
 
 @CommandHandler(CancelLikeCommand)
 export class CancelLikeHandler implements ICommandHandler<CancelLikeCommand> {
@@ -10,6 +11,7 @@ export class CancelLikeHandler implements ICommandHandler<CancelLikeCommand> {
         private readonly likeRepository : LikeRepositoryPort
     ) {}
     
+    @Transactional()
     async execute(command: CancelLikeCommand): Promise<void> {
         const like = await this.likeRepository.selectLikeFromId(command.likeId)
         if(like.likeeId !== command.user.userId) {

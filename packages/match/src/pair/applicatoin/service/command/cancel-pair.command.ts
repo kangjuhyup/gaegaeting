@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { CancelPairCommand } from "../../port/command/cancel-pair.port";
 import { PairRepositoryPort } from "@app/pair/domain/port/pair.repository.port";
 import { ForbiddenException } from "@nestjs/common";
+import { Transactional } from "@core/database";
 
 @CommandHandler(CancelPairCommand)
 export class CancelPairHandler implements ICommandHandler<CancelPairCommand,void> {
@@ -10,6 +11,7 @@ export class CancelPairHandler implements ICommandHandler<CancelPairCommand,void
         private readonly pairRepository : PairRepositoryPort
     ) {}
 
+    @Transactional()
     async execute(command : CancelPairCommand) : Promise<void> {
         const pair = await this.pairRepository.selectPairFromId(command.pairId)
         if(command.user.userId !== (pair.leftUserId || pair.rightUserId)) {

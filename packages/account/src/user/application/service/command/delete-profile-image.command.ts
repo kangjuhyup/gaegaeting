@@ -4,6 +4,7 @@ import { ICommandHandler } from "@nestjs/cqrs";
 import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { UserStoragePort } from "@app/user/domain/port/user-storage.port";
 import { NotFoundException } from "@nestjs/common";
+import { Transactional } from "@core/database";
 
 @CommandHandler(DeleteProfileImageCommand)
 export class DeleteProfileImageHandler implements ICommandHandler<DeleteProfileImageCommand, void> {
@@ -13,6 +14,7 @@ export class DeleteProfileImageHandler implements ICommandHandler<DeleteProfileI
         private readonly userStoragePort : UserStoragePort
     ) {}
     
+    @Transactional()
     async execute(command: DeleteProfileImageCommand): Promise<void> {
         const profile = await this.userRepositoryPort.selectUserAttachment(command.userId, command.no);
         if(!profile) {

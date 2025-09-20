@@ -4,6 +4,7 @@ import { MessageEntity } from "@app/message/domain/model/message";
 import { MessageRepositoryPort } from "@app/message/domain/port/message-repository.port";
 import { RoomRepositoryPort } from "@app/room/domain/port/room-repository.port";
 import { RedisPubSubService } from "@core/redis";
+import { Transactional } from "@core/database";
 
 @CommandHandler(SendMessageCommand)
 export class SendMessageHandler implements ICommandHandler<SendMessageCommand, MessageEntity> {
@@ -13,6 +14,7 @@ export class SendMessageHandler implements ICommandHandler<SendMessageCommand, M
     private readonly pubSubService: RedisPubSubService
   ) {}
 
+  @Transactional()
   async execute(command: SendMessageCommand): Promise<MessageEntity> {
     // Verify room exists and user is member
     const room = await this.roomRepository.selectRoomFromIdWithMembers(command.roomId);

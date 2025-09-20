@@ -5,6 +5,7 @@ import { PairRepositoryPort } from "@app/pair/domain/port/pair.repository.port";
 import { KafkaProducerPort } from "@app/pair/domain/port/kafka-producer.port";
 import { Topics } from "@app/common/topic";
 import { ChatRoomCreatedV1Payload } from "@app/common/payload";
+import { Transactional } from "@core/database";
 
 @CommandHandler(SavePairCommand)
 export class SavePairHandler implements ICommandHandler<SavePairCommand,PairEntity> {
@@ -13,6 +14,7 @@ export class SavePairHandler implements ICommandHandler<SavePairCommand,PairEnti
         private readonly kafkaProducer : KafkaProducerPort
     ) {}
 
+    @Transactional()
     async execute(command : SavePairCommand) : Promise<PairEntity> {
         const pair = PairEntity.of({
             leftUserId: command.leftUserId,

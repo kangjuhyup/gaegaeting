@@ -6,6 +6,7 @@ import { Topics } from "@app/common/topic";
 import { KafkaProducerPort } from "@app/like/domain/port/kafka-producer.port";
 import { MatchPairCreatedV1Payload, NotificationFcmSendV1Payload } from "@app/common/payload";
 import { EventPublisherPort } from "@app/like/domain/port/event-publisher.port";
+import { Transactional } from "@core/database";
 
 @CommandHandler(SaveLikeCommand)
 export class SaveLikeHandler implements ICommandHandler<SaveLikeCommand,LikeEntity> {
@@ -16,6 +17,7 @@ export class SaveLikeHandler implements ICommandHandler<SaveLikeCommand,LikeEnti
         private readonly eventPublisher : EventPublisherPort
     ) {}
     
+    @Transactional()
     async execute(command: SaveLikeCommand): Promise<LikeEntity> {
         const like = LikeEntity.of({
             likerId : command.likerId,

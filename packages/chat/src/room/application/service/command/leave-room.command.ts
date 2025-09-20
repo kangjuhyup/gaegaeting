@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { LeaveRoomCommand } from "../../port/command/leave-room.port";
 import { RoomRepositoryPort } from "@app/room/domain/port/room-repository.port";
+import { Transactional } from "@core/database";
 
 @CommandHandler(LeaveRoomCommand)
 export class LeaveRoomHandler implements ICommandHandler<LeaveRoomCommand, void> {
@@ -8,6 +9,7 @@ export class LeaveRoomHandler implements ICommandHandler<LeaveRoomCommand, void>
     private readonly roomRepository: RoomRepositoryPort
   ) {}
 
+  @Transactional()
   async execute(command: LeaveRoomCommand): Promise<void> {
     const member = await this.roomRepository.selectMemberFromRoomAndUser(command.roomId, command.userId);
     if (!member || !member.isActive()) {

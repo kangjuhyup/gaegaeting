@@ -3,6 +3,7 @@ import { RegisterPetCommand } from "../../port/command/register-pet.port";
 import { PetEntity } from "@app/pet/domain/model/pet";
 import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port";
 import { PetCertificationPort } from "@app/pet/domain/port/pet-certification.port";
+import { Transactional } from "@core/database";
 
 @CommandHandler(RegisterPetCommand)
 export class RegisterPetHandler implements ICommandHandler<RegisterPetCommand,PetEntity> {
@@ -11,6 +12,7 @@ export class RegisterPetHandler implements ICommandHandler<RegisterPetCommand,Pe
         private readonly petRepository : PetRepositoryPort,
         private readonly petCeritifcationPort : PetCertificationPort
     ) {}
+    @Transactional()
     async execute(command: RegisterPetCommand): Promise<PetEntity> {
         if(command.pet.certificationCode){
             const isCertificated = await this.petCeritifcationPort.checkCertifiaction(command.user.name, command.pet.certificationCode);

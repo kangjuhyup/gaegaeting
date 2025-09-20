@@ -3,6 +3,7 @@ import { CreateUserCommand } from "../../port/command/create-user.port";
 import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { UserEntity } from "@app/user/domain/model/user";
 import { AuthInternalApiPort } from "@app/user/domain/port/auth-internal-api.port";
+import { Transactional } from "@core/database";
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand, UserEntity> {
@@ -11,6 +12,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand, Use
     private readonly authInternalApiPort : AuthInternalApiPort
   ) {}
 
+  @Transactional()
   async execute(command: CreateUserCommand): Promise<UserEntity> {
     const existsUser = await this.userRepository.selectUserFromAuthProvider(
       command.providerType,

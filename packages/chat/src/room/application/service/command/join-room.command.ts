@@ -2,6 +2,7 @@ import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { JoinRoomCommand } from "../../port/command/join-room.port";
 import { RoomRepositoryPort } from "@app/room/domain/port/room-repository.port";
 import { MemberEntity } from "@app/room/domain/model/member";
+import { Transactional } from "@core/database";
 
 @CommandHandler(JoinRoomCommand)
 export class JoinRoomHandler implements ICommandHandler<JoinRoomCommand, void> {
@@ -9,6 +10,7 @@ export class JoinRoomHandler implements ICommandHandler<JoinRoomCommand, void> {
     private readonly roomRepository: RoomRepositoryPort
   ) {}
 
+  @Transactional()
   async execute(command: JoinRoomCommand): Promise<void> {
     const room = await this.roomRepository.selectRoomFromId(command.roomId);
     if (!room) {

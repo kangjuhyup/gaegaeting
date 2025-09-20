@@ -5,6 +5,7 @@ import { LikeEntity } from "@app/like/domain/model/like";
 import { Topics } from "@app/common/topic";
 import { EventPublisherPort } from "@app/feed/domain/port/event-publisher.port";
 import { MatchPairCreatedV1Payload } from "@app/common/payload";
+import { Transactional } from "@core/database";
 
 @CommandHandler(AcceptLikeCommand)
 export class AcceptLikeHandler implements ICommandHandler<AcceptLikeCommand, void> {
@@ -14,6 +15,7 @@ export class AcceptLikeHandler implements ICommandHandler<AcceptLikeCommand, voi
         private readonly eventPublisher : EventPublisherPort
     ) {}
 
+    @Transactional()
     async execute(command: AcceptLikeCommand): Promise<void> {
         const like = await this.likeRepository.selectLikeFromId(command.likeId)
         const myLike = LikeEntity.of({

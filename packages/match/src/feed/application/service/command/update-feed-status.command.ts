@@ -7,6 +7,7 @@ import { FeedItemStatus } from "@app/feed/domain/enum/feed-item-status.enum";
 import { MessageRouter } from "../../service/message-router";
 import { Topics } from "../../../../common/topic";
 import { MatchFeedLikeV1Payload } from "@app/common/payload";
+import { Transactional } from "@core/database";
 
 @CommandHandler(UpdateFeedItemStatusCommand)
 export class UpdateFeedItemStatusHandler implements ICommandHandler<UpdateFeedItemStatusCommand, FeedItemEntity> {
@@ -16,6 +17,7 @@ export class UpdateFeedItemStatusHandler implements ICommandHandler<UpdateFeedIt
         private readonly messageRouter : MessageRouter
     ) {}
     
+    @Transactional()
     async execute(command: UpdateFeedItemStatusCommand): Promise<FeedItemEntity> {
         const feedItem = await this.feedItemRepository.getFeedItemFromId(command.id)
         switch(command.status) {

@@ -5,6 +5,7 @@ import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port";
 import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { ICommandHandler } from "@nestjs/cqrs";
 import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
+import { Transactional } from "@core/database";
 
 @CommandHandler(GeneratePetPresignedCommand)
 export class GeneratePetPresignedUrlHandler implements ICommandHandler<GeneratePetPresignedCommand,PresignedUrl> {
@@ -14,6 +15,7 @@ export class GeneratePetPresignedUrlHandler implements ICommandHandler<GenerateP
         private readonly petRepositoryPort : PetRepositoryPort
     ) {}
     
+    @Transactional()
     async execute(command: GeneratePetPresignedCommand): Promise<PresignedUrl> {
         const presignedUrl = await this.petStoragePort.getPresignedUrl(command.petId, command.no);
         const pet = PetProfileEntity.of({

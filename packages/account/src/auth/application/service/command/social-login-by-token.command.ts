@@ -5,6 +5,7 @@ import { SocialAuthProviderPort } from "@app/auth/domain/port/social-auth-provid
 import { AuthProvider } from "@core/auth";
 import { Inject } from "@nestjs/common";
 import { AuthTokenService } from "../../service/auth-token.service";
+import { Transactional } from "@core/database";
 
 @CommandHandler(SocialLoginByTokenCommand)
 export class SocialLoginByTokenHandler implements ICommandHandler<SocialLoginByTokenCommand> {
@@ -25,6 +26,7 @@ export class SocialLoginByTokenHandler implements ICommandHandler<SocialLoginByT
         });
     }
 
+    @Transactional()
     async execute(command: SocialLoginByTokenCommand): Promise<AuthEntity> {
         try {
             const provider = this.providersMap.get(command.provider);
