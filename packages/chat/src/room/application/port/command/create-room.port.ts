@@ -1,5 +1,5 @@
-import { RoomEntity } from "@app/room/domain/model/room";
 import { Command } from "@nestjs/cqrs";
+import { RoomEntity } from "../../../domain/model/room";
 
 export class CreateRoomCommand extends Command<RoomEntity> {
   constructor(
