@@ -41,7 +41,7 @@ export class StorageModule {
                 {
                     provide: StorageService,
                     useFactory: (storageOptions: StorageModuleOptions) => {
-                        return new StorageService(storageOptions.region, storageOptions.storageHost, storageOptions.bucket, storageOptions.prefix, storageOptions.accessKeyId, storageOptions.secretAccessKey);
+                        return new StorageService(storageOptions.region, storageOptions.storageHost, storageOptions.bucket, storageOptions.accessKeyId, storageOptions.secretAccessKey, storageOptions.prefix);
                     },
                     inject: [STORAGE_MODULE_OPTIONS]
                 },
@@ -72,7 +72,7 @@ export class StorageModule {
                 {
                     provide: StorageService,
                     useFactory: async (storageOptions: StorageModuleOptions) => {
-                        return new StorageService(storageOptions.region, storageOptions.storageHost, storageOptions.bucket, storageOptions.prefix, storageOptions.accessKeyId, storageOptions.secretAccessKey);
+                        return new StorageService(storageOptions.region, storageOptions.storageHost, storageOptions.bucket, storageOptions.accessKeyId, storageOptions.secretAccessKey, storageOptions.prefix, );
                     },
                     inject: [STORAGE_MODULE_OPTIONS]
                 },

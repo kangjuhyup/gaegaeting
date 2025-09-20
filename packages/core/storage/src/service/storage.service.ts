@@ -20,6 +20,12 @@ export class StorageService {
         private readonly secretAccessKey : string,
         private readonly prefix? : string,
     ){
+      console.log('region : ' , region)
+      console.log('storageHost : ' , storageHost)
+      console.log('bucket : ' , bucket)
+      console.log('accessKeyId : ' , accessKeyId)
+      console.log('secretAccessKey : ' , secretAccessKey)
+      console.log('prefix : ' , prefix)
         this.s3Client = new S3Client({
             region: this.region,
             endpoint: this.storageHost,

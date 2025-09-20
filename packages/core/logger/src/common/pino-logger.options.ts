@@ -17,27 +17,34 @@ export const createPinoLoggerOptions = (
 ): any => {
   const name = options?.name || 'App';
   const level = options?.level || 'info';
-  const pretty = options?.pretty ?? process.env.NODE_ENV !== 'production';
+  const pretty = options?.pretty ?? (process.env.NODE_ENV !== 'production');
 
   const pinoHttp: any = {
     name,
     level,
-    transport: pretty
-      ? {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            levelFirst: true,
-            translateTime: 'yyyy-mm-dd HH:MM:ss',
-          },
-        }
-      : undefined,
     formatters: {
       level: (label) => {
         return { level: label };
       },
     },
   };
+
+  // pretty 모드일 때만 transport 설정
+  if (pretty) {
+    try {
+      pinoHttp.transport = {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          levelFirst: true,
+          translateTime: 'yyyy-mm-dd HH:MM:ss',
+        },
+      };
+    } catch (error) {
+      // pino-pretty가 설치되지 않은 경우 일반 JSON 로그로 fallback
+      console.warn('pino-pretty not available, falling back to JSON logging');
+    }
+  }
 
   return {
     pinoHttp,

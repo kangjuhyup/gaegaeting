@@ -7,9 +7,13 @@ export abstract class PersistenceEntity<PK,PERSISTENCE_PROPS> {
     #updatedAt : Date;
 
     protected constructor(
-        etc : PERSISTENCE_PROPS
+        etc : PERSISTENCE_PROPS,
+        id? : PK
     ) {
-        this.etc = etc
+        this.etc = etc;
+        if (id !== undefined) {
+            this.#id = id;
+        }
     }
 
     get id() : PK {

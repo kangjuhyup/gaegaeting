@@ -17,7 +17,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       secretOrKey: secret,
     });
-    console.log('JwtStrategy secret : ' , secret)
   }
 
   /**

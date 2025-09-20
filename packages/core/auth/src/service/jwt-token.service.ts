@@ -13,7 +13,6 @@ export class JwtTokenService {
     private readonly expiresIn: number,
     private readonly refreshExpiresIn: number
   ) {
-    console.log("JwtTokenService secret : ", secret);
   }
 
   /**
@@ -52,7 +51,6 @@ export class JwtTokenService {
         secret: this.secret,
       });
     } catch (error) {
-      console.log(error);
       throw new UnauthorizedException("유효하지 않은 토큰입니다.");
     }
   }
