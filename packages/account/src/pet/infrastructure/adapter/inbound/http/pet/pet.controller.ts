@@ -82,7 +82,15 @@ export class PetController {
   @Get('user/:userId')
   async findPetsByUserId(@UserParam() user : UserPrincipal, @Param('userId') userId: string): Promise<any> {
     const pets = await this.queryBus.execute(new GetPetsQuery(userId));
-    return PetResponse.of(user.userId, pets);
+    return PetResponse.of(userId, pets);
+  }
+
+  @ApiOperation({ summary : '특정 사용자의 반려동물 목록 조회' })
+  @ApiBearerAuth('access-token')
+  @Get('/internal/user/:userId')
+  async findInternalPetsByUserId(@Param('userId') userId: string): Promise<any> {
+    const pets = await this.queryBus.execute(new GetPetsQuery(userId));
+    return PetResponse.of(userId, pets);
   }
 
   @Post(':id/images/:no')

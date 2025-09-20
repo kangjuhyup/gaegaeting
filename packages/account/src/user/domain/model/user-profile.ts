@@ -5,14 +5,19 @@ interface IProfile {
     active : boolean;
 }
 
-export class UserProfileEntity extends PersistenceEntity<{ userId : string, no : number },IProfile> {
+interface Pk {
+    userId : string,
+    no : number
+}
 
-    private constructor(param : IProfile) {
-        super(param);
+export class UserProfileEntity extends PersistenceEntity<Pk,IProfile> {
+
+    private constructor(param : IProfile, pk?: Pk) {
+        super(param,pk);
     }
 
-    static of(param : IProfile) {
-        return new UserProfileEntity(param);
+    static of(param : IProfile,pk?:Pk) {
+        return new UserProfileEntity(param,pk);
     }
 
     get path() {

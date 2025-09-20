@@ -29,6 +29,7 @@ export class UserOrmMapper {
             birthDate: orm.birthDate,
             region: UserRegion.from(orm.region),
             phoneNumber: orm.phoneNumber,
+            bio : orm.bio,
             status: UserStatus.from(orm.status),
             profiles : orm.attachments?.map(a => UserProfileEntity.of({
                 path : a.path,
@@ -51,6 +52,7 @@ export class UserOrmMapper {
         // ID 설정
         userOrm.id = userEntity.id || ulid();
         // 기본 정보 설정
+        userOrm.name = userEntity.name;
         userOrm.email = userEntity.email;
         userOrm.passwordHash = userEntity.passwordHash;
         userOrm.nickname = userEntity.nickname;

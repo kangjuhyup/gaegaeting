@@ -3,6 +3,7 @@ import { UserEntity } from "@app/user/domain/model/user";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { UserStoragePort } from '../../../domain/port/user-storage.port';
+import { NotFoundException } from "@nestjs/common";
 
 @QueryHandler(GetUserQuery)
 export class GetUserHandler implements IQueryHandler<GetUserQuery, UserEntity> {
@@ -15,7 +16,7 @@ export class GetUserHandler implements IQueryHandler<GetUserQuery, UserEntity> {
   async execute(query: GetUserQuery): Promise<UserEntity> {
     const user = await this.userRepository.selectUserFromIdWithProfiles(query.id);
     if (!user) {
-      throw new Error("존재하지 않는 사용자입니다.");
+      throw new NotFoundException("프로필을 찾을 수 없습니다.");
     }
     if(user.hasProfiles()) {
       await Promise.all(user.profiles.map(async (profile) => {
@@ -32,6 +33,7 @@ export class GetUserHandler implements IQueryHandler<GetUserQuery, UserEntity> {
         user.removeUnActiveProfiles()
       }))
     }
+    console.log(user)
     return user;
   }
 }

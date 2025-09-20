@@ -1,6 +1,13 @@
 import { AuthToken } from "@app/auth/domain/model/auth-token";
+import { AuthProvider } from "@core/auth";
+import { EnumTransformPipe } from "@core/util";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+
+export class SocialLogInNativeParam {
+    @EnumTransformPipe(AuthProvider)
+    provider : AuthProvider
+}
 
 export class SocialLoginNativeBody {
  @ApiProperty({ description : '소셜에서 발급받은 액세스토큰', required : true })

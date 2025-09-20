@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { PetCertificationPort } from "@app/pet/domain/port/pet-certification.port";
 import { FetchHttpClient } from "@core/http";
 import { ConfigService } from "@nestjs/config";
@@ -10,7 +10,7 @@ export class PetCertificationAdapter implements PetCertificationPort {
     private readonly URL = 'https://apis.data.go.kr/1543061/animalInfoSrvc_v3';
     private readonly API_KEY : string;
     constructor(
-        private readonly fetchClient : FetchHttpClient,
+        @Inject('HTTP_CLIENT_ACCOUNT-PET') private readonly fetchClient : FetchHttpClient,
         private readonly config : ConfigService
     ){
         this.API_KEY = this.config.get<string>('PUBLIC_DATA_API_KEY');

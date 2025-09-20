@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { JwtAuthModule } from '@core/auth';
 import { DatabaseModule, DatabaseSchema } from '@core/database';
 import { HttpModule } from '@core/http';
+import { HttpLoggerModule } from '@core/logger';
 import { PetModule } from './pet/pet.module';
 
 @Module({
@@ -19,6 +20,11 @@ import { PetModule } from './pet/pet.module';
         allowUnknown: true,
         abortEarly: false,
       },
+    }),
+    // HTTP 로깅
+    HttpLoggerModule.forRoot({
+      name: 'Account-API',
+      level: process.env.LOG_LEVEL || 'info',
     }),
     // DATABASE
     DatabaseModule.forRootAsync(

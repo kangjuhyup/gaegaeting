@@ -18,6 +18,9 @@ export class GenerateUserPresignedUrlHandler implements ICommandHandler<Generate
         const profile = UserProfileEntity.of({
             path : presignedUrl.path,
             active : false,
+        }, {
+            userId : command.userId,
+            no : command.no
         });
         await this.userRepositoryPort.insertUserAttachment(profile);
         return presignedUrl;

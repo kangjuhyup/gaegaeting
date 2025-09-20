@@ -7,7 +7,9 @@ import { AuthTokenService } from "./service/auth-token.service";
 import { SocialLoginByTokenHandler } from "./service/command/social-login-by-token.command";
 
 const providers : Provider[] = [
-     // Query
+     // Service
+     AuthTokenService,
+  // Query
      SocialRedirectHandler,
      SocialRedirectHandler,   
      GetUserPrincipalHandler,
@@ -16,8 +18,7 @@ const providers : Provider[] = [
      SocialLoginHandler,
      SocialLoginByTokenHandler,
      
-     // Service
-     AuthTokenService,
+
 ]
 
 @Module({
