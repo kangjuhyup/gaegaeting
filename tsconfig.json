@@ -26,7 +26,7 @@
         "@core/logger/*": ["packages/core/logger/src/*"],
         "@core/util/*": ["packages/core/util/src/*"],
         "@core/kafka/*": ["packages/core/kafka/src/*"],
-        "@core/redis/*": ["packages/core/redis/src/*"]
+        "@core/redis/*": ["packages/core/redis/src/*"],
       }
     }
   }
