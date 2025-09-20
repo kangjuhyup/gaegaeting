@@ -18,6 +18,15 @@ export class FeedController {
         private readonly commandBus : CommandBus
     ) {}
 
+    @Post()
+    @ApiOperation({ summary : '피드 생성' })
+    @ApiBearerAuth('access-token')
+    async createFeed(
+        @UserParam() user : UserPrincipal
+    ) {
+        
+    }
+
     @Get('/daily')
     @ApiOperation({ summary : '일일 피드 목록 조회'})
     @ApiBearerAuth('access-token')
