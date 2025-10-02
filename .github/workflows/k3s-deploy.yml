@@ -105,7 +105,8 @@ jobs:
           fi
 
           ansible-playbook playbooks/site.yml $ANSIBLE_OPTS \
-            --extra-vars "k3s_token=${K3S_TOKEN} ansible_host=${K3S_SSH_HOST} ansible_user=${K3S_SSH_USER}"
+            --extra-vars "k3s_token=${K3S_TOKEN} ansible_host=${K3S_SSH_HOST} ansible_user=${K3S_SSH_USER}" \
+            --extra-vars "@group_vars/all.yml"
 
       - name: Verify cluster health
         if: success()
