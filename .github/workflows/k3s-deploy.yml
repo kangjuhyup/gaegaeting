@@ -93,12 +93,15 @@ jobs:
 
           ANSIBLE_OPTS="--inventory inventory/hosts.yml"
 
-          if [ "${{ inputs.tags }}" != "all" ]; then
-            ANSIBLE_OPTS="$ANSIBLE_OPTS --tags ${{ inputs.tags }}"
+          TAGS="${{ inputs.tags }}"
+          SKIP_TAGS="${{ inputs.skip_tags }}"
+
+          if [ -n "${TAGS}" ] && [ "${TAGS}" != "all" ]; then
+            ANSIBLE_OPTS="$ANSIBLE_OPTS --tags ${TAGS}"
           fi
 
-          if [ -n "${{ inputs.skip_tags }}" ]; then
-            ANSIBLE_OPTS="$ANSIBLE_OPTS --skip-tags ${{ inputs.skip_tags }}"
+          if [ -n "${SKIP_TAGS}" ]; then
+            ANSIBLE_OPTS="$ANSIBLE_OPTS --skip-tags ${SKIP_TAGS}"
           fi
 
           ansible-playbook playbooks/site.yml $ANSIBLE_OPTS \
