@@ -39,7 +39,8 @@
     - name: Configure ufw rules
       ufw:
         rule: "{{ item.rule }}"
-        port: "{{ item.port }}"
+        port: "{{ item.port.split('/')[0] }}"
+        proto: "{{ item.port.split('/')[1] }}"
         comment: "{{ item.comment | default('') }}"
       loop: "{{ system.firewall.rules }}"
       when: system.firewall.enabled | default(true)
