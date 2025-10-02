@@ -24,9 +24,9 @@ on:
 env:
   ANSIBLE_CONFIG: infra/k3s/ansible/ansible.cfg
   ANSIBLE_INVENTORY: infra/k3s/ansible/inventory/hosts.yml
-  K3S_SSH_HOST: ${{ secrets.K3S_HOST }}
-  K3S_SSH_USER: ${{ secrets.K3S_USER }}
-  K3S_SSH_KEY: ${{ secrets.K3S_SSH_KEY }}
+  K3S_SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+  K3S_SSH_USER: ${{ secrets.DEPLOY_USER }}
+  K3S_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
 
 jobs:
   deploy:
@@ -70,7 +70,7 @@ jobs:
           fi
 
           # Doppler에서 k3s 설정 가져오기
-          CONFIG_NAME="${{ inputs.environment == 'production' && 'k3s-prd' || 'k3s-stg' }}"
+          CONFIG_NAME="prod"
 
           if [ -n "${DOPPLER_PROJECT:-}" ]; then
             PROJECT="${DOPPLER_PROJECT}"
