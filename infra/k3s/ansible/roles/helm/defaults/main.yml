@@ -1,0 +1,61 @@
+---
+# Helm role default variables
+
+## Helm version
+helm_version: "v3.13.3"
+helm_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+
+## Helm charts to deploy
+helm_charts:
+  - name: mysql
+    enabled: true
+    namespace: database
+    create_namespace: true
+    chart_ref: bitnami/mysql
+    chart_version: "9.14.4"
+    values_file: "{{ playbook_dir }}/../../../helm/mysql/values.yaml"
+
+  - name: redis
+    enabled: true
+    namespace: database
+    create_namespace: true
+    chart_ref: bitnami/redis
+    chart_version: "18.4.0"
+    values_file: "{{ playbook_dir }}/../../../helm/redis/values.yaml"
+
+  - name: kafka
+    enabled: true
+    namespace: messaging
+    create_namespace: true
+    chart_ref: bitnami/kafka
+    chart_version: "26.4.3"
+    values_file: "{{ playbook_dir }}/../../../helm/kafka/values.yaml"
+
+  - name: elasticsearch
+    enabled: true
+    namespace: logging
+    create_namespace: true
+    chart_ref: elastic/elasticsearch
+    chart_version: "8.5.1"
+    values_file: "{{ playbook_dir }}/../../../helm/elk/values.yaml"
+
+  - name: argocd
+    enabled: true
+    namespace: argocd
+    create_namespace: true
+    chart_ref: argo/argo-cd
+    chart_version: "5.51.6"
+    values_file: "{{ playbook_dir }}/../../../helm/argocd/values.yaml"
+
+## Helm repositories
+helm_repos:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+  - name: elastic
+    url: https://helm.elastic.co
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+
+## Wait for deployments
+helm_wait: true
+helm_timeout: 600s

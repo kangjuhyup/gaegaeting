@@ -21,6 +21,9 @@
       tags: [system, preparation]
     - role: k3s
       tags: [k3s, kubernetes]
+    - role: helm
+      tags: [helm, apps]
+      when: k3s_node_role | default('server') == 'server'
     - role: monitoring
       tags: [monitoring]
       when: monitoring.enabled | default(false)
