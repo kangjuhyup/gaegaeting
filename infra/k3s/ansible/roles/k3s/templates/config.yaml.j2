@@ -2,7 +2,7 @@
 # k3s configuration file
 {% if k3s_node_role | default('server') == 'server' %}
 # Server configuration
-token: "{{ k3s.token }}"
+token: "{{ k3s_token }}"
 data-dir: "{{ k3s.data_dir }}"
 write-kubeconfig-mode: "0644"
 {% if k3s_server_init | default(false) %}
@@ -26,22 +26,12 @@ disable:
 # Logging
 log: "/var/log/k3s/k3s.log"
 
-# Additional server arguments
-{% for arg in k3s.extra_server_args %}
-{{ arg | regex_replace('^--', '') | regex_replace('=', ': ') }}
-{% endfor %}
-
 {% else %}
 # Agent configuration
 server: "https://{{ hostvars[groups['k3s_server'][0]]['ansible_default_ipv4']['address'] }}:6443"
-token: "{{ k3s.token }}"
+token: "{{ k3s_token }}"
 data-dir: "{{ k3s.data_dir }}"
 
 # Logging
 log: "/var/log/k3s/k3s-agent.log"
-
-# Additional agent arguments
-{% for arg in k3s.extra_agent_args %}
-{{ arg | regex_replace('^--', '') | regex_replace('=', ': ') }}
-{% endfor %}
 {% endif %}
