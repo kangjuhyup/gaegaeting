@@ -69,7 +69,7 @@ jobs:
           fi
 
           # Doppler에서 k3s 설정 가져오기
-          CONFIG_NAME="prod"
+          CONFIG_NAME="prd"
 
           if [ -n "${DOPPLER_PROJECT:-}" ]; then
             PROJECT="${DOPPLER_PROJECT}"
