@@ -1,0 +1,109 @@
+#!/bin/bash
+
+set -euo pipefail
+
+# k3s 클러스터 백업 스크립트
+BACKUP_DIR="{{ backup.storage_path }}"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+BACKUP_NAME="k3s_backup_${TIMESTAMP}"
+BACKUP_PATH="${BACKUP_DIR}/${BACKUP_NAME}"
+
+# 로그 함수
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+}
+
+error() {
+    echo "[ERROR] $1" >&2
+    exit 1
+}
+
+# 백업 디렉토리 생성
+mkdir -p "${BACKUP_PATH}"
+
+log "k3s 클러스터 백업 시작: ${BACKUP_NAME}"
+
+# 1. etcd 스냅샷 백업 (k3s는 embedded etcd 사용)
+log "etcd 스냅샷 생성 중..."
+if [ -f /var/lib/rancher/k3s/server/db/snapshots ]; then
+    # k3s etcd 스냅샷 API 사용
+    curl -sfL -X POST "http://127.0.0.1:8080/v1-k3s/etcd-snapshot" \
+        -H "Authorization: Bearer $(cat /var/lib/rancher/k3s/server/token)" \
+        -d "{\"name\":\"backup-${TIMESTAMP}\"}" || log "etcd 스냅샷 API 호출 실패, 수동 복사 시도"
+fi
+
+# etcd 데이터 디렉토리 직접 백업
+if [ -d "{{ k3s.data_dir }}/server/db" ]; then
+    log "etcd 데이터 백업 중..."
+    cp -r "{{ k3s.data_dir }}/server/db" "${BACKUP_PATH}/etcd_data"
+else
+    log "경고: etcd 데이터 디렉토리를 찾을 수 없음"
+fi
+
+# 2. k3s 설정 파일 백업
+log "k3s 설정 파일 백업 중..."
+if [ -d "{{ k3s.config_dir }}" ]; then
+    cp -r "{{ k3s.config_dir }}" "${BACKUP_PATH}/config"
+fi
+
+# 3. Kubernetes 리소스 백업
+log "Kubernetes 리소스 백업 중..."
+mkdir -p "${BACKUP_PATH}/manifests"
+
+# 네임스페이스 목록
+kubectl get namespaces -o name > "${BACKUP_PATH}/manifests/namespaces.txt"
+
+# 모든 네임스페이스의 리소스 백업
+for ns in $(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'); do
+    log "네임스페이스 '$ns' 리소스 백업 중..."
+    mkdir -p "${BACKUP_PATH}/manifests/${ns}"
+    
+    # 주요 리소스 타입들
+    for resource in configmaps secrets services deployments statefulsets daemonsets jobs cronjobs ingresses persistentvolumeclaims; do
+        if kubectl get ${resource} -n ${ns} &>/dev/null; then
+            kubectl get ${resource} -n ${ns} -o yaml > "${BACKUP_PATH}/manifests/${ns}/${resource}.yaml" 2>/dev/null || true
+        fi
+    done
+done
+
+# 클러스터 레벨 리소스
+log "클러스터 레벨 리소스 백업 중..."
+mkdir -p "${BACKUP_PATH}/manifests/cluster"
+for resource in nodes persistentvolumes storageclasses clusterroles clusterrolebindings; do
+    if kubectl get ${resource} &>/dev/null; then
+        kubectl get ${resource} -o yaml > "${BACKUP_PATH}/manifests/cluster/${resource}.yaml" 2>/dev/null || true
+    fi
+done
+
+# 4. 시스템 서비스 설정 백업
+log "시스템 서비스 설정 백업 중..."
+mkdir -p "${BACKUP_PATH}/system"
+cp /etc/systemd/system/k3s* "${BACKUP_PATH}/system/" 2>/dev/null || true
+
+# 5. 백업 압축
+log "백업 압축 중..."
+cd "${BACKUP_DIR}"
+tar -czf "${BACKUP_NAME}.tar.gz" "${BACKUP_NAME}/"
+rm -rf "${BACKUP_NAME}/"
+
+# 백업 정보 파일 생성
+cat > "${BACKUP_DIR}/${BACKUP_NAME}.info" << EOF
+백업 생성 시간: $(date)
+k3s 버전: $(k3s version 2>/dev/null | head -1 || echo "확인 불가")
+호스트: $(hostname)
+백업 크기: $(du -h "${BACKUP_DIR}/${BACKUP_NAME}.tar.gz" | cut -f1)
+백업 경로: ${BACKUP_DIR}/${BACKUP_NAME}.tar.gz
+EOF
+
+log "백업 완료: ${BACKUP_DIR}/${BACKUP_NAME}.tar.gz"
+log "백업 크기: $(du -h "${BACKUP_DIR}/${BACKUP_NAME}.tar.gz" | cut -f1)"
+
+# 백업 검증
+if [ -f "${BACKUP_DIR}/${BACKUP_NAME}.tar.gz" ]; then
+    log "백업 파일 생성 확인 ✓"
+    tar -tzf "${BACKUP_DIR}/${BACKUP_NAME}.tar.gz" >/dev/null && log "백업 압축 파일 검증 ✓"
+else
+    error "백업 파일 생성 실패"
+fi
+
+log "백업 작업 완료"

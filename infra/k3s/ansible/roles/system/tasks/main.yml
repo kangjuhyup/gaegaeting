@@ -1,0 +1,141 @@
+---
+- name: Set timezone
+  timezone:
+    name: "{{ system.timezone | default('UTC') }}"
+  notify: restart cron
+
+- name: Install required packages
+  package:
+    name: "{{ packages.install }}"
+    state: present
+    update_cache: "{{ packages.update_cache | default(true) }}"
+  
+- name: Upgrade all packages
+  package:
+    name: "*"
+    state: latest
+  when: packages.upgrade | default(false)
+
+- name: Configure firewall (Ubuntu/Debian)
+  block:
+    - name: Install ufw
+      apt:
+        name: ufw
+        state: present
+      
+    - name: Reset ufw to defaults
+      ufw:
+        state: reset
+      
+    - name: Configure ufw defaults
+      ufw:
+        direction: "{{ item.direction }}"
+        policy: "{{ item.policy }}"
+      loop:
+        - { direction: 'incoming', policy: 'deny' }
+        - { direction: 'outgoing', policy: 'allow' }
+        - { direction: 'routed', policy: 'deny' }
+      
+    - name: Configure ufw rules
+      ufw:
+        rule: "{{ item.rule }}"
+        port: "{{ item.port }}"
+        comment: "{{ item.comment | default('') }}"
+      loop: "{{ system.firewall.rules }}"
+      when: system.firewall.enabled | default(true)
+      
+    - name: Enable ufw
+      ufw:
+        state: enabled
+      when: system.firewall.enabled | default(true)
+  when: 
+    - ansible_os_family == "Debian"
+    - system.firewall.enabled | default(true)
+
+- name: Configure firewall (CentOS/RHEL)
+  block:
+    - name: Install firewalld
+      yum:
+        name: firewalld
+        state: present
+      
+    - name: Start and enable firewalld
+      systemd:
+        name: firewalld
+        state: started
+        enabled: true
+        
+    - name: Configure firewalld rules
+      firewalld:
+        port: "{{ item.port }}"
+        permanent: true
+        state: enabled
+        immediate: true
+      loop: "{{ system.firewall.rules }}"
+      when: system.firewall.enabled | default(true)
+  when: 
+    - ansible_os_family == "RedHat"
+    - system.firewall.enabled | default(true)
+
+- name: Disable swap
+  block:
+    - name: Turn off swap
+      shell: swapoff -a
+      
+    - name: Remove swap from fstab
+      replace:
+        path: /etc/fstab
+        regexp: '^([^#].*\s+swap\s+.*)$'
+        replace: '# \1'
+      
+    - name: Check if swap is disabled
+      shell: swapon --show
+      register: swap_status
+      changed_when: false
+      
+    - name: Display swap status
+      debug:
+        msg: "Swap status: {{ 'disabled' if swap_status.stdout == '' else 'enabled' }}"
+
+- name: Configure kernel parameters
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: true
+  loop:
+    - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+    - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+    - { name: 'net.ipv4.ip_forward', value: '1' }
+  ignore_errors: true
+
+- name: Load br_netfilter module
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Ensure br_netfilter module loads on boot
+  lineinfile:
+    path: /etc/modules-load.d/k8s.conf
+    line: br_netfilter
+    create: true
+
+- name: Create k3s user
+  user:
+    name: k3s
+    system: true
+    shell: /bin/false
+    home: /var/lib/rancher/k3s
+    create_home: false
+    
+- name: Create k3s directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - "{{ k3s.config_dir }}"
+    - "{{ k3s.data_dir }}"
+    - /var/log/k3s

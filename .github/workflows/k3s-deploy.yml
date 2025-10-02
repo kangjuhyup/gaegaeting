@@ -1,0 +1,129 @@
+name: K3s Cluster Deploy
+
+on:
+  push:
+    branches: [ infra ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+      tags:
+        description: 'Ansible tags (comma-separated, e.g., system,k3s)'
+        required: false
+        default: 'all'
+      skip_tags:
+        description: 'Ansible skip-tags (comma-separated)'
+        required: false
+        default: ''
+
+env:
+  ANSIBLE_CONFIG: infra/k3s/ansible/ansible.cfg
+  ANSIBLE_INVENTORY: infra/k3s/ansible/inventory/hosts.yml
+  K3S_SSH_HOST: ${{ secrets.K3S_HOST }}
+  K3S_SSH_USER: ${{ secrets.K3S_USER }}
+  K3S_SSH_KEY: ${{ secrets.K3S_SSH_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Ansible
+        run: |
+          pip install ansible ansible-lint
+
+      - name: Write SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${K3S_SSH_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${K3S_SSH_HOST} >> ~/.ssh/known_hosts
+
+      - name: Verify Ansible inventory
+        run: |
+          ansible-inventory -i ${{ env.ANSIBLE_INVENTORY }} --list
+
+      - name: Run Ansible playbook with Doppler
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: 'false'
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+          DOPPLER_PROJECT: ${{ vars.DOPPLER_PROJECT }}
+        run: |
+          # Doppler CLI 설치
+          if ! command -v doppler >/dev/null 2>&1; then
+            curl -Ls https://cli.doppler.com/install.sh | sudo sh
+          fi
+
+          # Doppler에서 k3s 설정 가져오기
+          CONFIG_NAME="${{ inputs.environment == 'production' && 'k3s-prd' || 'k3s-stg' }}"
+
+          if [ -n "${DOPPLER_PROJECT:-}" ]; then
+            PROJECT="${DOPPLER_PROJECT}"
+          else
+            PROJECT="infra"
+          fi
+
+          doppler secrets download \
+            --project "${PROJECT}" \
+            --config "${CONFIG_NAME}" \
+            --format env \
+            --no-file > /tmp/k3s-secrets.env
+
+          # 환경변수 로드
+          set -a
+          source /tmp/k3s-secrets.env
+          set +a
+
+          # Ansible playbook 실행
+          cd infra/k3s/ansible
+
+          ANSIBLE_OPTS="--inventory inventory/hosts.yml"
+
+          if [ "${{ inputs.tags }}" != "all" ]; then
+            ANSIBLE_OPTS="$ANSIBLE_OPTS --tags ${{ inputs.tags }}"
+          fi
+
+          if [ -n "${{ inputs.skip_tags }}" ]; then
+            ANSIBLE_OPTS="$ANSIBLE_OPTS --skip-tags ${{ inputs.skip_tags }}"
+          fi
+
+          ansible-playbook playbooks/site.yml $ANSIBLE_OPTS \
+            --extra-vars "k3s_token=${K3S_TOKEN} ansible_host=${K3S_SSH_HOST} ansible_user=${K3S_SSH_USER}"
+
+      - name: Verify cluster health
+        if: success()
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+            ${K3S_SSH_USER}@${K3S_SSH_HOST} \
+            'kubectl get nodes && kubectl get pods -A'
+
+      - name: Cleanup secrets
+        if: always()
+        run: |
+          rm -f /tmp/k3s-secrets.env
+          rm -f ~/.ssh/id_rsa
+
+      - name: Notify deployment result
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ K3s cluster deployment completed successfully"
+          else
+            echo "❌ K3s cluster deployment failed"
+            exit 1
+          fi

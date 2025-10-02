@@ -1,0 +1,59 @@
+# k3s 설치 정보
+설치 날짜: {{ ansible_date_time.date }} {{ ansible_date_time.time }}
+k3s 버전: {{ k3s.version }}
+노드 역할: {{ k3s_node_role | default('server') }}
+호스트: {{ inventory_hostname }} ({{ ansible_default_ipv4.address }})
+
+# 클러스터 정보
+클러스터 토큰: {{ k3s.token }}
+데이터 디렉토리: {{ k3s.data_dir }}
+설정 디렉토리: {{ k3s.config_dir }}
+
+# 네트워크 설정
+클러스터 CIDR: {{ k3s.cluster_cidr }}
+서비스 CIDR: {{ k3s.service_cidr }}
+클러스터 DNS: {{ k3s.cluster_dns }}
+클러스터 도메인: {{ k3s.cluster_domain }}
+
+{% if k3s.disable_components | length > 0 %}
+# 비활성화된 구성요소
+{% for component in k3s.disable_components %}
+- {{ component }}
+{% endfor %}
+{% endif %}
+
+# 접근 정보
+{% if k3s_node_role | default('server') == 'server' %}
+API 서버: https://{{ ansible_default_ipv4.address }}:6443
+kubeconfig: /etc/rancher/k3s/k3s.yaml
+{% endif %}
+
+# 서비스 관리
+{% if k3s_node_role | default('server') == 'server' %}
+서비스 상태: systemctl status k3s
+서비스 로그: journalctl -u k3s -f
+서비스 재시작: systemctl restart k3s
+{% else %}
+서비스 상태: systemctl status k3s-agent
+서비스 로그: journalctl -u k3s-agent -f
+서비스 재시작: systemctl restart k3s-agent
+{% endif %}
+
+# 유용한 명령어
+{% if k3s_node_role | default('server') == 'server' %}
+kubectl get nodes
+kubectl get pods -A
+kubectl cluster-info
+{% endif %}
+
+# 제거 방법
+{% if k3s_node_role | default('server') == 'server' %}
+서비스 중지: systemctl stop k3s
+서비스 비활성화: systemctl disable k3s
+{% else %}
+서비스 중지: systemctl stop k3s-agent
+서비스 비활성화: systemctl disable k3s-agent
+{% endif %}
+바이너리 제거: rm -f /usr/local/bin/k3s
+데이터 제거: rm -rf {{ k3s.data_dir }}
+설정 제거: rm -rf {{ k3s.config_dir }}

@@ -1,0 +1,161 @@
+---
+- name: Check if k3s is already installed
+  stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+
+- name: Get current k3s version
+  shell: /usr/local/bin/k3s version | grep -E "k3s version" | awk '{print $3}'
+  register: current_k3s_version
+  when: k3s_binary.stat.exists
+  changed_when: false
+  failed_when: false
+
+- name: Set k3s installation facts
+  set_fact:
+    k3s_needs_install: "{{ not k3s_binary.stat.exists or (current_k3s_version.stdout | default('')) != k3s.version }}"
+
+- name: Download k3s binary
+  get_url:
+    url: "https://github.com/k3s-io/k3s/releases/download/{{ k3s.version }}/k3s"
+    dest: /usr/local/bin/k3s
+    mode: '0755'
+    owner: root
+    group: root
+  when: k3s_needs_install
+  notify: restart k3s
+
+- name: Create k3s config file
+  template:
+    src: config.yaml.j2
+    dest: "{{ k3s.config_dir }}/config.yaml"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart k3s
+
+- name: Create k3s service file for server
+  template:
+    src: k3s-server.service.j2
+    dest: /etc/systemd/system/k3s.service
+    owner: root
+    group: root
+    mode: '0644'
+  when: k3s_node_role | default('server') == 'server'
+  notify:
+    - reload systemd
+    - restart k3s
+
+- name: Create k3s service file for agent
+  template:
+    src: k3s-agent.service.j2
+    dest: /etc/systemd/system/k3s-agent.service
+    owner: root
+    group: root
+    mode: '0644'
+  when: k3s_node_role | default('server') == 'agent'
+  notify:
+    - reload systemd
+    - restart k3s agent
+
+- name: Start and enable k3s server
+  systemd:
+    name: k3s
+    state: started
+    enabled: true
+    daemon_reload: true
+  when: k3s_node_role | default('server') == 'server'
+
+- name: Start and enable k3s agent
+  systemd:
+    name: k3s-agent
+    state: started
+    enabled: true
+    daemon_reload: true
+  when: k3s_node_role | default('server') == 'agent'
+
+- name: Wait for k3s to be ready
+  wait_for:
+    port: 6443
+    host: "{{ ansible_default_ipv4.address }}"
+    delay: 15
+    timeout: 300
+  when: k3s_node_role | default('server') == 'server'
+
+- name: Create kubeconfig directory
+  file:
+    path: "{{ item }}/.kube"
+    state: directory
+    owner: "{{ item.split('/')[-1] }}"
+    group: "{{ item.split('/')[-1] }}"
+    mode: '0755'
+  loop:
+    - /root
+    - "{{ ansible_env.HOME | default('/home/ubuntu') }}"
+  when: k3s_node_role | default('server') == 'server'
+
+- name: Copy kubeconfig for root
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /root/.kube/config
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0600'
+  when: k3s_node_role | default('server') == 'server'
+
+- name: Copy kubeconfig for user
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ ansible_env.HOME | default('/home/ubuntu') }}/.kube/config"
+    remote_src: true
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0600'
+  when: 
+    - k3s_node_role | default('server') == 'server'
+    - ansible_user != 'root'
+
+- name: Install kubectl
+  get_url:
+    url: "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
+    dest: /usr/local/bin/kubectl
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Verify k3s installation
+  block:
+    - name: Check k3s service status
+      systemd:
+        name: "{{ 'k3s' if k3s_node_role | default('server') == 'server' else 'k3s-agent' }}"
+      register: k3s_service_status
+      
+    - name: Get node status
+      shell: kubectl get nodes
+      register: node_status
+      when: k3s_node_role | default('server') == 'server'
+      changed_when: false
+      
+    - name: Get pod status
+      shell: kubectl get pods -A
+      register: pod_status
+      when: k3s_node_role | default('server') == 'server'
+      changed_when: false
+      
+    - name: Display cluster information
+      debug:
+        msg: |
+          k3s Installation Status:
+          - Service: {{ k3s_service_status.status.ActiveState }}
+          - Nodes: {{ node_status.stdout_lines | default(['N/A']) | join('\n          ') }}
+          - System Pods: {{ pod_status.stdout_lines[:5] | default(['N/A']) | join('\n                     ') }}
+      when: k3s_node_role | default('server') == 'server'
+
+- name: Save k3s installation info
+  template:
+    src: installation-info.txt.j2
+    dest: "{{ k3s.config_dir }}/installation-info.txt"
+    owner: root
+    group: root
+    mode: '0644'
