@@ -15,9 +15,13 @@
   set_fact:
     k3s_needs_install: "{{ not k3s_binary.stat.exists or (current_k3s_version.stdout | default('')) != k3s.version }}"
 
+- name: Detect system architecture
+  set_fact:
+    k3s_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
+
 - name: Download k3s binary
   get_url:
-    url: "https://github.com/k3s-io/k3s/releases/download/{{ k3s.version }}/k3s"
+    url: "https://github.com/k3s-io/k3s/releases/download/{{ k3s.version }}/k3s{% if k3s_arch == 'arm64' %}-arm64{% endif %}"
     dest: /usr/local/bin/k3s
     mode: '0755'
     owner: root
