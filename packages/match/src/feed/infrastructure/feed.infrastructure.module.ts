@@ -53,7 +53,6 @@ const providers : Provider[] = [
             timeout : 5000,
             retryCount : 3,
         }),
-        EventEmitterModule.forRoot(),
         KafkaProducerModule.forRoot({
             clientId: 'feed-service',
             brokers: ['localhost:9092'],

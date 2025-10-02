@@ -33,7 +33,6 @@ export class GetUserHandler implements IQueryHandler<GetUserQuery, UserEntity> {
         user.removeUnActiveProfiles()
       }))
     }
-    console.log(user)
     return user;
   }
 }
