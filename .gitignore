@@ -26,7 +26,7 @@ dist
 
 mariadb
 mysql
-!infra/
+!infra/**
 
 docker-compose.release.yml
 
