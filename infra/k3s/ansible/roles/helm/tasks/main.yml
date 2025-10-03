@@ -201,3 +201,19 @@
 - name: Display Helm releases
   debug:
     msg: "{{ helm_list.stdout_lines }}"
+
+- name: Create Doppler token Secret for External Secrets Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: doppler-token
+        namespace: external-secrets
+      type: Opaque
+      stringData:
+        token: "{{ lookup('env', 'DOPPLER_TOKEN') }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  when: lookup('env', 'DOPPLER_TOKEN') | length > 0
