@@ -12,7 +12,7 @@ elasticsearch:
     - ingest
 
   ## Health check configuration (yellow is OK for single node)
-  clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
+  clusterHealthCheckParams: "wait_for_status=yellow&timeout=30s"
 
   ## Resources
   resources:
