@@ -14,10 +14,6 @@ imagePullPolicy: "IfNotPresent"
 replicas: 1
 minimumMasterNodes: 1
 
-## Single-node cluster discovery
-clusterInitialMasterNodes:
-  - elasticsearch-master-0
-
 ## Health check configuration (yellow is OK for single node)
 clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
 
