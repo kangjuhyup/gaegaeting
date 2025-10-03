@@ -166,35 +166,27 @@
   loop: "{{ helm_deploy_result.results }}"
   when: item.item.enabled | default(true)
 
-- name: Restart StatefulSets when Helm chart changed
-  kubernetes.core.k8s:
-    api_version: apps/v1
-    kind: StatefulSet
-    name: "{{ item.item.name }}-{{ item.item.statefulset_suffix | default('master') }}"
-    namespace: "{{ item.item.namespace }}"
-    state: patched
-    definition:
-      spec:
-        template:
-          metadata:
-            annotations:
-              kubectl.kubernetes.io/restartedAt: "{{ ansible_date_time.iso8601 }}"
-    kubeconfig: /etc/rancher/k3s/k3s.yaml
+- name: Restart workloads when Helm chart changed
+  shell: |
+    kubectl rollout restart statefulset -n {{ item.item.namespace }} -l app.kubernetes.io/instance={{ item.item.name }} 2>/dev/null || true
+    kubectl rollout restart deployment -n {{ item.item.namespace }} -l app.kubernetes.io/instance={{ item.item.name }} 2>/dev/null || true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   loop: "{{ helm_deploy_result.results }}"
   when:
     - item.changed | default(false)
     - item.item.enabled | default(true)
     - not item.unreachable | default(false)
   failed_when: false
-  register: statefulset_restart_result
+  register: workload_restart_result
 
-- name: Display restarted StatefulSets
+- name: Display restarted workloads
   debug:
     msg: |
-      🔄 Restarted StatefulSet: {{ item.item.item.name }}-{{ item.item.item.statefulset_suffix | default('master') }}
+      🔄 Restarted workloads for: {{ item.item.item.name }}
       Namespace: {{ item.item.item.namespace }}
       Restart Time: {{ ansible_date_time.iso8601 }}
-  loop: "{{ statefulset_restart_result.results }}"
+  loop: "{{ workload_restart_result.results }}"
   when:
     - not item.skipped | default(false)
     - not item.failed | default(false)
