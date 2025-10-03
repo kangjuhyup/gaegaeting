@@ -60,6 +60,10 @@ securityContext:
   runAsUser: 1000
   fsGroup: 1000
 
+## Sysctls via initContainer
+sysctlInitContainer:
+  enabled: true
+
 ## Volume claim template
 volumeClaimTemplate:
   accessModes: [ "ReadWriteOnce" ]
