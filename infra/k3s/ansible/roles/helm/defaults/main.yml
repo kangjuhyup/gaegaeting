@@ -13,7 +13,7 @@ helm_charts:
     create_namespace: true
     chart_ref: bitnami/mysql
     chart_version: "9.14.4"
-    values_file: "{{ playbook_dir }}/../../../helm/mysql/values.yaml"
+    values_file: "{{ playbook_dir }}/../../helm/mysql/values.yaml"
 
   - name: redis
     enabled: true
@@ -21,7 +21,7 @@ helm_charts:
     create_namespace: true
     chart_ref: bitnami/redis
     chart_version: "18.4.0"
-    values_file: "{{ playbook_dir }}/../../../helm/redis/values.yaml"
+    values_file: "{{ playbook_dir }}/../../helm/redis/values.yaml"
 
   - name: kafka
     enabled: true
@@ -29,7 +29,7 @@ helm_charts:
     create_namespace: true
     chart_ref: bitnami/kafka
     chart_version: "26.4.3"
-    values_file: "{{ playbook_dir }}/../../../helm/kafka/values.yaml"
+    values_file: "{{ playbook_dir }}/../../helm/kafka/values.yaml"
 
   - name: elasticsearch
     enabled: true
@@ -37,7 +37,7 @@ helm_charts:
     create_namespace: true
     chart_ref: elastic/elasticsearch
     chart_version: "8.5.1"
-    values_file: "{{ playbook_dir }}/../../../helm/elk/values.yaml"
+    values_file: "{{ playbook_dir }}/../../helm/elk/values.yaml"
     values_file_remote: /tmp/helm-values/elk/values.yaml
 
   - name: argocd
@@ -46,7 +46,7 @@ helm_charts:
     create_namespace: true
     chart_ref: argo/argo-cd
     chart_version: "5.51.6"
-    values_file: "{{ playbook_dir }}/../../../helm/argocd/values.yaml"
+    values_file: "{{ playbook_dir }}/../../helm/argocd/values.yaml"
 
 ## Helm repositories
 helm_repos:
