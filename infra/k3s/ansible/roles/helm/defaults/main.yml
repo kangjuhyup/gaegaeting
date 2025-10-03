@@ -8,7 +8,7 @@ helm_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
 ## Helm charts to deploy
 helm_charts:
   - name: mysql
-    enabled: true
+    enabled: false  # GitOps로 관리
     namespace: database
     create_namespace: true
     chart_ref: bitnami/mysql
@@ -18,7 +18,7 @@ helm_charts:
     timeout: 900s
 
   - name: redis
-    enabled: true
+    enabled: false  # GitOps로 관리
     namespace: database
     create_namespace: true
     chart_ref: bitnami/redis
@@ -27,7 +27,7 @@ helm_charts:
     wait: false
 
   - name: kafka
-    enabled: true
+    enabled: false  # GitOps로 관리
     namespace: messaging
     create_namespace: true
     chart_ref: bitnami/kafka
@@ -36,7 +36,7 @@ helm_charts:
     wait: false
 
   - name: elasticsearch
-    enabled: true
+    enabled: false  # GitOps로 관리
     namespace: logging
     create_namespace: true
     chart_ref: elastic/elasticsearch
