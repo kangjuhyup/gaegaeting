@@ -14,6 +14,8 @@ helm_charts:
     chart_ref: bitnami/mysql
     chart_version: "9.14.4"
     values_file: "{{ playbook_dir }}/../../helm/mysql/values.yaml"
+    wait: false
+    timeout: 900s
 
   - name: redis
     enabled: true
