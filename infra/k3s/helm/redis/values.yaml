@@ -1,88 +1,89 @@
-## Redis Configuration (Standalone)
-## Bitnami Redis Helm Chart
+redis:
+  ## Redis Configuration (Standalone)
+  ## Bitnami Redis Helm Chart
 
-## Global settings
-global:
-  storageClass: "local-path"
-
-## Redis Architecture (standalone for dev)
-architecture: standalone
-
-## Image configuration
-image:
-  registry: docker.io
-  repository: redis
-  tag: "7"
-  pullPolicy: IfNotPresent
-
-## Authentication
-auth:
-  enabled: false
-
-## Master configuration
-master:
-  persistence:
-    enabled: true
+  ## Global settings
+  global:
     storageClass: "local-path"
-    size: 4Gi
 
-  resources:
-    requests:
-      memory: 128Mi
-      cpu: 100m
-    limits:
-      memory: 256Mi
-      cpu: 250m
+  ## Redis Architecture (standalone for dev)
+  architecture: standalone
 
-  ## Container security context
-  containerSecurityContext:
-    enabled: true
-    runAsUser: 999
-    runAsNonRoot: true
+  ## Image configuration
+  image:
+    registry: docker.io
+    repository: redis
+    tag: "7"
+    pullPolicy: IfNotPresent
 
-  ## Redis configuration
-  configuration: |-
-    # Redis performance tuning
-    maxmemory 256mb
-    maxmemory-policy allkeys-lru
+  ## Authentication
+  auth:
+    enabled: false
 
-    # Persistence
-    save 900 1
-    save 300 10
-    save 60 10000
+  ## Master configuration
+  master:
+    persistence:
+      enabled: true
+      storageClass: "local-path"
+      size: 4Gi
 
-    # AOF persistence
-    appendonly yes
-    appendfsync everysec
+    resources:
+      requests:
+        memory: 128Mi
+        cpu: 100m
+      limits:
+        memory: 256Mi
+        cpu: 250m
 
-    # Networking
-    tcp-backlog 511
-    timeout 0
-    tcp-keepalive 300
+    ## Container security context
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 999
+      runAsNonRoot: true
 
-    # Limits
-    maxclients 10000
+    ## Redis configuration
+    configuration: |-
+      # Redis performance tuning
+      maxmemory 256mb
+      maxmemory-policy allkeys-lru
 
-  ## Service
-  service:
-    type: ClusterIP
-    ports:
-      redis: 6379
+      # Persistence
+      save 900 1
+      save 300 10
+      save 60 10000
 
-## Metrics (disabled for simplicity)
-metrics:
-  enabled: false
+      # AOF persistence
+      appendonly yes
+      appendfsync everysec
 
-## Common configuration
-commonConfiguration: |-
-  # Disable dangerous commands
-  rename-command FLUSHDB ""
-  rename-command FLUSHALL ""
+      # Networking
+      tcp-backlog 511
+      timeout 0
+      tcp-keepalive 300
 
-## Volume Permissions
-volumePermissions:
-  enabled: false
+      # Limits
+      maxclients 10000
 
-## Sysctl (disabled for compatibility)
-sysctl:
-  enabled: false
+    ## Service
+    service:
+      type: ClusterIP
+      ports:
+        redis: 6379
+
+  ## Metrics (disabled for simplicity)
+  metrics:
+    enabled: false
+
+  ## Common configuration
+  commonConfiguration: |-
+    # Disable dangerous commands
+    rename-command FLUSHDB ""
+    rename-command FLUSHALL ""
+
+  ## Volume Permissions
+  volumePermissions:
+    enabled: false
+
+  ## Sysctl (disabled for compatibility)
+  sysctl:
+    enabled: false
