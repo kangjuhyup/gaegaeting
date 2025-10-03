@@ -9,21 +9,19 @@ mysql:
   ## MySQL Architecture
   architecture: replication
 
-  ## Image configuration
+  ## Image configuration (use Bitnami image for proper secret integration)
   image:
     registry: docker.io
-    repository: mysql
+    repository: bitnami/mysql
     tag: "8.4"
     pullPolicy: IfNotPresent
 
   ## Authentication
   auth:
-    rootPassword: ""  # Set via Doppler
+    existingSecret: mysql-secrets
     database: gaegaeting
     username: gaegaeting
-    password: ""  # Set via Doppler
     replicationUser: replicator
-    replicationPassword: ""  # Set via Doppler
 
   ## Primary (Master) configuration
   primary:

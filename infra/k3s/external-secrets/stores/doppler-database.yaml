@@ -1,0 +1,15 @@
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: doppler
+  namespace: database
+spec:
+  provider:
+    doppler:
+      auth:
+        secretRef:
+          dopplerToken:
+            name: doppler-token
+            key: token
+      project: app
+      config: prd
