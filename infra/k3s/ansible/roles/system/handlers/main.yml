@@ -1,0 +1,12 @@
+---
+- name: restart cron
+  systemd:
+    name: cron
+    state: restarted
+  when: ansible_os_family == "Debian"
+
+- name: restart crond
+  systemd:
+    name: crond
+    state: restarted
+  when: ansible_os_family == "RedHat"

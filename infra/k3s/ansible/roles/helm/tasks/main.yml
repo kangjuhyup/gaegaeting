@@ -1,0 +1,203 @@
+---
+- name: Install Python3 pip
+  apt:
+    name: python3-pip
+    state: present
+    update_cache: true
+  become: true
+
+- name: Install kubernetes Python library
+  pip:
+    name:
+      - kubernetes
+      - PyYAML
+    state: present
+    executable: pip3
+  become: true
+
+- name: Check if Helm is installed
+  stat:
+    path: /usr/local/bin/helm
+  register: helm_binary
+
+- name: Get current Helm version
+  shell: /usr/local/bin/helm version --short | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+'
+  register: current_helm_version
+  when: helm_binary.stat.exists
+  changed_when: false
+  failed_when: false
+
+- name: Detect system architecture for Helm
+  set_fact:
+    helm_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
+
+- name: Download Helm
+  get_url:
+    url: "https://get.helm.sh/helm-{{ helm_version }}-linux-{{ helm_arch }}.tar.gz"
+    dest: /tmp/helm.tar.gz
+    mode: '0644'
+  when: not helm_binary.stat.exists or (current_helm_version.stdout | default('')) != helm_version
+
+- name: Extract Helm binary
+  unarchive:
+    src: /tmp/helm.tar.gz
+    dest: /tmp
+    remote_src: true
+  when: not helm_binary.stat.exists or (current_helm_version.stdout | default('')) != helm_version
+
+- name: Install Helm binary
+  copy:
+    src: "/tmp/linux-{{ helm_arch }}/helm"
+    dest: /usr/local/bin/helm
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: true
+  when: not helm_binary.stat.exists or (current_helm_version.stdout | default('')) != helm_version
+
+- name: Clean up Helm download
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/helm.tar.gz
+    - "/tmp/linux-{{ helm_arch }}"
+
+- name: Verify Helm installation
+  command: helm version --short
+  register: helm_version_output
+  changed_when: false
+
+- name: Display Helm version
+  debug:
+    msg: "Helm version: {{ helm_version_output.stdout }}"
+
+- name: Add Helm repositories
+  kubernetes.core.helm_repository:
+    name: "{{ item.name }}"
+    repo_url: "{{ item.url }}"
+  loop: "{{ helm_repos }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Update Helm repositories
+  command: helm repo update
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
+
+- name: Set helm values source path
+  set_fact:
+    helm_values_source: "{{ playbook_dir | dirname | dirname }}/helm"
+
+- name: Debug helm values source path
+  debug:
+    msg: "Helm values source path: {{ helm_values_source }}"
+
+- name: Check if helm values directory exists
+  stat:
+    path: "{{ helm_values_source }}"
+  delegate_to: localhost
+  register: helm_values_dir
+
+- name: Fail if helm values directory not found
+  fail:
+    msg: "Helm values directory not found at {{ helm_values_source }}"
+  when: not helm_values_dir.stat.exists
+
+- name: Create Helm values base directory on remote
+  file:
+    path: /tmp/helm-values
+    state: directory
+    mode: '0755'
+
+- name: Create Helm chart subdirectories on remote
+  file:
+    path: "/tmp/helm-values/{{ item.name }}"
+    state: directory
+    mode: '0755'
+  loop: "{{ helm_charts }}"
+  when: item.enabled | default(true)
+
+- name: Copy Helm values files to remote
+  copy:
+    src: "{{ item.values_file }}"
+    dest: "/tmp/helm-values/{{ item.name }}/values.yaml"
+    mode: '0644'
+  loop: "{{ helm_charts }}"
+  when:
+    - item.enabled | default(true)
+    - item.values_file is defined
+
+- name: Create namespaces
+  kubernetes.core.k8s:
+    name: "{{ item.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+  loop: "{{ helm_charts }}"
+  when:
+    - item.enabled | default(true)
+    - item.create_namespace | default(false)
+
+- name: Deploy Helm charts
+  kubernetes.core.helm:
+    name: "{{ item.name }}"
+    chart_ref: "{{ item.chart_ref }}"
+    chart_version: "{{ item.chart_version | default(omit) }}"
+    release_namespace: "{{ item.namespace }}"
+    create_namespace: "{{ item.create_namespace | default(false) }}"
+    values_files:
+      - "{{ item.values_file_remote | default('/tmp/helm-values/' + item.name + '/values.yaml') }}"
+    wait: "{{ item.wait | default(helm_wait) }}"
+    wait_timeout: "{{ item.timeout | default(helm_timeout) }}"
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+  loop: "{{ helm_charts }}"
+  when: item.enabled | default(true)
+  register: helm_deploy_result
+
+- name: Display Helm deployment status
+  debug:
+    msg: |
+      Helm Chart: {{ item.item.name }}
+      Status: {{ 'Deployed' if item.changed else 'Already deployed' }}
+      Namespace: {{ item.item.namespace }}
+  loop: "{{ helm_deploy_result.results }}"
+  when: item.item.enabled | default(true)
+
+- name: Restart workloads when Helm chart changed
+  shell: |
+    kubectl rollout restart statefulset -n {{ item.item.namespace }} -l app.kubernetes.io/instance={{ item.item.name }} 2>/dev/null || true
+    kubectl rollout restart deployment -n {{ item.item.namespace }} -l app.kubernetes.io/instance={{ item.item.name }} 2>/dev/null || true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  loop: "{{ helm_deploy_result.results }}"
+  when:
+    - item.changed | default(false)
+    - item.item.enabled | default(true)
+    - not item.unreachable | default(false)
+  failed_when: false
+  register: workload_restart_result
+
+- name: Display restarted workloads
+  debug:
+    msg: |
+      🔄 Restarted workloads for: {{ item.item.item.name }}
+      Namespace: {{ item.item.item.namespace }}
+      Restart Time: {{ ansible_date_time.iso8601 }}
+  loop: "{{ workload_restart_result.results }}"
+  when:
+    - not item.skipped | default(false)
+    - not item.failed | default(false)
+
+- name: List all Helm releases
+  command: helm list --all-namespaces
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: helm_list
+  changed_when: false
+
+- name: Display Helm releases
+  debug:
+    msg: "{{ helm_list.stdout_lines }}"

@@ -1,0 +1,98 @@
+---
+- name: Create backup directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - "{{ backup.storage_path }}"
+    - "{{ backup.storage_path }}/scripts"
+    - "{{ backup.storage_path }}/etcd"
+    - "{{ backup.storage_path }}/manifests"
+
+- name: Create backup script
+  template:
+    src: backup-k3s.sh.j2
+    dest: "{{ backup.storage_path }}/scripts/backup-k3s.sh"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create restore script
+  template:
+    src: restore-k3s.sh.j2
+    dest: "{{ backup.storage_path }}/scripts/restore-k3s.sh"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create cleanup script
+  template:
+    src: cleanup-backups.sh.j2
+    dest: "{{ backup.storage_path }}/scripts/cleanup-backups.sh"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Setup backup cron job
+  cron:
+    name: "k3s cluster backup"
+    minute: "{{ backup.schedule.split(' ')[0] }}"
+    hour: "{{ backup.schedule.split(' ')[1] }}"
+    day: "{{ backup.schedule.split(' ')[2] }}"
+    month: "{{ backup.schedule.split(' ')[3] }}"
+    weekday: "{{ backup.schedule.split(' ')[4] }}"
+    job: "{{ backup.storage_path }}/scripts/backup-k3s.sh >> /var/log/k3s-backup.log 2>&1"
+    user: root
+  when: 
+    - backup.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'
+
+- name: Setup backup cleanup cron job
+  cron:
+    name: "k3s backup cleanup"
+    minute: "30"
+    hour: "3"
+    day: "*"
+    month: "*"
+    weekday: "*"
+    job: "{{ backup.storage_path }}/scripts/cleanup-backups.sh >> /var/log/k3s-backup-cleanup.log 2>&1"
+    user: root
+  when: 
+    - backup.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'
+
+- name: Create log rotation for backup logs
+  template:
+    src: k3s-backup-logrotate.j2
+    dest: /etc/logrotate.d/k3s-backup
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Run initial backup
+  shell: "{{ backup.storage_path }}/scripts/backup-k3s.sh"
+  when: 
+    - backup.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'
+  register: initial_backup
+  
+- name: Display backup information
+  debug:
+    msg: |
+      💾 Backup 설정 완료!
+      
+      백업 경로: {{ backup.storage_path }}
+      백업 스케줄: {{ backup.schedule }} (매일 {{ backup.schedule.split(' ')[1] }}:{{ backup.schedule.split(' ')[0] }})
+      보존 기간: {{ backup.retention_days }}일
+      
+      수동 백업: {{ backup.storage_path }}/scripts/backup-k3s.sh
+      복원: {{ backup.storage_path }}/scripts/restore-k3s.sh [backup-file]
+      정리: {{ backup.storage_path }}/scripts/cleanup-backups.sh
+      
+      백업 로그: /var/log/k3s-backup.log
+  when: 
+    - backup.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'

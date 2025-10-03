@@ -1,0 +1,107 @@
+---
+- name: Create monitoring namespace
+  kubernetes.core.k8s:
+    name: "{{ monitoring.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+  when: k3s_node_role | default('server') == 'server'
+
+- name: Create monitoring directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /opt/monitoring
+    - /opt/monitoring/prometheus
+    - /opt/monitoring/grafana
+
+- name: Deploy Prometheus configuration
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - { src: 'prometheus-config.yml.j2', dest: '/opt/monitoring/prometheus/prometheus.yml' }
+    - { src: 'prometheus-deployment.yml.j2', dest: '/opt/monitoring/prometheus-deployment.yml' }
+    - { src: 'grafana-deployment.yml.j2', dest: '/opt/monitoring/grafana-deployment.yml' }
+  when: 
+    - monitoring.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'
+
+- name: Apply Prometheus manifests
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ item }}"
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+  loop:
+    - /opt/monitoring/prometheus-deployment.yml
+  when: 
+    - monitoring.enabled | default(false)
+    - monitoring.prometheus.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'
+
+- name: Apply Grafana manifests
+  kubernetes.core.k8s:
+    state: present
+    src: /opt/monitoring/grafana-deployment.yml
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+  when: 
+    - monitoring.enabled | default(false)
+    - monitoring.grafana.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'
+
+- name: Wait for Prometheus to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: prometheus
+    namespace: "{{ monitoring.namespace }}"
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    wait_condition:
+      type: Available
+      status: "True"
+    wait_timeout: 300
+  when: 
+    - monitoring.enabled | default(false)
+    - monitoring.prometheus.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'
+
+- name: Wait for Grafana to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: grafana
+    namespace: "{{ monitoring.namespace }}"
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    wait_condition:
+      type: Available
+      status: "True"
+    wait_timeout: 300
+  when: 
+    - monitoring.enabled | default(false)
+    - monitoring.grafana.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'
+
+- name: Display monitoring access information
+  debug:
+    msg: |
+      🔍 Monitoring 설치 완료!
+      
+      Prometheus 접속:
+      kubectl port-forward -n {{ monitoring.namespace }} svc/prometheus 9090:9090
+      브라우저: http://localhost:9090
+      
+      Grafana 접속:
+      kubectl port-forward -n {{ monitoring.namespace }} svc/grafana 3000:3000
+      브라우저: http://localhost:3000
+      로그인: admin / {{ monitoring.grafana.admin_password }}
+  when: 
+    - monitoring.enabled | default(false)
+    - k3s_node_role | default('server') == 'server'

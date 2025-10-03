@@ -1,0 +1,37 @@
+---
+# k3s configuration file
+{% if k3s_node_role | default('server') == 'server' %}
+# Server configuration
+token: "{{ k3s_token }}"
+data-dir: "{{ k3s.data_dir }}"
+write-kubeconfig-mode: "0644"
+{% if k3s_server_init | default(false) %}
+cluster-init: true
+{% endif %}
+
+# Network configuration
+cluster-cidr: "{{ k3s.cluster_cidr }}"
+service-cidr: "{{ k3s.service_cidr }}"
+cluster-dns: "{{ k3s.cluster_dns }}"
+cluster-domain: "{{ k3s.cluster_domain }}"
+
+# Disable components
+{% if k3s.disable_components | length > 0 %}
+disable:
+{% for component in k3s.disable_components %}
+  - {{ component }}
+{% endfor %}
+{% endif %}
+
+# Logging
+log: "/var/log/k3s/k3s.log"
+
+{% else %}
+# Agent configuration
+server: "https://{{ hostvars[groups['k3s_server'][0]]['ansible_default_ipv4']['address'] }}:6443"
+token: "{{ k3s_token }}"
+data-dir: "{{ k3s.data_dir }}"
+
+# Logging
+log: "/var/log/k3s/k3s-agent.log"
+{% endif %}

@@ -1,0 +1,70 @@
+## Elasticsearch Configuration
+## Elastic Helm Chart
+
+## Cluster settings
+clusterName: "gaegaeting-es"
+nodeGroup: "master"
+
+## Image configuration
+image: "docker.elastic.co/elasticsearch/elasticsearch"
+imageTag: "8.5.1"
+imagePullPolicy: "IfNotPresent"
+
+## Replica count (3 for production, 1 for dev)
+replicas: 1
+minimumMasterNodes: 1
+
+## Health check configuration (yellow is OK for single node)
+clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
+
+## Resources
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "1000m"
+    memory: "2Gi"
+
+## Persistence
+persistence:
+  enabled: true
+  storageClass: "local-path"
+  size: 30Gi
+
+## JVM heap size
+esJavaOpts: "-Xmx1g -Xms1g"
+
+## Elasticsearch configuration
+esConfig:
+  elasticsearch.yml: |
+    cluster.name: gaegaeting-es
+    network.host: 0.0.0.0
+    xpack.security.enabled: false
+
+## Service
+service:
+  type: ClusterIP
+  httpPort: 9200
+  transportPort: 9300
+
+## Anti-affinity (spread pods across nodes)
+antiAffinity: "soft"
+
+## Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+## Sysctls via initContainer
+sysctlInitContainer:
+  enabled: true
+
+## Volume claim template
+volumeClaimTemplate:
+  accessModes: [ "ReadWriteOnce" ]
+  storageClassName: "local-path"
+  resources:
+    requests:
+      storage: 30Gi

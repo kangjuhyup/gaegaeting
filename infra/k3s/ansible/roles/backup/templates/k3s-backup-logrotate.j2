@@ -1,0 +1,10 @@
+/var/log/k3s-backup.log /var/log/k3s-backup-cleanup.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root root
+    sharedscripts
+}

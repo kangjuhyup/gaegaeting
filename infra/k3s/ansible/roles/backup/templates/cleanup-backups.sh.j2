@@ -1,0 +1,41 @@
+#!/bin/bash
+set -euo pipefail
+
+# k3s 백업 정리 스크립트
+# {{ backup.retention_days }}일 이상 된 백업 삭제
+
+BACKUP_DIR="{{ backup.storage_path }}/etcd"
+MANIFEST_DIR="{{ backup.storage_path }}/manifests"
+RETENTION_DAYS={{ backup.retention_days }}
+
+echo "🧹 오래된 백업 정리 시작..."
+echo "보존 기간: ${RETENTION_DAYS}일"
+
+# etcd 백업 정리
+if [ -d "$BACKUP_DIR" ]; then
+    DELETED_COUNT=$(find "$BACKUP_DIR" -name "*.db" -type f -mtime +${RETENTION_DAYS} -delete -print | wc -l)
+    echo "✅ etcd 백업 ${DELETED_COUNT}개 삭제"
+fi
+
+# manifest 백업 정리
+if [ -d "$MANIFEST_DIR" ]; then
+    DELETED_COUNT=$(find "$MANIFEST_DIR" -name "*.tar.gz" -type f -mtime +${RETENTION_DAYS} -delete -print | wc -l)
+    echo "✅ manifest 백업 ${DELETED_COUNT}개 삭제"
+fi
+
+# 백업 통계
+echo ""
+echo "📊 현재 백업 상태:"
+if [ -d "$BACKUP_DIR" ]; then
+    ETCD_COUNT=$(find "$BACKUP_DIR" -name "*.db" -type f | wc -l)
+    ETCD_SIZE=$(du -sh "$BACKUP_DIR" 2>/dev/null | cut -f1)
+    echo "  - etcd 백업: ${ETCD_COUNT}개 (${ETCD_SIZE})"
+fi
+
+if [ -d "$MANIFEST_DIR" ]; then
+    MANIFEST_COUNT=$(find "$MANIFEST_DIR" -name "*.tar.gz" -type f | wc -l)
+    MANIFEST_SIZE=$(du -sh "$MANIFEST_DIR" 2>/dev/null | cut -f1)
+    echo "  - manifest 백업: ${MANIFEST_COUNT}개 (${MANIFEST_SIZE})"
+fi
+
+echo "✅ 백업 정리 완료"

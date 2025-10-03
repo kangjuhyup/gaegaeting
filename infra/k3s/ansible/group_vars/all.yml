@@ -1,0 +1,81 @@
+---
+# k3s 기본 설정
+k3s:
+  version: "{{ k3s_version | default('v1.28.5+k3s1') }}"
+  token: "{{ k3s_token }}"
+  data_dir: "/var/lib/rancher/k3s"
+  config_dir: "/etc/rancher/k3s"
+  
+  # 네트워크 설정
+  cluster_cidr: "{{ k3s_cluster_cidr | default('10.42.0.0/16') }}"
+  service_cidr: "{{ k3s_service_cidr | default('10.43.0.0/16') }}"
+  cluster_dns: "{{ k3s_cluster_dns | default('10.43.0.10') }}"
+  cluster_domain: "{{ k3s_cluster_domain | default('cluster.local') }}"
+  
+  # 비활성화할 구성요소
+  disable_components: "{{ k3s_disable_components | default([]) }}"
+  
+  # 추가 인수
+  extra_server_args: "{{ k3s_extra_server_args | default([]) }}"
+  extra_agent_args: "{{ k3s_extra_agent_args | default([]) }}"
+
+# 시스템 설정
+system:
+  timezone: "Asia/Seoul"
+  locale: "ko_KR.UTF-8"
+  
+  # 방화벽 설정
+  firewall:
+    enabled: true
+    rules:
+      - port: "22/tcp"
+        rule: allow
+        comment: "SSH"
+      - port: "6443/tcp"
+        rule: allow
+        comment: "k3s API server"
+      - port: "10250/tcp"
+        rule: allow
+        comment: "kubelet"
+      - port: "8472/udp"
+        rule: allow
+        comment: "flannel vxlan"
+      - port: "51820/udp"
+        rule: allow
+        comment: "flannel wireguard ipv4"
+      - port: "51821/udp"
+        rule: allow
+        comment: "flannel wireguard ipv6"
+
+# 패키지 설정
+packages:
+  update_cache: true
+  upgrade: false
+  install:
+    - curl
+    - wget
+    - unzip
+    - git
+    - htop
+    - tree
+    - jq
+    - nfs-common  # NFS 클라이언트 (필요시)
+
+# 모니터링 설정
+monitoring:
+  enabled: true
+  namespace: "monitoring"
+  prometheus:
+    enabled: true
+    retention: "15d"
+    storage_size: "10Gi"
+  grafana:
+    enabled: true
+    admin_password: "{{ vault_grafana_admin_password | default('admin') }}"
+
+# 백업 설정
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # 매일 오전 2시
+  retention_days: 7
+  storage_path: "/var/backups/k3s"
