@@ -117,10 +117,7 @@ secondary:
 
 ## Metrics
 metrics:
-  enabled: true
-  serviceMonitor:
-    enabled: true
-    namespace: monitoring
+  enabled: false
 
 ## Service configuration
 service:
