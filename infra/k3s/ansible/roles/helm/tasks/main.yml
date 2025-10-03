@@ -123,35 +123,25 @@
     - elk
     - argocd
 
-- name: Copy Helm values files to remote (mysql)
-  copy:
-    src: "{{ helm_values_source }}/mysql/values.yaml"
-    dest: /tmp/helm-values/mysql/values.yaml
-    mode: '0644'
+- name: Find actual helm values files
+  find:
+    paths: "{{ helm_values_source }}"
+    patterns: "values.yaml"
+    recurse: yes
+  delegate_to: localhost
+  register: helm_values_files
 
-- name: Copy Helm values files to remote (redis)
-  copy:
-    src: "{{ helm_values_source }}/redis/values.yaml"
-    dest: /tmp/helm-values/redis/values.yaml
-    mode: '0644'
+- name: Debug found files
+  debug:
+    msg: "{{ helm_values_files.files | map(attribute='path') | list }}"
 
-- name: Copy Helm values files to remote (kafka)
+- name: Copy Helm values files to remote
   copy:
-    src: "{{ helm_values_source }}/kafka/values.yaml"
-    dest: /tmp/helm-values/kafka/values.yaml
+    src: "{{ item.path }}"
+    dest: "/tmp/helm-values/{{ item.path | dirname | basename }}/values.yaml"
     mode: '0644'
-
-- name: Copy Helm values files to remote (elk)
-  copy:
-    src: "{{ helm_values_source }}/elk/values.yaml"
-    dest: /tmp/helm-values/elk/values.yaml
-    mode: '0644'
-
-- name: Copy Helm values files to remote (argocd)
-  copy:
-    src: "{{ helm_values_source }}/argocd/values.yaml"
-    dest: /tmp/helm-values/argocd/values.yaml
-    mode: '0644'
+  loop: "{{ helm_values_files.files }}"
+  when: helm_values_files.files | length > 0
 
 - name: Create namespaces
   kubernetes.core.k8s:
