@@ -141,6 +141,15 @@
     - item.enabled | default(true)
     - item.create_namespace | default(false)
 
+- name: Install External Secrets CRDs manually
+  shell: |
+    kubectl apply -f https://raw.githubusercontent.com/external-secrets/external-secrets/v0.9.11/deploy/crds/bundle.yaml --server-side --force-conflicts
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: crds_install
+  changed_when: "'created' in crds_install.stdout or 'configured' in crds_install.stdout"
+  failed_when: false
+
 - name: Deploy Helm charts
   kubernetes.core.helm:
     name: "{{ item.name }}"
