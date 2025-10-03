@@ -202,6 +202,17 @@
   debug:
     msg: "{{ helm_list.stdout_lines }}"
 
+- name: Wait for external-secrets namespace to be ready
+  kubernetes.core.k8s_info:
+    kind: Namespace
+    name: external-secrets
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+  register: external_secrets_ns
+  until: external_secrets_ns.resources | length > 0
+  retries: 30
+  delay: 2
+  when: lookup('env', 'DOPPLER_TOKEN') | length > 0
+
 - name: Create Doppler token Secret for External Secrets Operator
   kubernetes.core.k8s:
     state: present
