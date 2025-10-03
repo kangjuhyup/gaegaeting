@@ -4,6 +4,7 @@
 ## Global settings
 global:
   storageClass: "local-path"
+  imageRegistry: registry.bitnami.com
 
 ## Combined mode (broker + controller in single pod for dev)
 replicaCount: 1
