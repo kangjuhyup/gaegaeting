@@ -62,6 +62,10 @@ metrics:
   jmx:
     enabled: false
 
+## JMX configuration
+jmx:
+  enabled: false
+
 ## Zookeeper (disabled in KRaft mode)
 zookeeper:
   enabled: false
