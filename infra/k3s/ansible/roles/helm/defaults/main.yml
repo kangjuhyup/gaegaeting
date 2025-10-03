@@ -24,6 +24,7 @@ helm_charts:
     chart_ref: bitnami/redis
     chart_version: "18.4.0"
     values_file: "{{ playbook_dir }}/../../helm/redis/values.yaml"
+    wait: false
 
   - name: kafka
     enabled: true
@@ -32,6 +33,7 @@ helm_charts:
     chart_ref: bitnami/kafka
     chart_version: "26.4.3"
     values_file: "{{ playbook_dir }}/../../helm/kafka/values.yaml"
+    wait: false
 
   - name: elasticsearch
     enabled: true
