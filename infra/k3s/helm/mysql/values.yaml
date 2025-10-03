@@ -8,6 +8,13 @@ global:
 ## MySQL Architecture
 architecture: replication
 
+## Image configuration
+image:
+  registry: docker.io
+  repository: bitnami/mysql
+  tag: 8.0.35-debian-11-r0
+  pullPolicy: IfNotPresent
+
 ## Authentication
 auth:
   rootPassword: ""  # Set via Doppler
