@@ -88,7 +88,7 @@
 
 - name: Set helm values source path
   set_fact:
-    helm_values_source: "{{ playbook_dir | dirname | dirname | dirname }}/helm"
+    helm_values_source: "{{ playbook_dir | dirname | dirname }}/helm"
 
 - name: Debug helm values source path
   debug:
