@@ -1,8 +1,9 @@
 name: K3s Cluster Deploy
 
 on:
-  push:
-    branches: [ infra ]
+  pull_request:
+    types: [ closed ]
+    branches: [ develop, main ]
   workflow_dispatch:
     inputs:
       environment:
@@ -31,6 +32,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && contains(fromJSON('["infra"]'), github.head_ref)) }}
     environment: ${{ inputs.environment }}
 
     steps:
