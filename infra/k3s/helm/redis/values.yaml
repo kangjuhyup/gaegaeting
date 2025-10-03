@@ -34,6 +34,38 @@ master:
       memory: 256Mi
       cpu: 250m
 
+  ## Override healthcheck commands for Alpine (use sh instead of bash)
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+    runAsNonRoot: true
+
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 5
+    exec:
+      command:
+        - sh
+        - -c
+        - redis-cli ping | grep -q PONG
+
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 5
+    exec:
+      command:
+        - sh
+        - -c
+        - redis-cli ping | grep -q PONG
+
   ## Redis configuration
   configuration: |-
     # Redis performance tuning
