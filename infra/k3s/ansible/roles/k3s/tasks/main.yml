@@ -136,13 +136,12 @@
     - k3s_node_role | default('server') == 'server'
     - ansible_user != 'root'
 
-- name: Install kubectl
-  get_url:
-    url: "https://dl.k8s.io/release/v1.28.0/bin/linux/{{ k3s_arch }}/kubectl"
+- name: Create kubectl symlink from k3s
+  file:
+    src: /usr/local/bin/k3s
     dest: /usr/local/bin/kubectl
-    mode: '0755'
-    owner: root
-    group: root
+    state: link
+    force: true
 
 - name: Verify k3s installation
   block:
