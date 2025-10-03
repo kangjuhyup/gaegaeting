@@ -10,9 +10,9 @@ architecture: standalone
 
 ## Image configuration
 image:
-  registry: registry.bitnami.com
-  repository: bitnami/redis
-  tag: 7.4.2-debian-12-r0
+  registry: docker.io
+  repository: redis
+  tag: 7-alpine
   pullPolicy: IfNotPresent
 
 ## Authentication

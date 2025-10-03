@@ -10,9 +10,9 @@ architecture: replication
 
 ## Image configuration
 image:
-  registry: registry.bitnami.com
-  repository: bitnami/mysql
-  tag: 8.0.40-debian-12-r2
+  registry: docker.io
+  repository: mysql
+  tag: "8.4"
   pullPolicy: IfNotPresent
 
 ## Authentication
