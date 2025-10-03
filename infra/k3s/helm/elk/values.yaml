@@ -45,6 +45,7 @@ esConfig:
     cluster.name: gaegaeting-es
     network.host: 0.0.0.0
     xpack.security.enabled: false
+    discovery.type: single-node
 
 ## Service
 service:
