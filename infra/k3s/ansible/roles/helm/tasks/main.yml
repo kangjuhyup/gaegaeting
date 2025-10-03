@@ -105,27 +105,53 @@
     msg: "Helm values directory not found at {{ helm_values_source }}"
   when: not helm_values_dir.stat.exists
 
-- name: Create Helm values directory on remote
+- name: Create Helm values base directory on remote
   file:
     path: /tmp/helm-values
     state: directory
     mode: '0755'
 
-- name: Copy Helm values files to remote
-  synchronize:
-    src: "{{ helm_values_source }}/"
-    dest: /tmp/helm-values/
-    recursive: yes
-    delete: no
+- name: Create Helm chart subdirectories on remote
+  file:
+    path: "/tmp/helm-values/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - mysql
+    - redis
+    - kafka
+    - elk
+    - argocd
 
-- name: Verify copied files
-  shell: ls -la /tmp/helm-values/
-  register: helm_values_check
-  changed_when: false
+- name: Copy Helm values files to remote (mysql)
+  copy:
+    src: "{{ helm_values_source }}/mysql/values.yaml"
+    dest: /tmp/helm-values/mysql/values.yaml
+    mode: '0644'
 
-- name: Display copied files
-  debug:
-    msg: "{{ helm_values_check.stdout_lines }}"
+- name: Copy Helm values files to remote (redis)
+  copy:
+    src: "{{ helm_values_source }}/redis/values.yaml"
+    dest: /tmp/helm-values/redis/values.yaml
+    mode: '0644'
+
+- name: Copy Helm values files to remote (kafka)
+  copy:
+    src: "{{ helm_values_source }}/kafka/values.yaml"
+    dest: /tmp/helm-values/kafka/values.yaml
+    mode: '0644'
+
+- name: Copy Helm values files to remote (elk)
+  copy:
+    src: "{{ helm_values_source }}/elk/values.yaml"
+    dest: /tmp/helm-values/elk/values.yaml
+    mode: '0644'
+
+- name: Copy Helm values files to remote (argocd)
+  copy:
+    src: "{{ helm_values_source }}/argocd/values.yaml"
+    dest: /tmp/helm-values/argocd/values.yaml
+    mode: '0644'
 
 - name: Create namespaces
   kubernetes.core.k8s:
