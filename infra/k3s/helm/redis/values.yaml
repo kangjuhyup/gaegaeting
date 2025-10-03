@@ -125,7 +125,7 @@ metrics:
       cpu: 100m
 
   serviceMonitor:
-    enabled: true
+    enabled: false
     namespace: monitoring
 
 ## Common configuration
