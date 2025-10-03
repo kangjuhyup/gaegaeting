@@ -1,4 +1,20 @@
 ---
+- name: Install Python3 pip
+  apt:
+    name: python3-pip
+    state: present
+    update_cache: true
+  become: true
+
+- name: Install kubernetes Python library
+  pip:
+    name:
+      - kubernetes
+      - PyYAML
+    state: present
+    executable: pip3
+  become: true
+
 - name: Check if Helm is installed
   stat:
     path: /usr/local/bin/helm
