@@ -52,6 +52,14 @@ helm_charts:
     chart_version: "5.51.6"
     values_file: "{{ playbook_dir }}/../../helm/argocd/values.yaml"
 
+  - name: external-secrets
+    enabled: true
+    namespace: external-secrets
+    create_namespace: true
+    chart_ref: external-secrets/external-secrets
+    chart_version: "0.9.11"
+    values_file: "{{ playbook_dir }}/../../helm/external-secrets/values.yaml"
+
 ## Helm repositories
 helm_repos:
   - name: bitnami
@@ -60,6 +68,8 @@ helm_repos:
     url: https://helm.elastic.co
   - name: argo
     url: https://argoproj.github.io/argo-helm
+  - name: external-secrets
+    url: https://charts.external-secrets.io
 
 ## Wait for deployments
 helm_wait: true
