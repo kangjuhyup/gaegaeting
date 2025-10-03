@@ -78,22 +78,21 @@ server:
     servicePortHttps: 443
 
   ## Ingress
-  ingress:
-    enabled: false
-    ingressClassName: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    hosts:
-      - argocd.gaegaeting.com
-    paths:
-      - /
-    pathType: Prefix
-    tls:
-      - secretName: argocd-server-tls
-        hosts:
-          - argocd.gaegaeting.com
+  server:
+    ingress:
+      enabled: true
+      ingressClassName: traefik   # ← traefik ingress class
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"   # SSL 자동 발급용
+      hosts:
+        - argo.gaegaeting.app
+      paths:
+        - /
+      pathType: Prefix
+      tls:
+        - secretName: argocd-server-tls
+          hosts:
+            - argo.gaegaeting.app
 
   ## Metrics
   metrics:
