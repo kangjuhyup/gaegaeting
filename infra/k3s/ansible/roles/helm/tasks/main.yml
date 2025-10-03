@@ -86,6 +86,25 @@
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
   changed_when: false
 
+- name: Set helm values source path
+  set_fact:
+    helm_values_source: "{{ playbook_dir | dirname | dirname | dirname }}/helm"
+
+- name: Debug helm values source path
+  debug:
+    msg: "Helm values source path: {{ helm_values_source }}"
+
+- name: Check if helm values directory exists
+  stat:
+    path: "{{ helm_values_source }}"
+  delegate_to: localhost
+  register: helm_values_dir
+
+- name: Fail if helm values directory not found
+  fail:
+    msg: "Helm values directory not found at {{ helm_values_source }}"
+  when: not helm_values_dir.stat.exists
+
 - name: Create Helm values directory on remote
   file:
     path: /tmp/helm-values
@@ -94,7 +113,7 @@
 
 - name: Copy Helm values files to remote
   copy:
-    src: "{{ playbook_dir }}/../../../helm/"
+    src: "{{ helm_values_source }}/"
     dest: /tmp/helm-values/
     mode: '0644'
 
