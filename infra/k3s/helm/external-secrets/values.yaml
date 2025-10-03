@@ -1,5 +1,5 @@
 ## Install CRDs
-installCRDs: true
+installCRDs: false
 
 ## Resources
 resources:
