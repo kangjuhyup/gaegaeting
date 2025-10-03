@@ -8,50 +8,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://charts.bitnami.com/bitnami
-    chart: redis
-    targetRevision: 18.4.0
+    repoURL: https://github.com/kangjuhyup/gaegaeting
+    targetRevision: infra
+    path: infra/k3s/helm/redis
     helm:
-      values: |
-        global:
-          storageClass: "local-path"
-
-        architecture: standalone
-
-        image:
-          registry: docker.io
-          repository: redis
-          tag: "7"
-          pullPolicy: IfNotPresent
-
-        auth:
-          enabled: false
-
-        master:
-          persistence:
-            enabled: true
-            storageClass: "local-path"
-            size: 4Gi
-          resources:
-            requests:
-              memory: 128Mi
-              cpu: 100m
-            limits:
-              memory: 256Mi
-              cpu: 250m
-          containerSecurityContext:
-            enabled: true
-            runAsUser: 999
-            runAsNonRoot: true
-
-        metrics:
-          enabled: false
-
-        volumePermissions:
-          enabled: false
-
-        sysctl:
-          enabled: false
+      valueFiles:
+        - values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: database

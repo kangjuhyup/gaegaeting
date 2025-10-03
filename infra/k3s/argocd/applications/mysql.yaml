@@ -8,67 +8,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://charts.bitnami.com/bitnami
-    chart: mysql
-    targetRevision: 9.14.4
+    repoURL: https://github.com/kangjuhyup/gaegaeting
+    targetRevision: infra
+    path: infra/k3s/helm/mysql
     helm:
-      values: |
-        ## MySQL Configuration
-        global:
-          storageClass: "local-path"
-
-        architecture: replication
-
-        image:
-          registry: docker.io
-          repository: mysql
-          tag: "8.4"
-          pullPolicy: IfNotPresent
-
-        auth:
-          rootPassword: ""
-          database: gaegaeting
-          username: gaegaeting
-          password: ""
-          replicationUser: replicator
-          replicationPassword: ""
-
-        primary:
-          name: master
-          persistence:
-            enabled: true
-            storageClass: "local-path"
-            size: 20Gi
-          resources:
-            requests:
-              memory: 512Mi
-              cpu: 500m
-            limits:
-              memory: 2Gi
-              cpu: 2000m
-
-        secondary:
-          name: replica
-          replicaCount: 1
-          persistence:
-            enabled: true
-            storageClass: "local-path"
-            size: 20Gi
-          resources:
-            requests:
-              memory: 512Mi
-              cpu: 500m
-            limits:
-              memory: 2Gi
-              cpu: 2000m
-
-        metrics:
-          enabled: false
-
-        service:
-          type: ClusterIP
-          ports:
-            mysql: 3306
+      valueFiles:
+        - values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: database
