@@ -38,6 +38,7 @@ helm_charts:
     chart_ref: elastic/elasticsearch
     chart_version: "8.5.1"
     values_file: "{{ playbook_dir }}/../../../helm/elk/values.yaml"
+    values_file_remote: /tmp/helm-values/elk/values.yaml
 
   - name: argocd
     enabled: true

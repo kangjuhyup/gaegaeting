@@ -112,10 +112,20 @@
     mode: '0755'
 
 - name: Copy Helm values files to remote
-  copy:
+  synchronize:
     src: "{{ helm_values_source }}/"
     dest: /tmp/helm-values/
-    mode: '0644'
+    recursive: yes
+    delete: no
+
+- name: Verify copied files
+  shell: ls -la /tmp/helm-values/
+  register: helm_values_check
+  changed_when: false
+
+- name: Display copied files
+  debug:
+    msg: "{{ helm_values_check.stdout_lines }}"
 
 - name: Create namespaces
   kubernetes.core.k8s:
@@ -137,7 +147,7 @@
     release_namespace: "{{ item.namespace }}"
     create_namespace: "{{ item.create_namespace | default(false) }}"
     values_files:
-      - "/tmp/helm-values/{{ item.name }}/values.yaml"
+      - "{{ item.values_file_remote | default('/tmp/helm-values/' + item.name + '/values.yaml') }}"
     wait: "{{ helm_wait }}"
     wait_timeout: "{{ helm_timeout }}"
     kubeconfig: /etc/rancher/k3s/k3s.yaml
