@@ -28,6 +28,10 @@ controller:
 server:
   replicas: 2
 
+  ## Run in insecure mode (Traefik handles TLS)
+  extraArgs:
+    - --insecure
+
   resources:
     requests:
       cpu: 100m
@@ -80,9 +84,10 @@ server:
   ## Ingress
   ingress:
     enabled: true
-    ingressClassName: traefik   # ← traefik ingress class
+    ingressClassName: traefik
     annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-prod"   # SSL 자동 발급용
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
     hosts:
       - argo.gaegaeting.app
     paths:
