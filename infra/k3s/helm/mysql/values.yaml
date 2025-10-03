@@ -1,133 +1,134 @@
-## MySQL 1 Master + 1 Replica Configuration
-## Bitnami MySQL Helm Chart
+## MySQL Configuration (Wrapper Chart)
+## Values are passed to the mysql dependency
 
-## Global settings
-global:
-  storageClass: "local-path"  # k3s default storage class
-
-## MySQL Architecture
-architecture: replication
-
-## Image configuration
-image:
-  registry: docker.io
-  repository: mysql
-  tag: "8.4"
-  pullPolicy: IfNotPresent
-
-## Authentication
-auth:
-  rootPassword: ""  # Set via Doppler
-  database: gaegaeting
-  username: gaegaeting
-  password: ""  # Set via Doppler
-  replicationUser: replicator
-  replicationPassword: ""  # Set via Doppler
-
-## Primary (Master) configuration
-primary:
-  name: master
-  persistence:
-    enabled: true
+mysql:
+  ## Global settings
+  global:
     storageClass: "local-path"
-    size: 20Gi
 
-  resources:
-    requests:
-      memory: 512Mi
-      cpu: 500m
-    limits:
-      memory: 2Gi
-      cpu: 2000m
+  ## MySQL Architecture
+  architecture: replication
 
-  configuration: |-
-    [mysqld]
-    default_authentication_plugin=mysql_native_password
-    skip-name-resolve
-    explicit_defaults_for_timestamp
-    basedir=/opt/bitnami/mysql
-    plugin_dir=/opt/bitnami/mysql/lib/plugin
-    port=3306
-    socket=/opt/bitnami/mysql/tmp/mysql.sock
-    datadir=/bitnami/mysql/data
-    tmpdir=/opt/bitnami/mysql/tmp
-    max_allowed_packet=16M
-    bind-address=0.0.0.0
-    pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    log-error=/opt/bitnami/mysql/logs/mysqld.log
-    character-set-server=UTF8MB4
-    collation-server=utf8mb4_general_ci
-    slow_query_log=1
-    slow_query_log_file=/opt/bitnami/mysql/logs/mysqld-slow.log
-    long_query_time=2
+  ## Image configuration
+  image:
+    registry: docker.io
+    repository: mysql
+    tag: "8.4"
+    pullPolicy: IfNotPresent
 
-    # Replication settings
-    server-id=1
-    log-bin=mysql-bin
-    binlog_format=ROW
-    sync_binlog=1
-    expire_logs_days=7
-    max_binlog_size=100M
+  ## Authentication
+  auth:
+    rootPassword: ""  # Set via Doppler
+    database: gaegaeting
+    username: gaegaeting
+    password: ""  # Set via Doppler
+    replicationUser: replicator
+    replicationPassword: ""  # Set via Doppler
 
-    # InnoDB settings
-    innodb_buffer_pool_size=1G
-    innodb_log_file_size=256M
-    innodb_flush_log_at_trx_commit=1
-    innodb_flush_method=O_DIRECT
+  ## Primary (Master) configuration
+  primary:
+    name: master
+    persistence:
+      enabled: true
+      storageClass: "local-path"
+      size: 20Gi
 
-## Secondary (Replica) configuration
-secondary:
-  name: replica
-  replicaCount: 1
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 500m
+      limits:
+        memory: 2Gi
+        cpu: 2000m
 
-  persistence:
-    enabled: true
-    storageClass: "local-path"
-    size: 20Gi
+    configuration: |-
+      [mysqld]
+      default_authentication_plugin=mysql_native_password
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mysql
+      plugin_dir=/opt/bitnami/mysql/lib/plugin
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      datadir=/bitnami/mysql/data
+      tmpdir=/opt/bitnami/mysql/tmp
+      max_allowed_packet=16M
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+      log-error=/opt/bitnami/mysql/logs/mysqld.log
+      character-set-server=UTF8MB4
+      collation-server=utf8mb4_general_ci
+      slow_query_log=1
+      slow_query_log_file=/opt/bitnami/mysql/logs/mysqld-slow.log
+      long_query_time=2
 
-  resources:
-    requests:
-      memory: 512Mi
-      cpu: 500m
-    limits:
-      memory: 2Gi
-      cpu: 2000m
+      # Replication settings
+      server-id=1
+      log-bin=mysql-bin
+      binlog_format=ROW
+      sync_binlog=1
+      expire_logs_days=7
+      max_binlog_size=100M
 
-  configuration: |-
-    [mysqld]
-    default_authentication_plugin=mysql_native_password
-    skip-name-resolve
-    explicit_defaults_for_timestamp
-    basedir=/opt/bitnami/mysql
-    plugin_dir=/opt/bitnami/mysql/lib/plugin
-    port=3306
-    socket=/opt/bitnami/mysql/tmp/mysql.sock
-    datadir=/bitnami/mysql/data
-    tmpdir=/opt/bitnami/mysql/tmp
-    max_allowed_packet=16M
-    bind-address=0.0.0.0
-    pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    log-error=/opt/bitnami/mysql/logs/mysqld.log
-    character-set-server=UTF8MB4
-    collation-server=utf8mb4_general_ci
+      # InnoDB settings
+      innodb_buffer_pool_size=1G
+      innodb_log_file_size=256M
+      innodb_flush_log_at_trx_commit=1
+      innodb_flush_method=O_DIRECT
 
-    # Replication settings
-    server-id=2
-    relay-log=mysql-relay-bin
-    log-bin=mysql-bin
-    binlog_format=ROW
-    read_only=1
+  ## Secondary (Replica) configuration
+  secondary:
+    name: replica
+    replicaCount: 1
 
-    # InnoDB settings
-    innodb_buffer_pool_size=1G
-    innodb_log_file_size=256M
+    persistence:
+      enabled: true
+      storageClass: "local-path"
+      size: 20Gi
 
-## Metrics
-metrics:
-  enabled: false
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 500m
+      limits:
+        memory: 2Gi
+        cpu: 2000m
 
-## Service configuration
-service:
-  type: ClusterIP
-  ports:
-    mysql: 3306
+    configuration: |-
+      [mysqld]
+      default_authentication_plugin=mysql_native_password
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mysql
+      plugin_dir=/opt/bitnami/mysql/lib/plugin
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      datadir=/bitnami/mysql/data
+      tmpdir=/opt/bitnami/mysql/tmp
+      max_allowed_packet=16M
+      bind-address=0.0.0.0
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+      log-error=/opt/bitnami/mysql/logs/mysqld.log
+      character-set-server=UTF8MB4
+      collation-server=utf8mb4_general_ci
+
+      # Replication settings
+      server-id=2
+      relay-log=mysql-relay-bin
+      log-bin=mysql-bin
+      binlog_format=ROW
+      read_only=1
+
+      # InnoDB settings
+      innodb_buffer_pool_size=1G
+      innodb_log_file_size=256M
+
+  ## Metrics
+  metrics:
+    enabled: false
+
+  ## Service configuration
+  service:
+    type: ClusterIP
+    ports:
+      mysql: 3306
