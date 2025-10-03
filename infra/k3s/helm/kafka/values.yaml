@@ -1,47 +1,27 @@
 ## Kafka Configuration (Bitnami Kafka Helm Chart v26.4.3)
-## Using KRaft mode (Zookeeper-less)
+## Using KRaft mode (Zookeeper-less) - Minimal setup
 
 ## Global settings
 global:
   storageClass: "local-path"
 
-## Kafka broker replicas
-broker:
-  replicaCount: 3
+## Combined mode (broker + controller in single pod for dev)
+replicaCount: 1
 
-  ## Persistence
-  persistence:
-    enabled: true
-    storageClass: "local-path"
-    size: 20Gi
+## Persistence
+persistence:
+  enabled: true
+  storageClass: "local-path"
+  size: 10Gi
 
-  ## Resources
-  resources:
-    requests:
-      memory: 1Gi
-      cpu: 500m
-    limits:
-      memory: 2Gi
-      cpu: 1000m
-
-## KRaft controller (replaces Zookeeper)
-controller:
-  replicaCount: 3
-
-  ## Persistence
-  persistence:
-    enabled: true
-    storageClass: "local-path"
-    size: 8Gi
-
-  ## Resources
-  resources:
-    requests:
-      memory: 512Mi
-      cpu: 250m
-    limits:
-      memory: 1Gi
-      cpu: 500m
+## Resources (minimal for dev)
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 250m
+  limits:
+    memory: 1Gi
+    cpu: 500m
 
 ## Kafka configuration
 kraft:
@@ -55,41 +35,37 @@ listeners:
   interbroker:
     protocol: PLAINTEXT
 
-## Kafka server properties
-config: |
+## Kafka server properties (single replica settings)
+extraConfig: |
   auto.create.topics.enable=true
-  default.replication.factor=2
+  default.replication.factor=1
   min.insync.replicas=1
   num.partitions=3
-  offsets.topic.replication.factor=2
-  transaction.state.log.replication.factor=2
+  offsets.topic.replication.factor=1
+  transaction.state.log.replication.factor=1
   transaction.state.log.min.isr=1
   log.retention.hours=168
-  log.segment.bytes=1073741824
-  log.retention.check.interval.ms=300000
   compression.type=producer
   message.max.bytes=10485760
 
-## Metrics
+## Metrics (disabled)
 metrics:
   kafka:
-    enabled: true
-  jmx:
-    enabled: true
-  serviceMonitor:
     enabled: false
-    namespace: monitoring
+  jmx:
+    enabled: false
 
 ## Zookeeper (disabled in KRaft mode)
 zookeeper:
   enabled: false
 
-## External access (optional)
-externalAccess:
-  enabled: false
-
 ## Service configuration
 service:
   type: ClusterIP
+  ports:
+    client: 9092
+
+## Headless service
+headlessService:
   ports:
     client: 9092
