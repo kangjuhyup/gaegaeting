@@ -8,6 +8,13 @@ global:
 ## Redis Architecture (standalone for dev)
 architecture: standalone
 
+## Image configuration
+image:
+  registry: docker.io
+  repository: bitnami/redis
+  tag: 7.4.2-debian-12-r0
+  pullPolicy: IfNotPresent
+
 ## Authentication
 auth:
   enabled: false

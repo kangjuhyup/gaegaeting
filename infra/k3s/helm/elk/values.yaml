@@ -5,6 +5,11 @@
 clusterName: "gaegaeting-es"
 nodeGroup: "master"
 
+## Image configuration
+image: "docker.elastic.co/elasticsearch/elasticsearch"
+imageTag: "8.5.1"
+imagePullPolicy: "IfNotPresent"
+
 ## Replica count (3 for production, 1 for dev)
 replicas: 1
 minimumMasterNodes: 1

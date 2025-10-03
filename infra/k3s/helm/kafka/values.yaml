@@ -5,6 +5,13 @@
 global:
   storageClass: "local-path"
 
+## Image configuration
+image:
+  registry: docker.io
+  repository: bitnami/kafka
+  tag: 3.9.0-debian-12-r3
+  pullPolicy: IfNotPresent
+
 ## Combined mode (broker + controller in single pod for dev)
 replicaCount: 1
 
