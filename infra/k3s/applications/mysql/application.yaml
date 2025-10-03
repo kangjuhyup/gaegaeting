@@ -1,0 +1,160 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mysql
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: mysql
+    targetRevision: 9.14.4
+    helm:
+      values: |
+        ## Global settings
+        global:
+          storageClass: "local-path"
+
+        ## MySQL Architecture
+        architecture: replication
+
+        ## Image configuration
+        image:
+          registry: docker.io
+          repository: bitnami/mysql
+          tag: "8.4"
+          pullPolicy: IfNotPresent
+
+        ## Authentication
+        auth:
+          existingSecret: mysql-secrets
+          database: gaegaeting
+          username: gaegaeting
+          replicationUser: replicator
+
+        ## Primary (Master) configuration
+        primary:
+          name: master
+          persistence:
+            enabled: true
+            storageClass: "local-path"
+            size: 20Gi
+
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 500m
+            limits:
+              memory: 2Gi
+              cpu: 2000m
+
+          configuration: |-
+            [mysqld]
+            default_authentication_plugin=mysql_native_password
+            skip-name-resolve
+            explicit_defaults_for_timestamp
+            basedir=/opt/bitnami/mysql
+            plugin_dir=/opt/bitnami/mysql/lib/plugin
+            port=3306
+            socket=/opt/bitnami/mysql/tmp/mysql.sock
+            datadir=/bitnami/mysql/data
+            tmpdir=/opt/bitnami/mysql/tmp
+            max_allowed_packet=16M
+            bind-address=0.0.0.0
+            pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+            log-error=/opt/bitnami/mysql/logs/mysqld.log
+            character-set-server=UTF8MB4
+            collation-server=utf8mb4_general_ci
+            slow_query_log=1
+            slow_query_log_file=/opt/bitnami/mysql/logs/mysqld-slow.log
+            long_query_time=2
+
+            # Replication settings
+            server-id=1
+            log-bin=mysql-bin
+            binlog_format=ROW
+            sync_binlog=1
+            expire_logs_days=7
+            max_binlog_size=100M
+
+            # InnoDB settings
+            innodb_buffer_pool_size=1G
+            innodb_log_file_size=256M
+            innodb_flush_log_at_trx_commit=1
+            innodb_flush_method=O_DIRECT
+
+        ## Secondary (Replica) configuration
+        secondary:
+          name: replica
+          replicaCount: 1
+
+          persistence:
+            enabled: true
+            storageClass: "local-path"
+            size: 20Gi
+
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 500m
+            limits:
+              memory: 2Gi
+              cpu: 2000m
+
+          configuration: |-
+            [mysqld]
+            default_authentication_plugin=mysql_native_password
+            skip-name-resolve
+            explicit_defaults_for_timestamp
+            basedir=/opt/bitnami/mysql
+            plugin_dir=/opt/bitnami/mysql/lib/plugin
+            port=3306
+            socket=/opt/bitnami/mysql/tmp/mysql.sock
+            datadir=/bitnami/mysql/data
+            tmpdir=/opt/bitnami/mysql/tmp
+            max_allowed_packet=16M
+            bind-address=0.0.0.0
+            pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+            log-error=/opt/bitnami/mysql/logs/mysqld.log
+            character-set-server=UTF8MB4
+            collation-server=utf8mb4_general_ci
+
+            # Replication settings
+            server-id=2
+            relay-log=mysql-relay-bin
+            log-bin=mysql-bin
+            binlog_format=ROW
+            read_only=1
+
+            # InnoDB settings
+            innodb_buffer_pool_size=1G
+            innodb_log_file_size=256M
+
+        ## Metrics
+        metrics:
+          enabled: false
+
+        ## Service configuration
+        service:
+          type: ClusterIP
+          ports:
+            mysql: 3306
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: database
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
