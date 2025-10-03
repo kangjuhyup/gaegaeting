@@ -186,6 +186,18 @@
     - item.item.enabled | default(true)
     - not item.unreachable | default(false)
   failed_when: false
+  register: statefulset_restart_result
+
+- name: Display restarted StatefulSets
+  debug:
+    msg: |
+      🔄 Restarted StatefulSet: {{ item.item.item.name }}-{{ item.item.item.statefulset_suffix | default('master') }}
+      Namespace: {{ item.item.item.namespace }}
+      Restart Time: {{ ansible_date_time.iso8601 }}
+  loop: "{{ statefulset_restart_result.results }}"
+  when:
+    - not item.skipped | default(false)
+    - not item.failed | default(false)
 
 - name: List all Helm releases
   command: helm list --all-namespaces
