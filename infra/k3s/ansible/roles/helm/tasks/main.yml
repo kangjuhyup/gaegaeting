@@ -123,25 +123,15 @@
     - elk
     - argocd
 
-- name: Find actual helm values files
-  find:
-    paths: "{{ helm_values_source }}"
-    patterns: "values.yaml"
-    recurse: yes
-  delegate_to: localhost
-  register: helm_values_files
-
-- name: Debug found files
-  debug:
-    msg: "{{ helm_values_files.files | map(attribute='path') | list }}"
-
 - name: Copy Helm values files to remote
   copy:
-    src: "{{ item.path }}"
-    dest: "/tmp/helm-values/{{ item.path | dirname | basename }}/values.yaml"
+    src: "{{ item.values_file }}"
+    dest: "/tmp/helm-values/{{ item.name }}/values.yaml"
     mode: '0644'
-  loop: "{{ helm_values_files.files }}"
-  when: helm_values_files.files | length > 0
+  loop: "{{ helm_charts }}"
+  when:
+    - item.enabled | default(true)
+    - item.values_file is defined
 
 - name: Create namespaces
   kubernetes.core.k8s:
