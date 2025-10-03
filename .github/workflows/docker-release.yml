@@ -3,6 +3,9 @@ name: Docker Release
 on:
   push:
     branches: [ release ]
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    branches: [ release, develop ]
 
 env:
   REGISTRY: ghcr.io
@@ -38,6 +41,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Determine source branch and image tag
+        id: branch-info
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # PR인 경우 head branch 사용
+            SOURCE_BRANCH="${{ github.head_ref }}"
+          else
+            # push인 경우 현재 branch
+            SOURCE_BRANCH="${GITHUB_REF#refs/heads/}"
+          fi
+
+          # 브랜치명을 이미지 suffix로 변환 (account/api -> account-api)
+          IMAGE_SUFFIX=$(echo "$SOURCE_BRANCH" | sed 's|/|-|g')
+
+          # 이미지 이름 결정
+          if [[ "$SOURCE_BRANCH" == *"/"* ]]; then
+            # 브랜치에 슬래시가 있으면 (예: account/api)
+            IMAGE_NAME="gaegaeting-${IMAGE_SUFFIX}"
+          else
+            # 기본 이미지 이름
+            IMAGE_NAME="${{ matrix.image }}"
+          fi
+
+          echo "source_branch=$SOURCE_BRANCH" >> $GITHUB_OUTPUT
+          echo "image_suffix=$IMAGE_SUFFIX" >> $GITHUB_OUTPUT
+          echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
+          echo "Source Branch: $SOURCE_BRANCH"
+          echo "Image Name: $IMAGE_NAME"
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -67,11 +100,12 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ steps.branch-info.outputs.image_name }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ steps.branch-info.outputs.image_name }}:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.branch=${{ steps.branch-info.outputs.source_branch }}
           # ⚠️ build-time 시크릿이 필요하다면 아래 secrets 블록과 Dockerfile의 --mount=type=secret 사용
           # secrets: |
           #   id=doppler,env=DOPPLER_TOKEN
