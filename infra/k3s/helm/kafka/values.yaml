@@ -62,9 +62,14 @@ metrics:
   jmx:
     enabled: false
 
-## JMX configuration
-jmx:
+## Disable JMX exporter sidecar
+externalAccess:
   enabled: false
+
+## Controller settings
+controller:
+  jmx:
+    enabled: false
 
 ## Zookeeper (disabled in KRaft mode)
 zookeeper:
