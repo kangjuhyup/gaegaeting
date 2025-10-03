@@ -11,6 +11,9 @@ spec:
     repoURL: https://github.com/kangjuhyup/gaegaeting
     targetRevision: infra
     path: infra/k3s/helm/mysql
+    helm:
+      valueFiles:
+        - values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: database
