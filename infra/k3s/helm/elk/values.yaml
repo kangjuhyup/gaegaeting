@@ -10,13 +10,14 @@ image: "docker.elastic.co/elasticsearch/elasticsearch"
 imageTag: "8.5.1"
 imagePullPolicy: "IfNotPresent"
 
-## Replica count (3 for production, 1 for dev)
+## Replica count (1 for single-node dev cluster)
 replicas: 1
-minimumMasterNodes: 1
 
-## Single-node cluster discovery
-clusterInitialMasterNodes:
-  - elasticsearch-master-0
+## Roles (all roles for single node)
+roles:
+  - master
+  - data
+  - ingest
 
 ## Health check configuration (yellow is OK for single node)
 clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
