@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: mysql
-          image: docker.io/bitnami/mysql:8.4.3
+          image: docker.io/bitnami/mysql:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: MYSQL_DATABASE
