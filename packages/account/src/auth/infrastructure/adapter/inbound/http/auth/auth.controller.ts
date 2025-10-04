@@ -14,10 +14,10 @@ import { SocialLoginNativeBody, SocialLogInNativeParam } from './dto/request/soc
 import { SocialLoginByTokenCommand } from '@app/auth/application/port/command/social-login-by-token.port';
 import { SendOptMessageBody } from './dto/request/send-opt-message.request';
 import { VerifyOptMessageBody } from './dto/request/verify-opt-message.request';
-import { SendOptMessageCommand } from '@app/auth/application/port/command/send-opt-message.port';
+import { SendOptMessageCommand } from '@app/auth/application/port/command/send-otp-message.port';
 import { SendOptMessageResponse } from './dto/response/send-opt-message.response';
 import { VerifyOptMessageResponse } from './dto/response/verify-opt-message.response';
-import { VerifyOptMessageCommand } from '@app/auth/application/port/command/verify-opt-message.port';
+import { VerifyOptMessageCommand } from '@app/auth/application/port/command/verify-otp-message.port';
 
 @ApiTags('Account','Auth')
 @Controller('auth')
