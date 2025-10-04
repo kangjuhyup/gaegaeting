@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: mysql
-          image: docker.io/bitnami/mysql:latest
+          image: mysql:8.0
           imagePullPolicy: IfNotPresent
           env:
             - name: MYSQL_REPLICATION_MODE
@@ -50,9 +50,9 @@ spec:
               protocol: TCP
           volumeMounts:
             - name: data
-              mountPath: /bitnami/mysql/data
+              mountPath: /var/lib/mysql
             - name: config
-              mountPath: /opt/bitnami/mysql/conf/my_custom.cnf
+              mountPath: /etc/mysql/conf.d/my.cnf
               subPath: my.cnf
           resources:
             requests:
