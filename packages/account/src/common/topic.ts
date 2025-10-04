@@ -3,7 +3,7 @@
 import { AccountUserPhoneVerifiedV1Payload } from "./payload";
 
 export const Topics = {
-    ACCOUNT_USER_PHONE_VERIFIED_V1 : 'account.user.phoneVerified.v1',
+    ACCOUNT_USER_PHONE_VERIFIED_V1 : 'account.user.phone_verified.v1',
 } as const;
 
 export type Topics = typeof Topics[keyof typeof Topics];
