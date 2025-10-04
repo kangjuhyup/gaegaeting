@@ -5,17 +5,25 @@ import { UserGender, UserRegion, UserStatus } from "@app/user/domain/enum/user.e
 import { UpdateUserHandler } from "../update-user.command";
 import { UpdateUserCommand } from "@app/user/application/port/command/update-user.port";
 
+// Mock DataSource for @Transactional decorator
+const mockDataSource = {
+    transaction: jest.fn((callback) => {
+        return callback({} as any);
+    })
+};
+
 describe('UpdateUserHandler 단위 테스트', () => {
     let userRepositoryPort: jest.Mocked<UserRepositoryPort>;
     let updateUserHandler: UpdateUserHandler;
-    
+
     const userId = 'test-user-id';
     const mockDate = new Date();
-    
+
     beforeEach(() => {
         jest.clearAllMocks();
         userRepositoryPort = mockUserRepositoryPort;
         updateUserHandler = new UpdateUserHandler(userRepositoryPort);
+        (updateUserHandler as any).dataSource = mockDataSource;
     });
     
     it('존재하지 않는 유저일 경우 404에러', async () => {

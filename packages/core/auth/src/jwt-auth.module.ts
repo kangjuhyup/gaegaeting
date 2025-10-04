@@ -4,7 +4,10 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { PassportModule } from "@nestjs/passport";
 import { JwtStrategy } from "./strategy/jwt.strategy";
 import { JwtTokenService } from "./service/jwt-token.service";
+import { AdminTokenService } from "./service/admin-token.service";
 import { AccessGuard } from "./guard/access.guard";
+import { AdminGuard } from "./guard/admin.guard";
+import { FlexibleAuthGuard } from "./guard/flexible-auth.guard";
 import { AuthConfigValidator, AuthConfigValidationError } from "./config/auth-config.validator";
 import { UserService } from "./service/user.service";
 import { UserGuard } from "./guard/user.guard";
@@ -102,6 +105,18 @@ export class JwtAuthModule {
                     inject: [AUTH_MODULE_OPTIONS, JwtService]
                 },
                 {
+                    provide: AdminTokenService,
+                    useFactory: (authOptions: AuthModuleOptions, jwtService: JwtService) => {
+                        return new AdminTokenService(
+                            jwtService,
+                            authOptions.secret,
+                            authOptions.accessExpiresIn,
+                            authOptions.refreshExpiresIn
+                        );
+                    },
+                    inject: [AUTH_MODULE_OPTIONS, JwtService]
+                },
+                {
                     provide: UserService,
                     useFactory: (authOptions: AuthModuleOptions) => {
                         return new UserService(authOptions.userServiceHost);
@@ -109,13 +124,18 @@ export class JwtAuthModule {
                     inject: [AUTH_MODULE_OPTIONS]
                 },
                 AccessGuard,
+                AdminGuard,
+                FlexibleAuthGuard,
             ],
             exports: [
                 JwtModule,
                 JwtTokenService,
+                AdminTokenService,
                 UserService,
                 AccessGuard,
-                UserGuard
+                UserGuard,
+                AdminGuard,
+                FlexibleAuthGuard,
             ],
         };
     }
@@ -171,6 +191,18 @@ export class JwtAuthModule {
                     inject: [AUTH_MODULE_OPTIONS, JwtService]
                 },
                 {
+                    provide: AdminTokenService,
+                    useFactory: async (authOptions: AuthModuleOptions, jwtService: JwtService) => {
+                        return new AdminTokenService(
+                            jwtService,
+                            authOptions.secret,
+                            authOptions.accessExpiresIn,
+                            authOptions.refreshExpiresIn
+                        );
+                    },
+                    inject: [AUTH_MODULE_OPTIONS, JwtService]
+                },
+                {
                     provide : UserService,
                     useFactory : async (authOptions: AuthModuleOptions) => {
                         return new UserService(authOptions.userServiceHost);
@@ -178,14 +210,19 @@ export class JwtAuthModule {
                     inject : [AUTH_MODULE_OPTIONS]
                 },
                 AccessGuard,
-                UserGuard
+                UserGuard,
+                AdminGuard,
+                FlexibleAuthGuard,
             ],
             exports: [
                 JwtModule,
                 JwtTokenService,
+                AdminTokenService,
                 UserService,
                 AccessGuard,
-                UserGuard
+                UserGuard,
+                AdminGuard,
+                FlexibleAuthGuard,
             ],
         };
     }

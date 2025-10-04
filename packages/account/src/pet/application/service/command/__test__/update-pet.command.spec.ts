@@ -5,14 +5,22 @@ import { UserPrincipal } from '@core/auth';
 import { PetBreed, PetGender, PetPersonality, PetSize } from '@app/pet/domain/enum/pet.enum';
 import { mockPetRepositoryPort, mockPetCertificationPort } from '../../__test__/mock';
 
+// Mock DataSource for @Transactional decorator
+const mockDataSource = {
+  transaction: jest.fn((callback) => {
+    return callback({} as any);
+  })
+};
+
 describe('UpdatePetHandler', () => {
   let handler: UpdatePetHandler;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // 핸들러 생성
     handler = new UpdatePetHandler(mockPetRepositoryPort, mockPetCertificationPort);
+    (handler as any).dataSource = mockDataSource;
   });
 
   it('반려동물 정보를 성공적으로 업데이트해야 함', async () => {

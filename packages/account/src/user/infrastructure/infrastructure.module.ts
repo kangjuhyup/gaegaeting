@@ -1,10 +1,8 @@
-import { DatabaseModule, DatabaseSchema } from "@core/database";
 import { Module, Provider } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UserRepositoryPort } from "../domain/port/user-repository.port";
 import { UserOrmRepository } from "./adapter/outbound/persistence/user.orm.repository";
 import { UserController } from "./adapter/inbound/http/user/user.controller";
-import { PetController } from "../../pet/infrastructure/adapter/inbound/http/pet/pet.controller";
 import { StorageModule } from "@core/storage";
 import { AuthInternalApiAdapter } from "./adapter/outbound/api/auth-internal-api.adpater";
 import { AuthInternalApiPort } from "../domain/port/auth-internal-api.port";
@@ -12,6 +10,7 @@ import { AuthOrmRepository } from "@app/auth/infrastructure/adapter/outbound/pre
 import { AuthMapper } from "@app/auth/infrastructure/adapter/outbound/presistence/mapper/auth.mapper";
 import { UserStoragePort } from "../domain/port/user-storage.port";
 import { UserStorageAdapter } from "./adapter/outbound/api/user-storage.adapter";
+import { AdminUserContorller } from "./adapter/inbound/http/user/user.admin.controller";
 
 const providers : Provider[] = [
     {
@@ -52,6 +51,7 @@ const providers : Provider[] = [
     ],
     controllers : [
         UserController,
+        AdminUserContorller,
     ],
     providers : providers,
     exports : providers,

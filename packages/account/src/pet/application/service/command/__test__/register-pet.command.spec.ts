@@ -5,13 +5,21 @@ import { UserPrincipal } from '@core/auth';
 import { PetBreed, PetGender, PetPersonality, PetSize } from '@app/pet/domain/enum/pet.enum';
 import { mockPetRepositoryPort, mockPetCertificationPort } from '../../__test__/mock';
 
+// Mock DataSource for @Transactional decorator
+const mockDataSource = {
+  transaction: jest.fn((callback) => {
+    return callback({} as any);
+  })
+};
+
 describe('RegisterPetHandler', () => {
   let handler: RegisterPetHandler;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     handler = new RegisterPetHandler(mockPetRepositoryPort, mockPetCertificationPort);
+    (handler as any).dataSource = mockDataSource;
   });
 
 

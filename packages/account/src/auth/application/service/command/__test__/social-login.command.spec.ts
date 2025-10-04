@@ -8,10 +8,17 @@ import { AuthToken } from '@app/auth/domain/model/auth-token';
 import { AuthEntity } from '@app/auth/domain/model/auth';
 import { AuthTokenService } from '../../auth-token.service';
 
+// Mock DataSource for @Transactional decorator
+const mockDataSource = {
+  transaction: jest.fn((callback) => {
+    return callback({} as any);
+  })
+};
+
 // 목 객체 클래스
 class MockSocialToken {
   constructor(private readonly accessToken: string) {}
-  
+
   getAccessToken(): string {
     return this.accessToken;
   }
@@ -19,7 +26,7 @@ class MockSocialToken {
 
 class MockUserProfile {
   constructor(private readonly providerId: string) {}
-  
+
   getProviderId(): string {
     return this.providerId;
   }
@@ -31,7 +38,7 @@ describe('SocialLoginHandler 단위 테스트', () => {
   let jwtPort: jest.Mocked<JwtPort>;
   let kakaoAuthProvider: jest.Mocked<SocialAuthProviderPort>;
   let authTokenService: AuthTokenService;
-  
+
   // 테스트 데이터
   const mockCode = 'test_auth_code';
   const mockState = 'test_state';
@@ -40,15 +47,15 @@ describe('SocialLoginHandler 단위 테스트', () => {
   const mockRefreshToken = 'test_refresh_token';
   const mockKakaoToken = new MockSocialToken('kakao_access_token');
   const mockUserProfile = new MockUserProfile(mockProviderId);
-  
-  beforeEach(() => {
+
+  beforeAll(() => {
     // 모의 객체 생성
     jest.clearAllMocks();
-    
+
     authRepository = {
       saveAuth: jest.fn().mockResolvedValue(undefined),
     } as any;
-    
+
     jwtPort = {
       createAccessToken: jest.fn().mockResolvedValue(mockAccessToken),
       createRefreshToken: jest.fn().mockResolvedValue(mockRefreshToken),
@@ -57,24 +64,25 @@ describe('SocialLoginHandler 단위 테스트', () => {
         refreshToken: 604800
       }),
     } as any;
-    
+
     kakaoAuthProvider = {
       getSupportedProvider: jest.fn().mockReturnValue(AuthProvider.KAKAO),
       getAccessToken: jest.fn().mockResolvedValue(mockKakaoToken),
       getUserProfile: jest.fn().mockResolvedValue(mockUserProfile),
     } as any;
-    
+
     // AuthTokenService 모의 객체 생성
     authTokenService = new AuthTokenService(
       authRepository,
       jwtPort
     );
-    
+
     // 직접 의존성 주입
     handler = new SocialLoginHandler(
       authTokenService,
       [kakaoAuthProvider]
     );
+    (handler as any).dataSource = mockDataSource;
   });
   
   it('카카오 로그인 성공 시 인증 엔티티를 반환해야 함', async () => {

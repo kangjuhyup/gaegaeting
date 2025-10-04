@@ -5,6 +5,7 @@ import { AuthInfraStructureModule } from "../infrastructure/infrastructure.modul
 import { GetUserPrincipalHandler } from "./service/query/get-user-principal.query";
 import { AuthTokenService } from "./service/auth-token.service";
 import { SocialLoginByTokenHandler } from "./service/command/social-login-by-token.command";
+import { AdminLoginCommandHandler } from "./service/command/admin-login.command";
 
 const providers : Provider[] = [
      // Service
@@ -17,7 +18,7 @@ const providers : Provider[] = [
      // Command
      SocialLoginHandler,
      SocialLoginByTokenHandler,
-     
+     AdminLoginCommandHandler
 
 ]
 
