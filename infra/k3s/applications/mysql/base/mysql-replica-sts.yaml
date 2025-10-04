@@ -63,22 +63,16 @@ spec:
               memory: "2Gi"
               cpu: "2000m"
           livenessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - mysqladmin status -uroot -p$MYSQL_ROOT_PASSWORD
+            tcpSocket:
+              port: 3306
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
             successThreshold: 1
             failureThreshold: 3
           readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - mysqladmin status -uroot -p$MYSQL_ROOT_PASSWORD
+            tcpSocket:
+              port: 3306
             initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 5
