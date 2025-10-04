@@ -1,20 +1,17 @@
 import { AdminTokenService, AdminJwtPayload } from "@app/service/admin-token.service";
 import { JwtTokenService } from "@app/service/jwt-token.service";
-import { ExecutionContext, Injectable } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 
 /**
  * Admin 또는 User 모두 접근 가능한 가드
  * 토큰 검증 후 admin 또는 user 정보를 request에 추가
  */
 @Injectable()
-export class FlexibleAuthGuard extends AuthGuard('jwt') {
+export class FlexibleAuthGuard implements CanActivate {
     constructor(
         private readonly adminTokenService: AdminTokenService,
         private readonly jwtTokenService: JwtTokenService,
-    ) {
-        super();
-    }
+    ) {}
 
     /**
      * 토큰 검증 (Admin 또는 User)

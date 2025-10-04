@@ -1,18 +1,15 @@
 import { AdminTokenService, AdminJwtPayload } from "@app/service/admin-token.service";
-import { ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 
 /**
  * 어드민 액세스 토큰 검증을 위한 가드
  * AdminTokenService를 활용하여 토큰 검증 및 ADMIN role 확인
  */
 @Injectable()
-export class AdminGuard extends AuthGuard('jwt') {
+export class AdminGuard implements CanActivate {
     constructor(
         private readonly adminTokenService: AdminTokenService,
-    ) {
-        super();
-    }
+    ) {}
 
     /**
      * 어드민 토큰 검증 및 권한 확인
