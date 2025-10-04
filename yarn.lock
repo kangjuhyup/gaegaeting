@@ -1400,7 +1400,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@core/redis@workspace:packages/core/redis":
+"@core/redis@npm:*, @core/redis@workspace:packages/core/redis":
   version: 0.0.0-use.local
   resolution: "@core/redis@workspace:packages/core/redis"
   dependencies:
@@ -4439,6 +4439,7 @@ __metadata:
     "@core/http": "npm:*"
     "@core/logger": "npm:*"
     "@core/model": "npm:*"
+    "@core/redis": "npm:*"
     "@core/storage": "npm:*"
     "@core/util": "npm:*"
     "@nestjs/axios": "npm:^3.1.3"

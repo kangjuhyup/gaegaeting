@@ -21,6 +21,8 @@ export const envSpec = {
   DATABASE_NAME: { joi: Joi.string().default('ggt_account') },
   PUBLIC_DATA_API_KEY: { joi: Joi.string().required() },
   ADMIN_PASSWORD : { joi : Joi.string().required() }
+  REDIS_HOST : { joi: Joi.string().required() },
+  REDIS_PORT : { joi: Joi.string().required() }
 } as const;
 
 // 2) 타입과 상수 자동 추출

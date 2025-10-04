@@ -21,6 +21,7 @@ export class RedisCacheModule {
   static forRootAsync(opts: RedisCacheModuleAsyncOptions): DynamicModule {
     return {
       module: RedisCacheModule,
+      imports: opts.imports ?? [],
       providers: [
         { provide: REDIS_CACHE_OPTIONS, useFactory: opts.useFactory, inject: opts.inject ?? [] },
         {
