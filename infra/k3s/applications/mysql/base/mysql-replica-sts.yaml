@@ -24,26 +24,20 @@ spec:
           image: mysql:8.0
           imagePullPolicy: IfNotPresent
           env:
-            - name: MYSQL_REPLICATION_MODE
-              value: "slave"
-            - name: MYSQL_MASTER_HOST
-              value: "mysql-master"
-            - name: MYSQL_MASTER_PORT_NUMBER
-              value: "3306"
-            - name: MYSQL_MASTER_ROOT_USER
-              value: "root"
-            - name: MYSQL_MASTER_ROOT_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mysql-secrets
                   key: mysql-root-password
-            - name: MYSQL_REPLICATION_USER
-              value: "replicator"
-            - name: MYSQL_REPLICATION_PASSWORD
+            - name: MYSQL_DATABASE
+              value: "gaegaeting"
+            - name: MYSQL_USER
+              value: "gaegaeting"
+            - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mysql-secrets
-                  key: mysql-replication-password
+                  key: mysql-password
           ports:
             - name: mysql
               containerPort: 3306
