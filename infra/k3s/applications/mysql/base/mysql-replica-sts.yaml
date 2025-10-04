@@ -65,11 +65,9 @@ spec:
           livenessProbe:
             exec:
               command:
-                - /bin/bash
-                - -ec
-                - |
-                  password_aux="${MYSQL_MASTER_ROOT_PASSWORD:-}"
-                  mysqladmin status -uroot -p"${password_aux}"
+                - sh
+                - -c
+                - mysqladmin status -uroot -p$MYSQL_ROOT_PASSWORD
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -78,11 +76,9 @@ spec:
           readinessProbe:
             exec:
               command:
-                - /bin/bash
-                - -ec
-                - |
-                  password_aux="${MYSQL_MASTER_ROOT_PASSWORD:-}"
-                  mysqladmin status -uroot -p"${password_aux}"
+                - sh
+                - -c
+                - mysqladmin status -uroot -p$MYSQL_ROOT_PASSWORD
             initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 5
