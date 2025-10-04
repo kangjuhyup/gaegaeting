@@ -76,7 +76,7 @@ spec:
             httpGet:
               path: /_cluster/health?wait_for_status=yellow&timeout=60s
               port: http
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
             successThreshold: 1
