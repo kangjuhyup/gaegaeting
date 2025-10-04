@@ -74,4 +74,29 @@ export class AuthTokenService {
             throw new Error(`인증 엔티티 생성 중 오류가 발생했습니다: ${error.message}`);
         }
     }
+
+    async createAdminToken(id : string) {
+        // JWT 토큰 생성 (자체 토큰)
+        const accessToken = await this.jwtPort.createAccessToken({
+            role : 'ADMIN',
+            id
+        });
+            
+        const refreshToken = await this.jwtPort.createRefreshToken({
+            role : 'ADMIN',
+            id
+        });
+            
+        const expiresIn = this.jwtPort.getExpriesIn();
+            
+        // 자체 토큰 생성
+        const authToken = new AuthToken({
+            accessToken,
+            refreshToken,
+            expiresIn: expiresIn.accessToken, // 1시간
+            refreshTokenExpiresIn: expiresIn.refreshToken, // 7일   
+            tokenType: 'Bearer'
+        });
+        return authToken
+    }
 }

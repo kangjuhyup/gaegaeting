@@ -9,6 +9,7 @@ import { AuthMapper } from "./adapter/outbound/presistence/mapper/auth.mapper";
 import { HttpModule } from "@core/http";
 import { JwtPort } from "../domain/port/jwt.port";
 import { JwtAdpater } from "./adapter/outbound/jwt.adapter";
+import { AdminAuthController } from "./adapter/inbound/http/auth/auth.admin.controller";
 
 const providers : Provider[] = [
     // 매퍼 클래스
@@ -55,7 +56,8 @@ const providers : Provider[] = [
        
     ],
     controllers : [
-        AuthController
+        AuthController,
+        AdminAuthController
     ],
     providers : providers,
     exports : providers,
