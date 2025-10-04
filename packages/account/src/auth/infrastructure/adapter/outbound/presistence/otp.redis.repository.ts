@@ -9,22 +9,22 @@ export class OtpRedisRepository implements OtpRepositoryPort {
         private readonly cache : CacheService 
     ) {}
     
-    exists(phoneNumber: string): Promise<boolean> {
+    exists(key: string): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
-    save(phoneNumber: string, otp: string, ttlSec: number): Promise<void> {
+    save(key : string, param: any , ttlSec: number): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    get(phoneNumber: string): Promise<string | null> {
+    get(key: string): Promise<string | null> {
         throw new Error("Method not implemented.");
     }
-    delete(phoneNumber: string): Promise<void> {
+    delete(key: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    incrementAttempts(phoneNumber: string): Promise<number> {
+    incrementAttempts(key: string): Promise<number> {
         throw new Error("Method not implemented.");
     }
-    getAttempts(phoneNumber: string): Promise<number> {
+    getAttempts(key: string): Promise<number> {
         throw new Error("Method not implemented.");
     }
 

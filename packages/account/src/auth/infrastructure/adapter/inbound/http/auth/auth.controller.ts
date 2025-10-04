@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SocialRedirectQuery } from '@app/auth/application/port/query/social-redirect.port';
@@ -18,6 +18,7 @@ import { SendOptMessageCommand } from '@app/auth/application/port/command/send-o
 import { SendOptMessageResponse } from './dto/response/send-opt-message.response';
 import { VerifyOptMessageResponse } from './dto/response/verify-opt-message.response';
 import { VerifyOtpMessageCommand } from '@app/auth/application/port/command/verify-otp-message.port';
+import { AccessGuard, UserGuard, UserParam, UserPrincipal } from '@core/auth';
 
 @ApiTags('Account','Auth')
 @Controller('auth')
@@ -162,20 +163,23 @@ export class AuthController {
   }
 
   @Post('/auth/phone')
+  @UseGuards(AccessGuard,UserGuard)
   @ApiOperation({ summary : '휴대폰 인증번호 요청' })
   @ApiResponse({ status : 201, type : () => SendOptMessageResponse })
   async sendOptMessage(
-    @Body() body : SendOptMessageBody
+    @Body() body : SendOptMessageBody,
+    @UserParam() user : UserPrincipal,
   ) : Promise<SendOptMessageResponse> {
-    const opt = await this.commandBus.execute(new SendOptMessageCommand(body.phoneNumber))
+    const opt = await this.commandBus.execute(new SendOptMessageCommand(user,body.phoneNumber))
     return new SendOptMessageResponse(opt)
   }
 
   @Post('/auth/phone/verify')
   async verfyOptMessage(
-    @Body() body : VerifyOptMessageBody
+    @Body() body : VerifyOptMessageBody,
+    @UserParam() user : UserPrincipal,
   ) : Promise<VerifyOptMessageResponse> {
-    const verifyResult = await this.commandBus.execute(new VerifyOtpMessageCommand(body.phoneNumber,body.opt))
+    const verifyResult = await this.commandBus.execute(new VerifyOtpMessageCommand(user,body.phoneNumber,body.opt))
     return new VerifyOptMessageResponse(verifyResult.success,verifyResult.remainingAttempts)
   }
 }

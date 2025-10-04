@@ -10,6 +10,7 @@ import { HttpModule } from '@core/http';
 import { HttpLoggerModule } from '@core/logger';
 import { PetModule } from './pet/pet.module';
 import { AppController } from './app.controller';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { AppController } from './app.controller';
         };
       },
     }),
+    EventEmitterModule.forRoot(),
     // 도메인 모듈
     UserModule,
     AuthModule,
