@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-config
+  namespace: database
+data:
+  elasticsearch.yml: |
+    xpack.security.enabled: false
+    discovery.seed_hosts: []
+    cluster.initial_master_nodes: ["elasticsearch-0"]

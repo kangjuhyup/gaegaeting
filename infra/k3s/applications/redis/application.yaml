@@ -8,96 +8,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://charts.bitnami.com/bitnami
-    chart: redis
-    targetRevision: 18.4.0
-    helm:
-      values: |
-        ## Global settings
-        global:
-          storageClass: "local-path"
-
-        ## Redis Architecture (standalone for dev)
-        architecture: standalone
-
-        ## Image configuration
-        image:
-          registry: docker.io
-          repository: redis
-          tag: "7"
-          pullPolicy: IfNotPresent
-
-        ## Authentication
-        auth:
-          enabled: false
-
-        ## Master configuration
-        master:
-          persistence:
-            enabled: true
-            storageClass: "local-path"
-            size: 4Gi
-
-          resources:
-            requests:
-              memory: 128Mi
-              cpu: 100m
-            limits:
-              memory: 256Mi
-              cpu: 250m
-
-          ## Container security context
-          containerSecurityContext:
-            enabled: true
-            runAsUser: 999
-            runAsNonRoot: true
-
-          ## Redis configuration
-          configuration: |-
-            # Redis performance tuning
-            maxmemory 256mb
-            maxmemory-policy allkeys-lru
-
-            # Persistence
-            save 900 1
-            save 300 10
-            save 60 10000
-
-            # AOF persistence
-            appendonly yes
-            appendfsync everysec
-
-            # Networking
-            tcp-backlog 511
-            timeout 0
-            tcp-keepalive 300
-
-            # Limits
-            maxclients 10000
-
-          ## Service
-          service:
-            type: ClusterIP
-            ports:
-              redis: 6379
-
-        ## Metrics (disabled for simplicity)
-        metrics:
-          enabled: false
-
-        ## Common configuration
-        commonConfiguration: |-
-          # Disable dangerous commands
-          rename-command FLUSHDB ""
-          rename-command FLUSHALL ""
-
-        ## Volume Permissions
-        volumePermissions:
-          enabled: false
-
-        ## Sysctl (disabled for compatibility)
-        sysctl:
-          enabled: false
+    repoURL: https://github.com/kangjuhyup/gaegaeting
+    targetRevision: develop
+    path: infra/k3s/applications/redis/overlays/prod
   destination:
     server: https://kubernetes.default.svc
     namespace: database
