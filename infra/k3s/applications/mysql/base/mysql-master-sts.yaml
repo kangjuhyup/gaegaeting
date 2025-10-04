@@ -38,8 +38,6 @@ spec:
                 secretKeyRef:
                   name: mysql-secrets
                   key: mysql-password
-            - name: MYSQL_REPLICATION_USER
-              value: "replicator"
             - name: MYSQL_REPLICATION_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -55,6 +53,8 @@ spec:
             - name: config
               mountPath: /etc/mysql/conf.d/my.cnf
               subPath: my.cnf
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
           resources:
             requests:
               memory: "512Mi"
@@ -92,6 +92,10 @@ spec:
         - name: config
           configMap:
             name: mysql-master-config
+        - name: init-scripts
+          configMap:
+            name: mysql-master-init-sql
+            defaultMode: 0755
   volumeClaimTemplates:
     - metadata:
         name: data

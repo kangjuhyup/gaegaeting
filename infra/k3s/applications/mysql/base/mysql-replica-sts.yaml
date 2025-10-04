@@ -24,21 +24,20 @@ spec:
           image: mysql:8.0
           imagePullPolicy: IfNotPresent
           env:
-            - name: MYSQL_REPLICATION_MODE
-              value: "slave"
-            - name: MYSQL_MASTER_HOST
-              value: "mysql-master"
-            - name: MYSQL_MASTER_PORT_NUMBER
-              value: "3306"
-            - name: MYSQL_MASTER_ROOT_USER
-              value: "root"
-            - name: MYSQL_MASTER_ROOT_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mysql-secrets
                   key: mysql-root-password
-            - name: MYSQL_REPLICATION_USER
-              value: "replicator"
+            - name: MYSQL_DATABASE
+              value: "gaegaeting"
+            - name: MYSQL_USER
+              value: "gaegaeting"
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secrets
+                  key: mysql-password
             - name: MYSQL_REPLICATION_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -54,6 +53,8 @@ spec:
             - name: config
               mountPath: /etc/mysql/conf.d/my.cnf
               subPath: my.cnf
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
           resources:
             requests:
               memory: "512Mi"
@@ -91,6 +92,10 @@ spec:
         - name: config
           configMap:
             name: mysql-replica-config
+        - name: init-scripts
+          configMap:
+            name: mysql-replica-init-sql
+            defaultMode: 0755
   volumeClaimTemplates:
     - metadata:
         name: data
