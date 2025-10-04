@@ -9,6 +9,7 @@ import { DatabaseModule, DatabaseSchema } from '@core/database';
 import { HttpModule } from '@core/http';
 import { HttpLoggerModule } from '@core/logger';
 import { PetModule } from './pet/pet.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -66,5 +67,8 @@ import { PetModule } from './pet/pet.module';
     AuthModule,
     PetModule
   ],
+  controllers : [
+    AppController
+  ]
 })
 export class AppModule {}
