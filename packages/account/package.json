@@ -25,6 +25,7 @@
     "@core/http": "*",
     "@core/logger": "*",
     "@core/model": "*",
+    "@core/redis": "*",
     "@core/storage": "*",
     "@core/util": "*",
     "@nestjs/axios": "^3.1.3",
