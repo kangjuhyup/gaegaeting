@@ -1,7 +1,7 @@
 export class VerifyResult {
 
-    private readonly success : boolean
-    private readonly remainingAttempts : number
+    readonly success : boolean
+    readonly remainingAttempts : number
 
     constructor(
         success : boolean,
