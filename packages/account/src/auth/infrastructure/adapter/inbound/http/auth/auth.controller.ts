@@ -17,7 +17,7 @@ import { VerifyOptMessageBody } from './dto/request/verify-opt-message.request';
 import { SendOptMessageCommand } from '@app/auth/application/port/command/send-otp-message.port';
 import { SendOptMessageResponse } from './dto/response/send-opt-message.response';
 import { VerifyOptMessageResponse } from './dto/response/verify-opt-message.response';
-import { VerifyOptMessageCommand } from '@app/auth/application/port/command/verify-otp-message.port';
+import { VerifyOtpMessageCommand } from '@app/auth/application/port/command/verify-otp-message.port';
 
 @ApiTags('Account','Auth')
 @Controller('auth')
@@ -175,7 +175,7 @@ export class AuthController {
   async verfyOptMessage(
     @Body() body : VerifyOptMessageBody
   ) : Promise<VerifyOptMessageResponse> {
-    const verifyResult = await this.commandBus.execute(new VerifyOptMessageCommand(body.phoneNumber,body.opt))
+    const verifyResult = await this.commandBus.execute(new VerifyOtpMessageCommand(body.phoneNumber,body.opt))
     return new VerifyOptMessageResponse(verifyResult.success,verifyResult.remainingAttempts)
   }
 }
