@@ -4,11 +4,18 @@ import { NotFoundException } from '@nestjs/common';
 import { UserProfileEntity } from '@app/user/domain/model/user-profile';
 import { mockUserRepositoryPort, mockUserStoragePort } from '../../__test__/mock';
 
+// Mock DataSource for @Transactional decorator
+const mockDataSource = {
+    transaction: jest.fn((callback) => {
+        return callback({} as any); // Mock EntityManager
+    })
+};
+
 describe('DeleteProfileImageHandler 단위 테스트', () => {
     let deleteProfileImageHandler: DeleteProfileImageHandler;
     const userId = 'test-user-id';
     const profileNo = 1;
-    
+
     beforeEach(() => {
         // 모의 객체 초기화 및 핸들러 생성
         jest.clearAllMocks();
@@ -16,6 +23,8 @@ describe('DeleteProfileImageHandler 단위 테스트', () => {
             mockUserRepositoryPort,
             mockUserStoragePort
         );
+        // @Transactional을 위한 dataSource 주입
+        (deleteProfileImageHandler as any).dataSource = mockDataSource;
     });
     
     it('존재하지 않는 프로필 이미지인 경우 NotFoundException을 던진다', async () => {

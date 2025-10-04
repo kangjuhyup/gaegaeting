@@ -6,6 +6,13 @@ import { CreateUserHandler } from "../create-user.command";
 import { AuthInternalApiPort } from "@app/user/domain/port/auth-internal-api.port";
 import { CreateUserCommand } from "@app/user/application/port/command/create-user.port";
 
+// Mock DataSource for @Transactional decorator
+const mockDataSource = {
+    transaction: jest.fn((callback) => {
+        return callback({} as any);
+    })
+};
+
 describe('CreateUserHanlder 단위 테스트', () => {
 
     let userRepositoryPort : jest.Mocked<UserRepositoryPort>;
@@ -17,8 +24,9 @@ describe('CreateUserHanlder 단위 테스트', () => {
         jest.clearAllMocks();
         userRepositoryPort = mockUserRepositoryPort
         authInternalApiPort = mockAuthInternalApiPort
-        
-        createUserHandler = new CreateUserHandler(userRepositoryPort, authInternalApiPort)
+
+        createUserHandler = new CreateUserHandler(userRepositoryPort, authInternalApiPort);
+        (createUserHandler as any).dataSource = mockDataSource;
     })
     
     it('이미 존재하는 사용자라면 에러를 던진다.', async () => {

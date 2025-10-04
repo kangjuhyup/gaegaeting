@@ -107,46 +107,7 @@ describe('GetUserHandler 단위 테스트', () => {
             expect(userStoragePort.hasMetadata).not.toHaveBeenCalled(); // 이미 활성 상태이므로 메타데이터 확인 안함
         });
 
-        it('비활성 상태라면 메타데이터를 조회한다.', async () => {
-            // Given
-            const mockUser = createMockUser(true); // 프로필 있는 유저 (첫 번째 프로필은 비활성)
-            userRepositoryPort.selectUserFromIdWithProfiles.mockResolvedValue(mockUser);
-            userStoragePort.hasMetadata.mockResolvedValue(true); // 메타데이터 존재
-            
-            // When
-            await getUserHandler.execute(new GetUserQuery(userId));
-            
-            // Then
-            expect(userStoragePort.hasMetadata).toHaveBeenCalledWith(userId, 1);
-        });
-
-        it('메타데이터가 조회되지 않을 경우 스토리지에서 삭제한다.', async () => {
-            // Given
-            const mockUser = createMockUser(true); // 프로필 있는 유저 (첫 번째 프로필은 비활성)
-            userRepositoryPort.selectUserFromIdWithProfiles.mockResolvedValue(mockUser);
-            userStoragePort.hasMetadata.mockResolvedValue(false); // 메타데이터 없음
-            
-            // When
-            await getUserHandler.execute(new GetUserQuery(userId));
-            
-            // Then
-            expect(userRepositoryPort.deleteUserAttachment).toHaveBeenCalledWith(userId, 1);
-        });
-
-        it('메타데이터가 조회되었을 경우 활성상태로 변경한다.', async () => {
-            // Given
-            const mockUser = createMockUser(true); // 프로필 있는 유저 (첫 번째 프로필은 비활성)
-            userRepositoryPort.selectUserFromIdWithProfiles.mockResolvedValue(mockUser);
-            userStoragePort.hasMetadata.mockResolvedValue(true); // 메타데이터 존재
-            
-            // When
-            await getUserHandler.execute(new GetUserQuery(userId));
-            
-            // Then
-            expect(userRepositoryPort.updateUserAttachmentActive).toHaveBeenCalledWith(userId, 1, true);
-        });
-
-        it('활성상태인 프로필사진만 리턴한다.', async () => {
+        it('전체 프로필사진을 리턴한다.', async () => {
             // Given
             const mockUser = createMockUser(true); // 프로필 있는 유저 (두 번째 프로필은 활성)
             userRepositoryPort.selectUserFromIdWithProfiles.mockResolvedValue(mockUser);
@@ -156,9 +117,8 @@ describe('GetUserHandler 단위 테스트', () => {
             const result = await getUserHandler.execute(new GetUserQuery(userId));
             
             // Then
-            // removeUnActiveProfiles 메서드가 호출되어 비활성 프로필이 필터링됨
-            expect(result.profiles).toHaveLength(1);
-            expect(result.profiles[0].id.no).toBe(2); // 활성 프로필만 남음
+            expect(result.profiles).toHaveLength(2);
+            expect(result.profiles[0].id.no).toBe(1); // 활성 프로필만 남음
         });
         
         it('존재하지 않는 사용자 조회 시 에러를 발생시킨다', async () => {
@@ -168,7 +128,7 @@ describe('GetUserHandler 단위 테스트', () => {
             // When & Then
             await expect(getUserHandler.execute(new GetUserQuery('non-existent-id')))
                 .rejects
-                .toThrow('존재하지 않는 사용자입니다.');
+                .toThrow('프로필을 찾을 수 없습니다.');
         });
     });
 });
