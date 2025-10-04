@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - mysql-configmap.yaml
+  - mysql-replication-init.yaml
   - mysql-master-svc.yaml
   - mysql-replica-svc.yaml
   - mysql-master-sts.yaml

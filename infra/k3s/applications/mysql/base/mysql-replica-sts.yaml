@@ -38,6 +38,11 @@ spec:
                 secretKeyRef:
                   name: mysql-secrets
                   key: mysql-password
+            - name: MYSQL_REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secrets
+                  key: mysql-replication-password
           ports:
             - name: mysql
               containerPort: 3306
@@ -48,6 +53,8 @@ spec:
             - name: config
               mountPath: /etc/mysql/conf.d/my.cnf
               subPath: my.cnf
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
           resources:
             requests:
               memory: "512Mi"
@@ -85,6 +92,10 @@ spec:
         - name: config
           configMap:
             name: mysql-replica-config
+        - name: init-scripts
+          configMap:
+            name: mysql-replica-init-sql
+            defaultMode: 0755
   volumeClaimTemplates:
     - metadata:
         name: data

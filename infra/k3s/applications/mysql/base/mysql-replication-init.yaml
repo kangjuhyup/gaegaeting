@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-master-init-sql
+  namespace: database
+data:
+  01-replication-user.sh: |
+    #!/bin/bash
+    echo "Creating replication user..."
+    mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" <<-EOSQL
+      CREATE USER IF NOT EXISTS 'replicator'@'%' IDENTIFIED BY '${MYSQL_REPLICATION_PASSWORD}';
+      GRANT REPLICATION SLAVE ON *.* TO 'replicator'@'%';
+      FLUSH PRIVILEGES;
+    EOSQL
+    echo "Replication user created successfully"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-replica-init-sql
+  namespace: database
+data:
+  01-setup-replication.sh: |
+    #!/bin/bash
+    echo "Waiting for master to be ready..."
+    until mysql -h mysql-master -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "SELECT 1" &>/dev/null; do
+      echo "Master not ready, waiting 5 seconds..."
+      sleep 5
+    done
+
+    echo "Getting master status..."
+    MASTER_STATUS=$(mysql -h mysql-master -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "SHOW MASTER STATUS\G")
+    MASTER_LOG_FILE=$(echo "$MASTER_STATUS" | grep "File:" | awk '{print $2}')
+    MASTER_LOG_POS=$(echo "$MASTER_STATUS" | grep "Position:" | awk '{print $2}')
+
+    echo "Master log file: $MASTER_LOG_FILE"
+    echo "Master log position: $MASTER_LOG_POS"
+
+    echo "Configuring replication..."
+    mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" <<-EOSQL
+      STOP REPLICA;
+      CHANGE REPLICATION SOURCE TO
+        SOURCE_HOST='mysql-master',
+        SOURCE_PORT=3306,
+        SOURCE_USER='replicator',
+        SOURCE_PASSWORD='${MYSQL_REPLICATION_PASSWORD}',
+        SOURCE_LOG_FILE='${MASTER_LOG_FILE}',
+        SOURCE_LOG_POS=${MASTER_LOG_POS};
+      START REPLICA;
+    EOSQL
+
+    echo "Replication configured successfully"
+    mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "SHOW REPLICA STATUS\G"
