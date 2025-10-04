@@ -10,6 +10,7 @@ export class UpdateUserCommand extends Command<UserEntity> {
       gender?: UserGender;
       region?: UserRegion;
       bio?: string;
+      phoneNumber? : string;
     },
   ) {
     super();
