@@ -1,18 +1,19 @@
-import { Body, Controller, Get, Param, Patch } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, UseGuards } from "@nestjs/common";
 import { ReviewUserImagesRequestBody } from "./dto/request/review-user-images";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { GetUserQuery } from "@app/user/application/port/query/get-user.port";
 import { UserResponse } from "./dto/response/user.response";
 import { ReviewUserImageCommand } from "@app/user/application/port/command/review-user-image.port";
+import { AccessGuard, AdminGuard } from "@core/auth";
 
 @Controller('/admin/users')
+@UseGuards(AccessGuard,AdminGuard)
 export class AdminUserContorller {
 
     constructor(
         private readonly queryBus : QueryBus,
         private readonly commandBus : CommandBus
     ) {}
-
 
     @Get('/:userId')
     async getUser(
