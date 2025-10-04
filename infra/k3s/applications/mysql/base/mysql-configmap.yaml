@@ -9,20 +9,17 @@ data:
     default_authentication_plugin=mysql_native_password
     skip-name-resolve
     explicit_defaults_for_timestamp
-    basedir=/opt/bitnami/mysql
-    plugin_dir=/opt/bitnami/mysql/lib/plugin
     port=3306
-    socket=/opt/bitnami/mysql/tmp/mysql.sock
-    datadir=/bitnami/mysql/data
-    tmpdir=/opt/bitnami/mysql/tmp
+    socket=/var/run/mysqld/mysqld.sock
+    datadir=/var/lib/mysql
+    tmpdir=/tmp
     max_allowed_packet=16M
     bind-address=0.0.0.0
-    pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    log-error=/opt/bitnami/mysql/logs/mysqld.log
+    pid-file=/var/run/mysqld/mysqld.pid
     character-set-server=UTF8MB4
     collation-server=utf8mb4_general_ci
     slow_query_log=1
-    slow_query_log_file=/opt/bitnami/mysql/logs/mysqld-slow.log
+    slow_query_log_file=/var/log/mysql/mysqld-slow.log
     long_query_time=2
 
     # Replication settings
@@ -30,7 +27,7 @@ data:
     log-bin=mysql-bin
     binlog_format=ROW
     sync_binlog=1
-    expire_logs_days=7
+    binlog_expire_logs_seconds=604800
     max_binlog_size=100M
 
     # InnoDB settings
@@ -50,16 +47,13 @@ data:
     default_authentication_plugin=mysql_native_password
     skip-name-resolve
     explicit_defaults_for_timestamp
-    basedir=/opt/bitnami/mysql
-    plugin_dir=/opt/bitnami/mysql/lib/plugin
     port=3306
-    socket=/opt/bitnami/mysql/tmp/mysql.sock
-    datadir=/bitnami/mysql/data
-    tmpdir=/opt/bitnami/mysql/tmp
+    socket=/var/run/mysqld/mysqld.sock
+    datadir=/var/lib/mysql
+    tmpdir=/tmp
     max_allowed_packet=16M
     bind-address=0.0.0.0
-    pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-    log-error=/opt/bitnami/mysql/logs/mysqld.log
+    pid-file=/var/run/mysqld/mysqld.pid
     character-set-server=UTF8MB4
     collation-server=utf8mb4_general_ci
 
