@@ -26,6 +26,6 @@ data:
     # Limits
     maxclients 10000
 
-    # Disable dangerous commands
-    rename-command FLUSHDB ""
-    rename-command FLUSHALL ""
+    # Security - Use ACL instead of rename-command for Redis 7.4+
+    enable-protected-configs yes
+    enable-debug-command local
