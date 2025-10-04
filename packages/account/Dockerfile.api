@@ -21,6 +21,7 @@ RUN yarn workspace @core/logger build
 RUN yarn workspace @core/model build
 RUN yarn workspace @core/storage build
 RUN yarn workspace @core/util build
+RUN yarn workspace @core/redis build
 
 # account 모듈 빌드
 RUN yarn workspace account build
