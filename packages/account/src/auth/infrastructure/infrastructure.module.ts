@@ -11,6 +11,7 @@ import { HttpModule } from "@core/http";
 import { RedisCacheModule } from "@core/redis";
 import { JwtPort } from "../domain/port/jwt.port";
 import { JwtAdpater } from "./adapter/outbound/jwt.adapter";
+import { ENV_KEY } from "@app/config/env.config";
 
 const providers : Provider[] = [
     // 매퍼 클래스
@@ -61,8 +62,8 @@ const providers : Provider[] = [
                 client: {
                     mode: 'single',
                     options: {
-                        host: configService.get('REDIS_HOST', 'localhost'),
-                        port: configService.get('REDIS_PORT', 6379),
+                        host: configService.get(ENV_KEY.REDIS_HOST),
+                        port: configService.get(ENV_KEY.REDIS_PORT),
                     },
                 },
                 prefix: 'account',
