@@ -1,4 +1,5 @@
 import { Logger, Module, Provider } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AuthRepositoryPort } from "../domain/port/auth-repository.port";
 import { AuthOrmRepository } from "./adapter/outbound/presistence/auth.orm.repository";
 import { AuthController } from "./adapter/inbound/http/auth/auth.controller";
@@ -7,6 +8,7 @@ import { KakaoAuthAdapter } from "./adapter/outbound/api/kakao-auth.adapter";
 import { NaverAuthAdapter } from "./adapter/outbound/api/naver-auth.adapter";
 import { AuthMapper } from "./adapter/outbound/presistence/mapper/auth.mapper";
 import { HttpModule } from "@core/http";
+import { RedisCacheModule } from "@core/redis";
 import { JwtPort } from "../domain/port/jwt.port";
 import { JwtAdpater } from "./adapter/outbound/jwt.adapter";
 
@@ -52,7 +54,21 @@ const providers : Provider[] = [
         HttpModule.forRoot({
             logger : Logger,
         }),
-       
+        // Redis Cache
+        RedisCacheModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: (configService: ConfigService) => ({
+                client: {
+                    mode: 'single',
+                    options: {
+                        host: configService.get('REDIS_HOST', 'localhost'),
+                        port: configService.get('REDIS_PORT', 6379),
+                    },
+                },
+                prefix: 'account',
+            }),
+            inject: [ConfigService],
+        }),
     ],
     controllers : [
         AuthController
