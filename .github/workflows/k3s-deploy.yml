@@ -1,8 +1,9 @@
 name: K3s Cluster Deploy
 
 on:
-  push:
-    branches: [ infra ]
+  pull_request:
+    types: [ closed ]
+    branches: [ develop, main ]
   workflow_dispatch:
     inputs:
       environment:
@@ -20,6 +21,7 @@ on:
         description: 'Ansible skip-tags (comma-separated)'
         required: false
         default: ''
+
 
 env:
   ANSIBLE_CONFIG: infra/k3s/ansible/ansible.cfg

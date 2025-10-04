@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-replica
+  namespace: database
+  labels:
+    app: mysql
+    component: replica
+spec:
+  serviceName: mysql-replica
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+      component: replica
+  template:
+    metadata:
+      labels:
+        app: mysql
+        component: replica
+    spec:
+      containers:
+        - name: mysql
+          image: docker.io/bitnami/mysql:8.4
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_REPLICATION_MODE
+              value: "slave"
+            - name: MYSQL_MASTER_HOST
+              value: "mysql-master"
+            - name: MYSQL_MASTER_PORT_NUMBER
+              value: "3306"
+            - name: MYSQL_MASTER_ROOT_USER
+              value: "root"
+            - name: MYSQL_MASTER_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secrets
+                  key: mysql-root-password
+            - name: MYSQL_REPLICATION_USER
+              value: "replicator"
+            - name: MYSQL_REPLICATION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secrets
+                  key: mysql-replication-password
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/mysql/data
+            - name: config
+              mountPath: /opt/bitnami/mysql/conf/my_custom.cnf
+              subPath: my.cnf
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - |
+                  password_aux="${MYSQL_MASTER_ROOT_PASSWORD:-}"
+                  mysqladmin status -uroot -p"${password_aux}"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - |
+                  password_aux="${MYSQL_MASTER_ROOT_PASSWORD:-}"
+                  mysqladmin status -uroot -p"${password_aux}"
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+      volumes:
+        - name: config
+          configMap:
+            name: mysql-replica-config
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app: mysql
+          component: replica
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 20Gi

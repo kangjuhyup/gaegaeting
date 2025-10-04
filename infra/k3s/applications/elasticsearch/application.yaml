@@ -8,57 +8,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://helm.elastic.co
-    chart: elasticsearch
-    targetRevision: 8.5.1
-    helm:
-      values: |
-        ## Replica count (1 for single-node dev cluster)
-        replicas: 1
-
-        ## Roles (all roles for single node)
-        roles:
-          - master
-          - data
-          - ingest
-
-        ## Health check configuration (yellow is OK for single node)
-        clusterHealthCheckParams: "wait_for_status=yellow&timeout=60s"
-
-        ## Resources
-        resources:
-          requests:
-            cpu: "500m"
-            memory: "1Gi"
-          limits:
-            cpu: "1000m"
-            memory: "2Gi"
-
-        ## Persistence
-        persistence:
-          enabled: true
-          size: 30Gi
-
-        ## Storage class
-        volumeClaimTemplate:
-          storageClassName: "local-path"
-
-        ## JVM heap size
-        esJavaOpts: "-Xmx1g -Xms1g"
-
-        ## Elasticsearch configuration
-        esConfig:
-          elasticsearch.yml: |
-            xpack.security.enabled: false
-            discovery.seed_hosts: []
-            cluster.initial_master_nodes: ["elasticsearch-master-0"]
-
-        ## Anti-affinity
-        antiAffinity: "soft"
-
-        ## Sysctls via initContainer
-        sysctlInitContainer:
-          enabled: true
+    repoURL: https://github.com/kangjuhyup/gaegaeting
+    targetRevision: develop
+    path: infra/k3s/applications/elasticsearch/overlays/prod
   destination:
     server: https://kubernetes.default.svc
     namespace: logging

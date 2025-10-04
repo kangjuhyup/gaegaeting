@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: database
+  labels:
+    app: elasticsearch
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9200
+      targetPort: http
+      protocol: TCP
+    - name: transport
+      port: 9300
+      targetPort: transport
+      protocol: TCP
+  selector:
+    app: elasticsearch
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-headless
+  namespace: database
+  labels:
+    app: elasticsearch
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 9200
+      targetPort: http
+      protocol: TCP
+    - name: transport
+      port: 9300
+      targetPort: transport
+      protocol: TCP
+  selector:
+    app: elasticsearch

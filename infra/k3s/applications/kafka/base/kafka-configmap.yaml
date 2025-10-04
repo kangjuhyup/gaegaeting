@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: messaging
+data:
+  server.properties: |
+    auto.create.topics.enable=true
+    default.replication.factor=1
+    min.insync.replicas=1
+    num.partitions=3
+    offsets.topic.replication.factor=1
+    transaction.state.log.replication.factor=1
+    transaction.state.log.min.isr=1
+    log.retention.hours=168
+    compression.type=producer
+    message.max.bytes=10485760

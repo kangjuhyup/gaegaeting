@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-replica
+  namespace: database
+  labels:
+    app: mysql
+    component: replica
+spec:
+  type: ClusterIP
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql
+      protocol: TCP
+  selector:
+    app: mysql
+    component: replica
