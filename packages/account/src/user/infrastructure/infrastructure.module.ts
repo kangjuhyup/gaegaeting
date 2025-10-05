@@ -4,34 +4,31 @@ import { UserRepositoryPort } from "../domain/port/user-repository.port";
 import { UserOrmRepository } from "./adapter/outbound/persistence/user.orm.repository";
 import { UserController } from "./adapter/inbound/http/user/user.controller";
 import { StorageModule } from "@core/storage";
-import { AuthInternalApiAdapter } from "./adapter/outbound/api/auth-internal-api.adpater";
-import { AuthInternalApiPort } from "../domain/port/auth-internal-api.port";
-import { AuthOrmRepository } from "@app/auth/infrastructure/adapter/outbound/presistence/auth.orm.repository";
-import { AuthMapper } from "@app/auth/infrastructure/adapter/outbound/presistence/mapper/auth.mapper";
 import { UserStoragePort } from "../domain/port/user-storage.port";
 import { UserStorageAdapter } from "./adapter/outbound/api/user-storage.adapter";
 import { AdminUserContorller } from "./adapter/inbound/http/user/user.admin.controller";
+import { AuthApiPort } from "../domain/port/auth-api.port";
+import { AuthApiAdapter } from "./adapter/outbound/api/auth-api.adapter";
+import { HttpModule } from "@core/http";
 
 const providers : Provider[] = [
     {
         provide : UserRepositoryPort,
         useClass : UserOrmRepository
     },
-    // TODO: AuthInternalApiAdapter 가 Api Client 의존성을 가지게 되면 제거
-    AuthOrmRepository,
-    AuthMapper,
-    {
-        provide : AuthInternalApiPort,
-        useClass : AuthInternalApiAdapter,
-    },
     {
         provide : UserStoragePort,
         useClass : UserStorageAdapter,
+    },
+    {
+        provide : AuthApiPort,
+        useClass : AuthApiAdapter,
     }
 ]
 
 @Module({
     imports : [
+        HttpModule.forRoot(),
         StorageModule.forRootAsync({
             imports : [
                 ConfigModule
