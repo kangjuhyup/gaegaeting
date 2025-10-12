@@ -12,6 +12,8 @@ import { PetProfileOrmMapper } from "./adapter/outbound/persistence/mapper/pet-p
 import { HttpModule } from "@core/http";
 import { PetCertificationPort } from "../domain/port/pet-certification.port";
 import { PetCertificationAdapter } from "./adapter/outbound/api/pet-certification.adapter";
+import { AuthApiPort } from "../domain/port/auth-api.port";
+import { AuthApiAdapter } from "./adapter/outbound/api/auth-api.adapter";
 
 const providers : Provider[] = [
     PetOrmMapper,
@@ -27,6 +29,10 @@ const providers : Provider[] = [
     {
         provide : PetCertificationPort,
         useClass : PetCertificationAdapter
+    },
+    {
+        provide : AuthApiPort,
+        useClass : AuthApiAdapter
     }
 ]
 
