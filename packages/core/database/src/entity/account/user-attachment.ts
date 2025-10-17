@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
-import { UserOrmEntity } from "./user";
+import { UserProfileOrmEntity } from "./user-profile";
 import { BaseEntity } from "../base";
 
 @Entity('user_attachment')
@@ -20,8 +20,8 @@ export class UserAttachmentOrmEntity extends BaseEntity {
     /**
      * 첨부파일 업로드 사용자
      */
-    @ManyToOne(() => UserOrmEntity, (user) => user.attachments)
+    @ManyToOne(() => UserProfileOrmEntity, (user) => user.attachments)
     @JoinColumn({ name: "user_id" })
-    user: UserOrmEntity;
+    user: UserProfileOrmEntity;
 
 }

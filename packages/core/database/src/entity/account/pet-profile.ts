@@ -1,6 +1,5 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { UserOrmEntity } from "./user";
-import { EnumTransformer } from "../../transformer/enum.transformer";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { UserProfileOrmEntity } from "./user-profile";
 import { BaseEntity } from "../base";
 import { PetAttachmentOrmEntity } from "./pet-attachment";
 
@@ -11,7 +10,7 @@ import { PetAttachmentOrmEntity } from "./pet-attachment";
  * 각 컴포넌트는 관련 속성들을 그룹화하여 관리하기 쉽게 합니다.
  */
 @Entity("pet")
-export class PetOrmEntity extends BaseEntity {
+export class PetProfileOrmEntity extends BaseEntity {
   /**
    * 강아지 ID
    */
@@ -88,9 +87,9 @@ export class PetOrmEntity extends BaseEntity {
   /**
    * 강아지의 소유자 (사용자) 참조
    */
-  @ManyToOne(() => UserOrmEntity, (user) => user.pets)
+  @ManyToOne(() => UserProfileOrmEntity, (user) => user.pets)
   @JoinColumn({ name: "user_id" })
-  owner: UserOrmEntity;
+  owner: UserProfileOrmEntity;
 
   @OneToMany(() => PetAttachmentOrmEntity, (petAttachment) => petAttachment.pet)
   attachments: PetAttachmentOrmEntity[];
