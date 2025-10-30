@@ -1,0 +1,67 @@
+scalar DateTime
+
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  expiresIn: Int!
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String
+  status: String!
+  identities: [UserIdentity!]!
+}
+
+type UserIdentity {
+  provider: String!
+  providerSub: String!
+  linkedAt: DateTime!
+}
+
+type Query {
+  me: User!                                        # 내 프로필
+  myPermissions(clientId: String): [String!]!      # 실효 퍼미션
+}
+
+input SignupInput {
+  username: String!
+  email: String
+  password: String!
+  inviteCode: String
+}
+
+input SigninInput {
+  usernameOrEmail: String!
+  password: String!
+  clientId: String
+}
+
+input LinkIdentityInput {
+  provider: String!
+  authCode: String
+  redirectUri: String
+}
+
+type Mutation {
+  signup(input: SignupInput!): AuthPayload         # issueToken 옵션이면 토큰 반환
+  signin(input: SigninInput!): AuthPayload
+  signout(allDevices: Boolean): Boolean!
+  refresh(refreshToken: String!): AuthPayload
+
+  linkIdentity(input: LinkIdentityInput!): Boolean!
+  unlinkIdentity(provider: String!): Boolean!
+
+  # Social sign-in
+  kakaoSignin(authCode: String!, redirectUri: String): AuthPayload!
+  appleSignin(idToken: String!, authorizationCode: String, user: String): AuthPayload!
+
+  # OTP
+  requestOtp(phoneNumber: String!): Boolean!
+  verifyOtp(phoneNumber: String!, code: String!): Boolean!
+}
+
+type Subscription {
+  onAuthEvent: String! # or a structured type (e.g., { type, deviceId, at })
+}
