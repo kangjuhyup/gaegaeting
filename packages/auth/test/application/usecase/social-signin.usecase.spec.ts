@@ -43,6 +43,9 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
 
     tokenService = {
       issueForUser: jest.fn(),
+      verifyToken: jest.fn(),
+      revokeToken: jest.fn(),
+      revokeUserTokens: jest.fn(),
     } as jest.Mocked<TokenServicePort>;
 
     // 직접 인스턴스 생성

@@ -12,7 +12,7 @@ export interface KakaoProfile {
 }
 
 export abstract class KakaoIdpPort {
-  abstract exchangeAuthCode(tenantId: string, code: string, redirectUri?: string): Promise<KakaoTokenResponse>;
+  abstract exchangeAuthCode(code: string, redirectUri?: string): Promise<KakaoTokenResponse>;
   abstract getProfile(accessToken: string): Promise<KakaoProfile>;
 }
 

@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RedisCacheModule } from '@core/redis';
 import { AuthResolver } from './in/gql/auth.resolver';
 import { SocialSigninUseCase } from '../application/usecase/social-signin.usecase';
 import { SocialSigninUseCaseImpl } from '../application/usecase/impl/social-signin.usecase.impl';
@@ -27,9 +29,31 @@ import { TestController } from './in/http/test.controller';
 import { SolApiAdapter } from './out/sol-api.adapter';
 import { InitService } from '@app/common/service/init.service';
 import { GraphqlAuthGuard } from '@app/common/guard/graphql-auth.guard';
+import { ENV_KEY } from '../common/config/env.config';
 
 @Module({
-  imports: [JwtModule],
+  imports: [
+    JwtModule,
+    ConfigModule,
+    RedisCacheModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const redisHost = configService.get<string>(ENV_KEY.REDIS_HOST);
+        const redisPort = configService.get<number>(ENV_KEY.REDIS_PORT);
+
+        return {
+          client: {
+            mode: 'single',
+            options: {
+              url: `redis://${redisHost}:${redisPort}`,
+            },
+          },
+          prefix: 'auth:',
+        };
+      },
+    }),
+  ],
   controllers: [
     HealthController,
     UserAdminController,

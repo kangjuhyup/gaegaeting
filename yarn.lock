@@ -5700,6 +5700,7 @@ __metadata:
     "@core/database": "npm:*"
     "@core/logger": "npm:*"
     "@core/model": "npm:*"
+    "@core/redis": "npm:*"
     "@core/util": "npm:*"
     "@nestjs/apollo": "npm:^13.2.1"
     "@nestjs/axios": "npm:^3.1.3"

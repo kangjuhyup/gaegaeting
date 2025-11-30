@@ -9,9 +9,11 @@ import { UserRepositoryAdapter } from '../../../src/adapter/out/user-repository.
 import { UserIdentityRepositoryAdapter } from '../../../src/adapter/out/user-identity-repository.adapter';
 import { SimpleTokenService } from '../../../src/adapter/out/token-service.simple';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { DataSource } from 'typeorm';
 import { UserOrmEntity, TenantOrmEntity, UserIdentityOrmEntity } from '@core/database';
 import { ENV_KEY } from '../../../src/common/config/env.config';
+import { RedisCacheModule, CacheService } from '@core/redis';
 
 describe('SocialSigninUseCaseImpl (E2E)', () => {
   let usecase: SocialSigninUseCaseImpl;
@@ -21,20 +23,51 @@ describe('SocialSigninUseCaseImpl (E2E)', () => {
   let tokenService: TokenServicePort;
   let dataSource: DataSource;
   let configService: ConfigService;
+  let jwtService: JwtService;
+  let cacheService: CacheService;
   let tenantId: string;
 
   beforeAll(async () => {
     // 실제 환경 변수 로드
     const { Test } = await import('@nestjs/testing');
-    const configModule = await Test.createTestingModule({
+    const redisHost = process.env.REDIS_HOST || 'localhost';
+    const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10);
+
+    const testModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
           envFilePath: ['.env.local', '.env'],
         }),
+        JwtModule.registerAsync({
+          imports: [ConfigModule],
+          inject: [ConfigService],
+          useFactory: (config: ConfigService) => {
+            const secret = config.get<string>(ENV_KEY.JWT_SECRET);
+            return {
+              secret,
+              signOptions: {
+                expiresIn: config.get<string>(ENV_KEY.JWT_ACCESS_EXPIRATION) || '1h',
+              },
+            };
+          },
+        }),
+        RedisCacheModule.forRootAsync({
+          useFactory: () => ({
+            client: {
+              mode: 'single',
+              options: {
+                url: `redis://${redisHost}:${redisPort}`,
+              },
+            },
+            prefix: 'auth:',
+          }),
+        }),
       ],
     }).compile();
-    configService = configModule.get<ConfigService>(ConfigService);
+    configService = testModule.get<ConfigService>(ConfigService);
+    jwtService = testModule.get<JwtService>(JwtService);
+    cacheService = testModule.get<CacheService>(CacheService);
 
     // 실제 데이터베이스 연결
     const dbHost = configService.get<string>(ENV_KEY.DATABASE_HOST);
@@ -83,7 +116,7 @@ describe('SocialSigninUseCaseImpl (E2E)', () => {
       dataSource.getRepository(TenantOrmEntity),
       dataSource.getRepository(UserOrmEntity),
     );
-    tokenService = new SimpleTokenService();
+    tokenService = new SimpleTokenService(jwtService, configService, cacheService);
 
     // UseCase 인스턴스 생성
     usecase = new SocialSigninUseCaseImpl(

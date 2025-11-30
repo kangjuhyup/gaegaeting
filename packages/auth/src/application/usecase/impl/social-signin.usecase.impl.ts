@@ -19,7 +19,7 @@ export class SocialSigninUseCaseImpl implements SocialSigninUseCase {
   ) {}
 
   async signinWithKakao(cmd: KakaoSigninCommand): Promise<AuthPayload> {
-    const token = await this.kakaoIdp.exchangeAuthCode(cmd.tenantId, cmd.authCode, cmd.redirectUri);
+    const token = await this.kakaoIdp.exchangeAuthCode(cmd.authCode, cmd.redirectUri);
     const profile = await this.kakaoIdp.getProfile(token.accessToken);
 
     // 1. 기존 사용자 조회

@@ -12,7 +12,7 @@ export class KakaoIdpAdapter extends KakaoIdpPort {
 
   constructor(private readonly configService: ConfigService) { super(); }
 
-  async exchangeAuthCode(tenantId: string, code: string, redirectUri?: string): Promise<KakaoTokenResponse> {
+  async exchangeAuthCode(code: string, redirectUri?: string): Promise<KakaoTokenResponse> {
     const clientId = this.configService.get<string>(ENV_KEY.KAKAO_CLIENT_ID);
     const clientSecret = this.configService.get<string>(ENV_KEY.KAKAO_CLIENT_SECRET, '');
     const fallbackRedirect = this.configService.get<string>(ENV_KEY.KAKAO_REDIRECT_URI, '');

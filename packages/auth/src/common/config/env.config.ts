@@ -39,6 +39,10 @@ export const envSpec = {
   SOLAPI_KEY: { joi: Joi.string().required() },
   SOLAPI_SECRET: { joi: Joi.string().required() },
   SOLAPI_SMS_SENDER: { joi: Joi.string().required() },
+
+  // Redis
+  REDIS_HOST: { joi: Joi.string().required() },
+  REDIS_PORT: { joi: Joi.number().required() },
 } as const;
 
 export type EnvKey = keyof typeof envSpec;

@@ -27,6 +27,7 @@
     "@core/database": "*",
     "@core/logger": "*",
     "@core/model": "*",
+    "@core/redis": "*",
     "@core/util": "*",
     "@nestjs/apollo": "^13.2.1",
     "@nestjs/axios": "^3.1.3",
