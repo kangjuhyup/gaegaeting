@@ -1,30 +1,54 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { AuthResolver } from './in/gql/auth.resolver';
 import { SocialSigninUseCase } from '../application/usecase/social-signin.usecase';
+import { SocialSigninUseCaseImpl } from '../application/usecase/impl/social-signin.usecase.impl';
 import { KakaoIdpAdapter } from './out/kakao-idp.adapter';
 import { AppleIdpAdapter } from './out/apple-idp.adapter';
-import { InMemoryUserRepository } from './out/user-repository.inmemory';
+import { UserRepositoryAdapter } from './out/user-repository.adapter';
+import { UserIdentityRepositoryAdapter } from './out/user-identity-repository.adapter';
 import { SimpleTokenService } from './out/token-service.simple';
 import { KakaoIdpPort } from '../application/port/kakao-idp.port';
 import { AppleIdpPort } from '../application/port/apple-idp.port';
-import { UserRepositoryPort } from '../application/port/user-repository.port';
+import { UserRepositoryPort } from '../domain/port/user-repository.port';
+import { UserIdentityRepositoryPort } from '../domain/port/user-identity-repository.port';
 import { TokenServicePort } from '../application/port/token-service.port';
-import { NaverCloudApiPort } from '../application/port/naver-cloud-api.port';
+import { SmsApiPort } from '../application/port/sms-api.port';
 import { OtpRepositoryPort } from '../application/port/otp-repository.port';
-import { NaverCloudApiAdapter } from './out/naver-cloud-api.adapter';
 import { InMemoryOtpRepository } from './out/otp-repository.inmemory';
 import { OtpUsecase } from '../application/usecase/otp.usecase';
+import { OtpUsecaseImpl } from '../application/usecase/impl/otp.usecase.impl';
+import { UserUsecase } from '../application/usecase/user.usecase';
+import { UserUsecaseImpl } from '../application/usecase/impl/user.usecase.impl';
+import { UserAdminController } from './in/http/admin/v1/user-admin.controller';
+import { TenantAdminController } from './in/http/admin/v1/tenant-admin.controller';
+import { HealthController } from './in/http/health.controller';
+import { TestController } from './in/http/test.controller';
+import { SolApiAdapter } from './out/sol-api.adapter';
+import { InitService } from '@app/common/service/init.service';
+import { GraphqlAuthGuard } from '@app/common/guard/graphql-auth.guard';
 
 @Module({
+  imports: [JwtModule],
+  controllers: [
+    HealthController,
+    UserAdminController,
+    TenantAdminController,
+    TestController,
+  ],
   providers: [
+    InitService,
+    GraphqlAuthGuard,
     AuthResolver,
-    SocialSigninUseCase,
-    OtpUsecase,
+    { provide: SocialSigninUseCase, useClass: SocialSigninUseCaseImpl },
+    { provide: OtpUsecase, useClass: OtpUsecaseImpl },
+    { provide: UserUsecase, useClass: UserUsecaseImpl },
     { provide: KakaoIdpPort, useClass: KakaoIdpAdapter },
     { provide: AppleIdpPort, useClass: AppleIdpAdapter },
-    { provide: UserRepositoryPort, useClass: InMemoryUserRepository },
+    { provide: UserRepositoryPort, useClass: UserRepositoryAdapter },
+    { provide: UserIdentityRepositoryPort, useClass: UserIdentityRepositoryAdapter },
     { provide: TokenServicePort, useClass: SimpleTokenService },
-    { provide: NaverCloudApiPort, useClass: NaverCloudApiAdapter },
+    { provide: SmsApiPort, useClass: SolApiAdapter },
     { provide: OtpRepositoryPort, useClass: InMemoryOtpRepository },
   ],
   exports: [],

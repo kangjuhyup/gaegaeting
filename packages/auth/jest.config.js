@@ -3,15 +3,22 @@ module.exports = {
   rootDir: '.',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
+    '^.+\\.ts$': 'ts-jest',
   },
+  transformIgnorePatterns: [
+    'node_modules/',
+    '<rootDir>/../core/.*/dist/',
+  ],
   collectCoverageFrom: ['**/*.(t|j)s'],
   coverageDirectory: './coverage',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src/'],
+  roots: ['<rootDir>/test/'],
   moduleNameMapper: {
     '^@app/(.*)$': '<rootDir>/src/$1',
     '^@core/(.*)$': '<rootDir>/../core/$1',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testTimeout: 30000,
+  detectOpenHandles: true,
+  verbose: true,
 };

@@ -1,12 +1,12 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { NaverCloudApiPort } from '../../application/port/naver-cloud-api.port';
+import { SmsApiPort } from '../../application/port/sms-api.port';
 import * as crypto from 'crypto';
 import * as https from 'https';
-import { ENV_KEY } from '../../config/env.config';
+import { ENV_KEY } from '../../common/config/env.config';
 
 @Injectable()
-export class NaverCloudApiAdapter extends NaverCloudApiPort {
+export class NaverCloudApiAdapter extends SmsApiPort {
   constructor(private readonly configService: ConfigService) { super(); }
 
   async sendSms(phoneNumber: string, message: string): Promise<void> {

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { KakaoIdpPort, KakaoProfile, KakaoTokenResponse } from '../../application/port/kakao-idp.port';
 import * as https from 'https';
 import { URLSearchParams } from 'url';
-import { ENV_KEY } from '../../config/env.config';
+import { ENV_KEY } from '../../common/config/env.config';
 
 @Injectable()
 export class KakaoIdpAdapter extends KakaoIdpPort {

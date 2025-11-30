@@ -1,30 +1,52 @@
-# Build stage
-FROM golang:1.21-alpine AS builder
+# 빌드 스테이지
+FROM node:20-alpine AS builder
 
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# Copy go mod files
-COPY go.mod go.sum* ./
-RUN go mod download
+# 패키지 매니저 설치
+RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
-# Copy source code
+# 전체 워크스페이스 복사 (모노레포 구조 지원)
 COPY . .
 
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
+# 의존성 설치
+RUN yarn install
 
-# Run stage
-FROM alpine:latest
+# @core 패키지들 먼저 빌드
+RUN yarn workspace @core/auth build
+RUN yarn workspace @core/database build
+RUN yarn workspace @core/http build
+RUN yarn workspace @core/logger build
+RUN yarn workspace @core/model build
+RUN yarn workspace @core/storage build
+RUN yarn workspace @core/util build
 
-RUN apk --no-cache add ca-certificates
+# match 모듈 빌드
+RUN yarn workspace match build
 
-WORKDIR /root/
+# 실행 스테이지
+FROM node:20-alpine AS runner
 
-# Copy the binary from builder
-COPY --from=builder /app/main .
+# 작업 디렉토리 설정
+WORKDIR /app
 
-# Expose port
-EXPOSE 8080
+# 패키지 매니저 설치
+RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
-# Run the binary
-CMD ["./main"]
+# 필요한 파일만 복사
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/yarn.lock ./yarn.lock
+COPY --from=builder /app/.yarnrc.yml ./.yarnrc.yml
+COPY --from=builder /app/.yarn ./.yarn
+COPY --from=builder /app/packages/match/package.json ./packages/match/package.json
+COPY --from=builder /app/packages/match/dist ./packages/match/dist
+COPY --from=builder /app/packages/core ./packages/core
+
+# 프로덕션 모드로 의존성 설치
+ENV NODE_ENV=production
+RUN yarn workspaces focus match --production
+
+
+# 애플리케이션 실행
+CMD ["node", "packages/match/dist/src/main.js"]

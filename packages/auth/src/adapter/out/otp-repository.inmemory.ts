@@ -19,6 +19,13 @@ export class InMemoryOtpRepository extends OtpRepositoryPort {
     if (valid) this.store.delete(phoneNumber);
     return valid;
   }
+
+  async hasActiveCode(phoneNumber: string): Promise<boolean> {
+    const entry = this.store.get(phoneNumber);
+    if (!entry) return false;
+    // 만료되지 않은 코드가 있는지 확인
+    return Date.now() <= entry.expiresAt;
+  }
 }
 
 

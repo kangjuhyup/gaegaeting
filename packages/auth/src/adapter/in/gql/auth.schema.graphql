@@ -56,6 +56,7 @@ type Mutation {
   # Social sign-in
   kakaoSignin(authCode: String!, redirectUri: String): AuthPayload!
   appleSignin(idToken: String!, authorizationCode: String, user: String): AuthPayload!
+  nativeSignin(provider: String!, accessToken: String!, refreshToken: String, expiresIn: Int, tokenType: String): AuthPayload!
 
   # OTP
   requestOtp(phoneNumber: String!): Boolean!
