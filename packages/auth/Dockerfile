@@ -16,14 +16,14 @@ RUN yarn install
 # @core 패키지들 먼저 빌드
 RUN yarn workspace @core/auth build
 RUN yarn workspace @core/database build
+RUN yarn workspace @core/redis build
 RUN yarn workspace @core/http build
 RUN yarn workspace @core/logger build
 RUN yarn workspace @core/model build
 RUN yarn workspace @core/storage build
 RUN yarn workspace @core/util build
 
-# match 모듈 빌드
-RUN yarn workspace match build
+RUN yarn workspace auth build
 
 # 실행 스테이지
 FROM node:20-alpine AS runner
@@ -39,8 +39,8 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/yarn.lock ./yarn.lock
 COPY --from=builder /app/.yarnrc.yml ./.yarnrc.yml
 COPY --from=builder /app/.yarn ./.yarn
-COPY --from=builder /app/packages/match/package.json ./packages/match/package.json
-COPY --from=builder /app/packages/match/dist ./packages/match/dist
+COPY --from=builder /app/packages/auth/package.json ./packages/auth/package.json
+COPY --from=builder /app/packages/auth/dist ./packages/auth/dist
 COPY --from=builder /app/packages/core ./packages/core
 
 # 프로덕션 모드로 의존성 설치
