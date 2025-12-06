@@ -5,6 +5,7 @@ import { AuthRepositoryPort } from '@app/auth/domain/port/auth-repository.port';
 import { JwtPort } from '@app/auth/domain/port/jwt.port';
 import { AuthProvider } from '@core/auth';
 import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
+import { AcocuntApiPort } from '@app/auth/domain/port/account-api.port';
 
 /**
  * 인증 토큰 서비스
@@ -15,6 +16,7 @@ import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
 export class AuthTokenService {
     constructor(
         private readonly authRepository: AuthRepositoryPort,
+        private readonly accountApi : AcocuntApiPort,
         private readonly jwtPort: JwtPort,
     ) {}
 
@@ -30,10 +32,14 @@ export class AuthTokenService {
         userProfile: SocialUserProfile,
     ): Promise<AuthEntity> {
         try {
+            const { profileRegistered , phoneVerified, petRegistered } = await this.accountApi.checkRegisted(provider.value,userProfile.getProviderId())
             // JWT 토큰 생성 (자체 토큰)
             const accessToken = await this.jwtPort.createAccessToken({
                 provider: provider,
                 providerId: userProfile.getProviderId(),
+                profileRegistered,
+                phoneVerified,
+                petRegistered
             });
             
             const refreshToken = await this.jwtPort.createRefreshToken({

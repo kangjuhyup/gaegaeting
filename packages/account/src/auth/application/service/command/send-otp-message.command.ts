@@ -1,6 +1,5 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { ConflictException } from "@nestjs/common";
-import { CacheService } from "@core/redis";
 import { SendOptMessageCommand } from '../../port/command/send-otp-message.port';
 import { NaverCloudApiPort } from "@app/auth/domain/port/naver-cloud-api.port";
 import { OtpRepositoryPort } from "@app/auth/domain/port/otp-repository.port";
@@ -14,7 +13,7 @@ export class SendOptMessageCommandHandler implements ICommandHandler<SendOptMess
     ) {}
 
     async execute(command: SendOptMessageCommand): Promise<string> {
-        const { phoneNumber } = command;
+        const { user, phoneNumber } = command;
 
         // Redis 에 기존 OTP 가 있을 경우 에러
         const existingOtp = await this.otpRepository.exists(
@@ -32,7 +31,7 @@ export class SendOptMessageCommandHandler implements ICommandHandler<SendOptMess
         await this.naverCloudApi.sendSms(phoneNumber, otp);
 
         // OTP 세팅
-        await this.otpRepository.save(phoneNumber,otp,300)
+        await this.otpRepository.save(user.userId, { phoneNumber, otp } ,300)
         return otp;
     }
 

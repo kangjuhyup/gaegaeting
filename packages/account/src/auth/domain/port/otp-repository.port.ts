@@ -4,7 +4,7 @@ export abstract class OtpRepositoryPort {
      * @param phoneNumber 전화번호
      * @returns 존재하면 true
      */
-    abstract exists(phoneNumber: string): Promise<boolean>;
+    abstract exists(key: string): Promise<boolean>;
 
     /**
      * OTP 저장
@@ -12,32 +12,32 @@ export abstract class OtpRepositoryPort {
      * @param otp 6자리 OTP
      * @param ttlSec TTL (초)
      */
-    abstract save(phoneNumber: string, otp: string, ttlSec: number): Promise<void>;
+    abstract save(key: string, param : any, ttlSec: number): Promise<void>;
 
     /**
      * OTP 조회
      * @param phoneNumber 전화번호
      * @returns OTP 코드 또는 null
      */
-    abstract get(phoneNumber: string): Promise<string | null>;
+    abstract get(key: string): Promise<string | null>;
 
     /**
      * OTP 삭제
      * @param phoneNumber 전화번호
      */
-    abstract delete(phoneNumber: string): Promise<void>;
+    abstract delete(key: string): Promise<void>;
 
     /**
      * OTP 검증 시도 횟수 증가
      * @param phoneNumber 전화번호
      * @returns 남은 시도 횟수
      */
-    abstract incrementAttempts(phoneNumber: string): Promise<number>;
+    abstract incrementAttempts(key: string): Promise<number>;
 
     /**
      * OTP 검증 시도 횟수 조회
      * @param phoneNumber 전화번호
      * @returns 시도 횟수
      */
-    abstract getAttempts(phoneNumber: string): Promise<number>;
+    abstract getAttempts(key: string): Promise<number>;
 }

@@ -77,6 +77,7 @@ export class UserEntity extends PersistenceEntity<string, IUser> {
     gender?: UserGender;
     region?: UserRegion;
     bio?: string;
+    phoneNumber? : string;
   }) {
     if(param.nickname) {
       this.etc.nickname = param.nickname;
@@ -89,6 +90,9 @@ export class UserEntity extends PersistenceEntity<string, IUser> {
     }
     if(param.bio) {
       this.etc.bio = param.bio;
+    }
+    if(param.phoneNumber) {
+      this.etc.phoneNumber = param.phoneNumber
     }
     return this;
   }

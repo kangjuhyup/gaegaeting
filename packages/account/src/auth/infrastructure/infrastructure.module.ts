@@ -12,6 +12,7 @@ import { RedisCacheModule } from "@core/redis";
 import { JwtPort } from "../domain/port/jwt.port";
 import { JwtAdpater } from "./adapter/outbound/jwt.adapter";
 import { AdminAuthController } from "./adapter/inbound/http/auth/auth.admin.controller";
+import { AuthInternalController } from "./adapter/inbound/http/auth/auth.internal.controller";
 import { ENV_KEY } from "@app/config/env.config";
 
 const providers : Provider[] = [
@@ -74,7 +75,8 @@ const providers : Provider[] = [
     ],
     controllers : [
         AuthController,
-        AdminAuthController
+        AdminAuthController,
+        AuthInternalController
     ],
     providers : providers,
     exports : providers,

@@ -4,8 +4,9 @@ import { CommandBus } from "@nestjs/cqrs";
 import { AdminLoginCommand } from "@app/auth/application/port/command/admin-login.port";
 import { AuthToken } from "@app/auth/domain/model/auth-token";
 import { Response } from "express";
-import { ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
+@ApiTags('Account','Auth','Admin')
 @Controller('admin/auth')
 export class AdminAuthController {
 
