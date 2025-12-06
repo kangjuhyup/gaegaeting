@@ -7,9 +7,9 @@ import { CacheService } from '@core/redis';
 import { createHash } from 'crypto';
 
 @Injectable()
-export class SimpleTokenService extends TokenServicePort {
+export class JwtServiceAdapter extends TokenServicePort {
 
-  private readonly logger = new Logger(SimpleTokenService.name);
+  private readonly logger = new Logger(JwtServiceAdapter.name);
 
   constructor(
     private readonly jwtService: JwtService,

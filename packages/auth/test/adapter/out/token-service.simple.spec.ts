@@ -1,7 +1,7 @@
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '@core/redis';
-import { SimpleTokenService } from '../../../src/adapter/out/token-service.simple';
+import { SimpleTokenService } from '../../../src/adapter/out/jwt-service.adapter';
 import { ENV_KEY } from '../../../src/common/config/env.config';
 import { TokenMetadata } from '../../../src/application/port/token-service.port';
 

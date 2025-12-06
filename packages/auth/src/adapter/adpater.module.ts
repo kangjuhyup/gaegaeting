@@ -9,7 +9,7 @@ import { KakaoIdpAdapter } from './out/kakao-idp.adapter';
 import { AppleIdpAdapter } from './out/apple-idp.adapter';
 import { UserRepositoryAdapter } from './out/user-repository.adapter';
 import { UserIdentityRepositoryAdapter } from './out/user-identity-repository.adapter';
-import { SimpleTokenService } from './out/token-service.simple';
+import { JwtServiceAdapter } from './out/jwt-service.adapter';
 import { KakaoIdpPort } from '../application/port/kakao-idp.port';
 import { AppleIdpPort } from '../application/port/apple-idp.port';
 import { UserRepositoryPort } from '../domain/port/user-repository.port';
@@ -71,7 +71,7 @@ import { ENV_KEY } from '../common/config/env.config';
     { provide: AppleIdpPort, useClass: AppleIdpAdapter },
     { provide: UserRepositoryPort, useClass: UserRepositoryAdapter },
     { provide: UserIdentityRepositoryPort, useClass: UserIdentityRepositoryAdapter },
-    { provide: TokenServicePort, useClass: SimpleTokenService },
+    { provide: TokenServicePort, useClass: JwtServiceAdapter },
     { provide: SmsApiPort, useClass: SolApiAdapter },
     { provide: OtpRepositoryPort, useClass: InMemoryOtpRepository },
   ],

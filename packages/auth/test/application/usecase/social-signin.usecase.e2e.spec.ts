@@ -7,7 +7,7 @@ import { UserIdentityRepositoryPort } from '../../../src/domain/port/user-identi
 import { KakaoIdpAdapter } from '../../../src/adapter/out/kakao-idp.adapter';
 import { UserRepositoryAdapter } from '../../../src/adapter/out/user-repository.adapter';
 import { UserIdentityRepositoryAdapter } from '../../../src/adapter/out/user-identity-repository.adapter';
-import { SimpleTokenService } from '../../../src/adapter/out/token-service.simple';
+import { SimpleTokenService } from '../../../src/adapter/out/jwt-service.adapter';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { DataSource } from 'typeorm';
