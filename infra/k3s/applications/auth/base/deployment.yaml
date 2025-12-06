@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: ghcr.io/kangjuhyup/gaegaeting/auth:latest
+          image: ghcr.io/kangjuhyup/gaegaeting/auth-api:latest
           imagePullPolicy: Always
           ports:
             - name: http
