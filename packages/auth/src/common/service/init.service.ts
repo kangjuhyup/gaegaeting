@@ -5,6 +5,7 @@ import { UserRepositoryPort } from '@app/domain/port/user-repository.port';
 import { User } from '@app/domain/model/user';
 import { createHash } from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { ENV_KEY } from '../config/env.config';
 
 @Injectable()
 export class InitService implements OnModuleInit {
@@ -16,7 +17,10 @@ export class InitService implements OnModuleInit {
     private readonly dataSource: DataSource,
     private readonly userRepository: UserRepositoryPort,
     private readonly config : ConfigService,
-  ) {}
+  ) {
+    this.rootId = this.config.get(ENV_KEY.AUTH_ROOT_ID);
+    this.rootPassword = this.config.get(ENV_KEY.AUTH_ROOT_PASSWORD);
+  }
 
   async onModuleInit() {
     await this.initializeDefaultTenant();
