@@ -194,6 +194,44 @@ docker-compose down -v
 - **Redis**: `localhost:6379`
 - **Kafka**: `localhost:9092`
 
+### 3. k3s 클러스터 데이터베이스 접근
+
+#### Port-Forward를 사용하는 이유
+
+k3s 클러스터에 배포된 MySQL, Redis 등의 서비스는 기본적으로 `ClusterIP` 타입으로 설정되어 있어 **클러스터 내부에서만 접근 가능**합니다. 
+
+로컬 개발 환경(DBeaver, MySQL Workbench 등)에서 클러스터의 데이터베이스에 접근하려면 `kubectl port-forward`를 사용해야 합니다:
+
+- **보안**: 클러스터 외부에 서비스를 노출하지 않고 안전하게 접근
+- **간편**: 추가 설정 없이 로컬 포트를 클러스터 내부 서비스로 연결
+- **임시 접근**: 필요할 때만 포트 포워딩을 활성화하여 사용
+
+#### MySQL 접근 방법
+
+```bash
+# 1. k3s 클러스터에 SSH 접속
+ssh user@your-k3s-server
+
+# 2. kubectl 설정
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+# 3. MySQL Master 서비스 포트 포워딩
+kubectl port-forward -n database svc/mysql-master 3306:3306
+
+# 또는 백그라운드로 실행
+kubectl port-forward -n database svc/mysql-master 3306:3306 &
+```
+
+#### DBeaver 연결 설정
+
+포트 포워딩이 활성화된 상태에서 DBeaver에서 다음 정보로 연결:
+
+- **Host**: k3s 서버 IP
+- **Port**: `3306`
+- **Database**: `gaegaeting`
+- **Username**: `gaegaeting` 또는 `root`
+- **Password**: Doppler에서 설정한 `DATABASE_PASSWORD` 또는 `MYSQL_ROOT_PASSWORD`
+
 ## Typescript 프로젝트 
 ### 실행 방법
 ```bash
