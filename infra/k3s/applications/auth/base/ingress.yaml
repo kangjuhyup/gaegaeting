@@ -17,7 +17,7 @@ spec:
     - host: api.gaegaeting.app
       http:
         paths:
-          - path: /
+          - path: /auth
             pathType: Prefix
             backend:
               service:
