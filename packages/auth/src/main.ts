@@ -53,7 +53,7 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document,{
     swaggerOptions: { persistAuthorization: true },
   });
-  
+   
   // 전역 파이프 설정 (유효성 검증)
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
