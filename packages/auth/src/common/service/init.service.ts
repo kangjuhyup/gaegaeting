@@ -4,12 +4,18 @@ import { TenantOrmEntity } from '@core/database';
 import { UserRepositoryPort } from '@app/domain/port/user-repository.port';
 import { User } from '@app/domain/model/user';
 import { createHash } from 'crypto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class InitService implements OnModuleInit {
+
+  private readonly rootId : string;
+  private readonly rootPassword : string;
+
   constructor(
     private readonly dataSource: DataSource,
     private readonly userRepository: UserRepositoryPort,
+    private readonly config : ConfigService,
   ) {}
 
   async onModuleInit() {
@@ -47,7 +53,7 @@ export class InitService implements OnModuleInit {
     }
 
     // username으로 기존 admin 사용자 확인
-    const existsAdmin = await this.userRepository.existsByUsername(tenant.id, 'admin');
+    const existsAdmin = await this.userRepository.existsByUsername(tenant.id, this.rootId);
     if (existsAdmin) {
       console.log('✅ Admin user already exists');
       return;
@@ -55,21 +61,21 @@ export class InitService implements OnModuleInit {
 
     // 비밀번호 해싱 (SHA-256)
     const passwordHash = createHash('sha256')
-      .update('Pa55word')
+      .update(this.rootPassword)
       .digest('hex');
 
     const adminUser = User.create({
-      id: 'admin',
+      id: this.rootId,
       tenantId: String(tenant.id),
-      username: 'admin',
-      email: 'admin@gaegaeting.com',
+      username: 'root',
+      email: 'root@gaegaeting.com',
     });
 
     adminUser.setPasswordHash(passwordHash);
     adminUser.setStatus('ACTIVE');
 
     await this.userRepository.create(adminUser);
-    console.log('✅ Admin user created (username: admin, password: Pa55word)');
+    console.log(`✅ Admin user created (username: ${this.rootId}, password: ${this.rootPassword})`);
   }
 }
 

@@ -43,6 +43,10 @@ export const envSpec = {
   // Redis
   REDIS_HOST: { joi: Joi.string().required() },
   REDIS_PORT: { joi: Joi.number().required() },
+
+  // Root user
+  AUTH_ROOT_ID: { joi: Joi.string().required() },
+  AUTH_ROOT_PASSWORD: { joi: Joi.string().required() },
 } as const;
 
 export type EnvKey = keyof typeof envSpec;
