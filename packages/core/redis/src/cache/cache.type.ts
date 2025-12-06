@@ -12,6 +12,7 @@ export interface RedisCacheModuleOptions {
 }
 
 export interface RedisCacheModuleAsyncOptions {
+  imports?: any[];
   useFactory: (...args: any[]) => Promise<RedisCacheModuleOptions> | RedisCacheModuleOptions;
   inject?: any[];
 }

@@ -5,6 +5,7 @@ import { AuthRepositoryPort } from '@app/auth/domain/port/auth-repository.port';
 import { JwtPort } from '@app/auth/domain/port/jwt.port';
 import { AuthProvider } from '@core/auth';
 import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
+import { AcocuntApiPort } from '@app/auth/domain/port/account-api.port';
 
 /**
  * 인증 토큰 서비스
@@ -15,6 +16,7 @@ import { SocialUserProfile } from '@app/auth/domain/model/auth-provider';
 export class AuthTokenService {
     constructor(
         private readonly authRepository: AuthRepositoryPort,
+        private readonly accountApi : AcocuntApiPort,
         private readonly jwtPort: JwtPort,
     ) {}
 
@@ -30,10 +32,14 @@ export class AuthTokenService {
         userProfile: SocialUserProfile,
     ): Promise<AuthEntity> {
         try {
+            const { profileRegistered , phoneVerified, petRegistered } = await this.accountApi.checkRegisted(provider.value,userProfile.getProviderId())
             // JWT 토큰 생성 (자체 토큰)
             const accessToken = await this.jwtPort.createAccessToken({
                 provider: provider,
                 providerId: userProfile.getProviderId(),
+                profileRegistered,
+                phoneVerified,
+                petRegistered
             });
             
             const refreshToken = await this.jwtPort.createRefreshToken({
@@ -73,5 +79,30 @@ export class AuthTokenService {
         } catch (error) {
             throw new Error(`인증 엔티티 생성 중 오류가 발생했습니다: ${error.message}`);
         }
+    }
+
+    async createAdminToken(id : string) {
+        // JWT 토큰 생성 (자체 토큰)
+        const accessToken = await this.jwtPort.createAccessToken({
+            role : 'ADMIN',
+            id
+        });
+            
+        const refreshToken = await this.jwtPort.createRefreshToken({
+            role : 'ADMIN',
+            id
+        });
+            
+        const expiresIn = this.jwtPort.getExpriesIn();
+            
+        // 자체 토큰 생성
+        const authToken = new AuthToken({
+            accessToken,
+            refreshToken,
+            expiresIn: expiresIn.accessToken, // 1시간
+            refreshTokenExpiresIn: expiresIn.refreshToken, // 7일   
+            tokenType: 'Bearer'
+        });
+        return authToken
     }
 }

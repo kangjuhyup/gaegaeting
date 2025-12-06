@@ -88,9 +88,10 @@ describe('UserGuard 단위테스트', () => {
 
         const mockUserPrincipal : UserPrincipal = {
             userId : '123',
+            name : 'test',
             nickname : 'test',
             birth : 'test',
-            region : 'test',
+            region : 1,
         }
         jest.spyOn(userService, 'getUserFromProvider').mockResolvedValue(mockUserPrincipal);
 

@@ -1,21 +1,24 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { SocialRedirectQuery } from '@app/auth/application/port/query/social-redirect.port';
 import { SocialLoginCommand } from '@app/auth/application/port/command/social-login.port';
 import { SocialCallbackDto } from './dto/request/social-callback.dto';
-import { ConfigService } from '@nestjs/config';
-import { ENV_KEY } from '../../../../../../config/env.config';
 import { LoginResponse } from './dto/response/login.response';
 import { SocialProviderDto } from './dto/request/social-provider.dto';
 import { GetUserPrincipalRequest } from './dto/request/get-user-principal.request';
 import { GetUserPrincipalResponse } from './dto/response/get-user-principal.response';
 import { GetUserPrincipalQuery } from '@app/auth/application/port/query/get-user-principal.port';
-import { AuthProvider } from '@core/auth';
 import { ApiOperation, ApiProperty, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SocialLoginNativeBody, SocialLogInNativeParam } from './dto/request/social-native.request';
 import { SocialLoginByTokenCommand } from '@app/auth/application/port/command/social-login-by-token.port';
-import { GenerateTestTokenCommand } from '@app/auth/application/port/command/generate-test-token.port';
+import { SendOptMessageBody } from './dto/request/send-opt-message.request';
+import { VerifyOptMessageBody } from './dto/request/verify-opt-message.request';
+import { SendOptMessageCommand } from '@app/auth/application/port/command/send-otp-message.port';
+import { SendOptMessageResponse } from './dto/response/send-opt-message.response';
+import { VerifyOptMessageResponse } from './dto/response/verify-opt-message.response';
+import { VerifyOtpMessageCommand } from '@app/auth/application/port/command/verify-otp-message.port';
+import { AccessGuard, UserGuard, UserParam, UserPrincipal } from '@core/auth';
 
 @ApiTags('Account','Auth')
 @Controller('auth')
@@ -23,7 +26,6 @@ export class AuthController {
   constructor(
     private readonly queryBus : QueryBus,
     private readonly commandBus : CommandBus,
-    private readonly configService: ConfigService,
   ) {}
   
   @Get(':provider')
@@ -158,5 +160,26 @@ export class AuthController {
       });
       
       res.json(LoginResponse.from(result));
+  }
+
+  @Post('/auth/phone')
+  @UseGuards(AccessGuard,UserGuard)
+  @ApiOperation({ summary : '휴대폰 인증번호 요청' })
+  @ApiResponse({ status : 201, type : () => SendOptMessageResponse })
+  async sendOptMessage(
+    @Body() body : SendOptMessageBody,
+    @UserParam() user : UserPrincipal,
+  ) : Promise<SendOptMessageResponse> {
+    const opt = await this.commandBus.execute(new SendOptMessageCommand(user,body.phoneNumber))
+    return new SendOptMessageResponse(opt)
+  }
+
+  @Post('/auth/phone/verify')
+  async verfyOptMessage(
+    @Body() body : VerifyOptMessageBody,
+    @UserParam() user : UserPrincipal,
+  ) : Promise<VerifyOptMessageResponse> {
+    const verifyResult = await this.commandBus.execute(new VerifyOtpMessageCommand(user,body.phoneNumber,body.opt))
+    return new VerifyOptMessageResponse(verifyResult.success,verifyResult.remainingAttempts)
   }
 }

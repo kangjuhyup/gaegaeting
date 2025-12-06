@@ -38,7 +38,6 @@ export class UserOrmRepository extends BaseRepository<UserOrmEntity> implements 
                 attachments : true
             }
         })
-        console.log(userOrm)
         return UserOrmMapper.toDomain(userOrm);
     }
 

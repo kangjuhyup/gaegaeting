@@ -5,19 +5,24 @@ import { AuthInfraStructureModule } from "../infrastructure/infrastructure.modul
 import { GetUserPrincipalHandler } from "./service/query/get-user-principal.query";
 import { AuthTokenService } from "./service/auth-token.service";
 import { SocialLoginByTokenHandler } from "./service/command/social-login-by-token.command";
+import { AdminLoginCommandHandler } from "./service/command/admin-login.command";
+import { CreateTokenForUserCommandHandler } from "./service/command/create-token-for-user.command";
+import { UpdateUserIdCommandHandler } from "./service/command/update-user-id.command";
 
 const providers : Provider[] = [
      // Service
      AuthTokenService,
   // Query
      SocialRedirectHandler,
-     SocialRedirectHandler,   
+     SocialRedirectHandler,
      GetUserPrincipalHandler,
 
      // Command
      SocialLoginHandler,
      SocialLoginByTokenHandler,
-     
+     AdminLoginCommandHandler,
+     CreateTokenForUserCommandHandler,
+     UpdateUserIdCommandHandler
 
 ]
 

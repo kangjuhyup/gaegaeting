@@ -1,9 +1,7 @@
-import { UserOrmEntity } from "../entity/account/user";
-import { PetOrmEntity } from "../entity/account/pet";
-import { AuthOrmEntity, FeedItemOrmEntity, FeedOrmEntity, LikeOrmEntity, LocationOrmEntity, MainAreaOrmEntity, PairOrmEntity, PetAttachmentOrmEntity, UserAttachmentOrmEntity } from "@app/entity";
-import { ConversationOrmEntity, ParticipantOrmEntity, MessageOrmEntity, MessageAttachmentOrmEntity, MessageReceiptOrmEntity, MessageReactionOrmEntity } from "@app/entity/chat";
+import { ClientOrmEntity, ConversationOrmEntity, EventOrmEntity, FeedItemOrmEntity, FeedOrmEntity, GroupOrmEntity, GroupRoleOrmEntity, IdentityProviderOrmEntity, LikeOrmEntity, LocationOrmEntity, MainAreaOrmEntity, MessageAttachmentOrmEntity, MessageOrmEntity, MessageReactionOrmEntity, MessageReceiptOrmEntity, PairOrmEntity, ParticipantOrmEntity, PermissionOrmEntity, PetAttachmentOrmEntity, PetProfileOrmEntity, RoleInheritOrmEntity, RoleOrmEntity, RolePermissionOrmEntity, TenantClientOrmEntity, TenantConfigOrmEntity, TenantOrmEntity, UserAttachmentOrmEntity, UserGroupOrmEntity, UserIdentityOrmEntity, UserOrmEntity, UserProfileOrmEntity, UserRoleOrmEntity } from "@app/entity";
 
 export const DatabaseSchema = {
+  AUTH: "AUTH",
   USER: "USER",
   MATCH: "MATCH",
   CHAT : "CHAT",
@@ -19,7 +17,8 @@ export type DatabaseSchema =
  */
 export function getEntitiesBySchema(schema: DatabaseSchema[]): any[] {
   const entityMap = {
-    [DatabaseSchema.USER]: [UserOrmEntity, PetOrmEntity, AuthOrmEntity, UserAttachmentOrmEntity, PetAttachmentOrmEntity],
+    [DatabaseSchema.AUTH]: [TenantOrmEntity, TenantConfigOrmEntity, TenantClientOrmEntity, ClientOrmEntity, IdentityProviderOrmEntity, UserOrmEntity, UserIdentityOrmEntity, UserGroupOrmEntity, UserRoleOrmEntity, GroupOrmEntity, GroupRoleOrmEntity, RoleOrmEntity, RoleInheritOrmEntity, RolePermissionOrmEntity, PermissionOrmEntity, EventOrmEntity],
+    [DatabaseSchema.USER]: [UserProfileOrmEntity, PetProfileOrmEntity, UserAttachmentOrmEntity, PetAttachmentOrmEntity],
     [DatabaseSchema.MATCH]: [PairOrmEntity, LikeOrmEntity, FeedOrmEntity, FeedItemOrmEntity, LocationOrmEntity, MainAreaOrmEntity],
     [DatabaseSchema.CHAT]: [ConversationOrmEntity, ParticipantOrmEntity, MessageOrmEntity, MessageAttachmentOrmEntity, MessageReceiptOrmEntity, MessageReactionOrmEntity],
   };

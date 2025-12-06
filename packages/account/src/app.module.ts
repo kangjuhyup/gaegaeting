@@ -9,6 +9,8 @@ import { DatabaseModule, DatabaseSchema } from '@core/database';
 import { HttpModule } from '@core/http';
 import { HttpLoggerModule } from '@core/logger';
 import { PetModule } from './pet/pet.module';
+import { AppController } from './app.controller';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -61,10 +63,14 @@ import { PetModule } from './pet/pet.module';
         };
       },
     }),
+    EventEmitterModule.forRoot(),
     // 도메인 모듈
     UserModule,
     AuthModule,
     PetModule
   ],
+  controllers : [
+    AppController
+  ]
 })
 export class AppModule {}

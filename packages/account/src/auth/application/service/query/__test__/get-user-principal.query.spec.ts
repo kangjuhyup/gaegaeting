@@ -37,17 +37,15 @@ describe('GetUserPrincipalHandler 단위 테스트', () => {
         expect(result).toEqual(mockUserPrincipal);
     });
 
-    it('사용자 정보가 없을 경우 null을 반환해야 함', async () => {
+    it('사용자 정보가 없을 경우 NotFoundException 발생', async () => {
         // Given
         authRepository.findUserByAuthProvider.mockResolvedValue(null);
         const query = new GetUserPrincipalQuery(mockProviderType, mockProviderId);
 
-        // When
-        const result = await getUserPrincipalHandler.execute(query);
-
+        // When & Then
+        await expect(getUserPrincipalHandler.execute(query)).rejects.toThrow('해당 프로바이더에 맞는 유저를 찾을 수 없습니다.');
         // Then
         expect(authRepository.findUserByAuthProvider).toHaveBeenCalledWith(mockProviderType, mockProviderId);
-        expect(result).toBeNull();
     });
 
     it('에러 발생 시 예외를 전파해야 함', async () => {

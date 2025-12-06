@@ -1,5 +1,5 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
-import { PetOrmEntity } from "./pet";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { PetProfileOrmEntity } from "./pet-profile";
 import { BaseEntity } from "../base";
 
 @Entity('pet_attachment')
@@ -15,7 +15,7 @@ export class PetAttachmentOrmEntity extends BaseEntity {
     @Column({type : 'boolean', name : 'is_active', default : false})
     isActive : boolean;
     
-    @ManyToOne(() => PetOrmEntity, (pet) => pet.attachments)
+    @ManyToOne(() => PetProfileOrmEntity, (pet) => pet.attachments)
     @JoinColumn({ name: "pet_id" })
-    pet: PetOrmEntity;
+    pet: PetProfileOrmEntity;
 }

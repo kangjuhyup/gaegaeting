@@ -1,8 +1,10 @@
 name: Docker Release
 
 on:
-  push:
-    branches: [ release ]
+  pull_request:
+    branches:
+      - develop
+      - release
 
 env:
   REGISTRY: ghcr.io
@@ -13,30 +15,68 @@ env:
   DOCKER_COMPOSE_REMOTE_PATH: ${{ vars.DOCKER_COMPOSE_REMOTE_PATH }}
 
 jobs:
+  check-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+      context: ${{ steps.check.outputs.context }}
+      subtype: ${{ steps.check.outputs.subtype }}
+      dockerfile: ${{ steps.check.outputs.dockerfile }}
+      image_name: ${{ steps.check.outputs.image_name }}
+    steps:
+      - name: Check branch pattern
+        id: check
+        run: |
+          SOURCE_BRANCH="${{ github.head_ref }}"
+
+          # 첫 번째 세그먼트 추출 (account, match, chat 등)
+          CONTEXT=$(echo "$SOURCE_BRANCH" | cut -d'/' -f1)
+
+          # 허용된 브랜치 패턴 체크
+          ALLOWED_CONTEXTS=("account" "match" "chat" "payments" "auth")
+          if [[ " ${ALLOWED_CONTEXTS[@]} " =~ " ${CONTEXT} " ]]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+
+            # 두 번째 세그먼트 추출 (api, batch 등)
+            SUBTYPE=$(echo "$SOURCE_BRANCH" | cut -d'/' -f2 -s)
+
+            # Dockerfile 경로 구성
+            if [ -n "$SUBTYPE" ] && [ "$SUBTYPE" != "${SOURCE_BRANCH#*/}" ]; then
+              DOCKERFILE="packages/${CONTEXT}/Dockerfile.${SUBTYPE}"
+              IMAGE_NAME="${CONTEXT}-${SUBTYPE}"
+            else
+              DOCKERFILE="packages/${CONTEXT}/Dockerfile"
+              IMAGE_NAME="${CONTEXT}"
+            fi
+
+            echo "context=$CONTEXT" >> $GITHUB_OUTPUT
+            echo "subtype=$SUBTYPE" >> $GITHUB_OUTPUT
+            echo "dockerfile=$DOCKERFILE" >> $GITHUB_OUTPUT
+            echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+
+            echo "Will build: $DOCKERFILE -> $IMAGE_NAME"
+          else
+            echo "should_build=false" >> $GITHUB_OUTPUT
+            echo "Skipping - branch pattern not in allowed list: $SOURCE_BRANCH"
+          fi
+
   build-and-push:
+    needs: check-branch
+    if: needs.check-branch.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: account
-            context: .
-            dockerfile: packages/account/Dockerfile
-            image: account
-          # - name: match
-          #   context: .
-          #   dockerfile: packages/match/Dockerfile
-          #   image: match
-          # - name: match-batch
-          #   context: .
-          #   dockerfile: packages/match/Dockerfile.batch
-          #   image: match-batch
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set build variables
+        id: branch-info
+        run: |
+          echo "dockerfile=${{ needs.check-branch.outputs.dockerfile }}" >> $GITHUB_OUTPUT
+          echo "image_name=${{ needs.check-branch.outputs.image_name }}" >> $GITHUB_OUTPUT
+          echo "source_branch=${{ github.head_ref }}" >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -59,86 +99,20 @@ jobs:
           cache: 'yarn'
       - run: yarn install --immutable
 
-      - name: Build & Push ${{ matrix.name }}
+      - name: Build & Push ${{ steps.branch-info.outputs.service_name }}
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
+          context: .
+          file: ${{ steps.branch-info.outputs.dockerfile }}
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ steps.branch-info.outputs.image_name }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ steps.branch-info.outputs.image_name }}:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.branch=${{ steps.branch-info.outputs.source_branch }}
           # ⚠️ build-time 시크릿이 필요하다면 아래 secrets 블록과 Dockerfile의 --mount=type=secret 사용
           # secrets: |
           #   id=doppler,env=DOPPLER_TOKEN
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-    steps:
-      - name: Install SSH client
-        run: sudo apt-get update && sudo apt-get install -y openssh-client
-
-      - name: Write SSH key
-        run: |
-          echo "${SSH_KEY}" > key.pem
-          chmod 600 key.pem
-
-      - name: Remote deploy with Doppler
-        env:
-          REGISTRY: ${{ env.REGISTRY }}
-          NS: ${{ env.IMAGE_NAMESPACE }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
-          DOPPLER_PROJECT: ${{ vars.DOPPLER_PROJECT }}
-          DOCKER_COMPOSE_REMOTE_PATH: ${{ vars.DOCKER_COMPOSE_REMOTE_PATH }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${SSH_USER}@${SSH_HOST} << EOF
-            set -euo pipefail
-
-            # --- 1) Docker 로그인 (GHCR)
-            echo "${GITHUB_TOKEN}" | docker login ${REGISTRY} -u "${GITHUB_ACTOR}" --password-stdin
-
-            # --- 2) Doppler CLI 설치 (없을 경우)
-            if ! command -v doppler >/dev/null 2>&1; then
-              curl -Ls https://cli.doppler.com/install.sh | sudo sh
-            fi
-            export DOPPLER_TOKEN="${DOPPLER_TOKEN}"
-
-            # --- 3) env 파일 생성 위치
-            echo "[DEBUG] APP_DIR=${DOCKER_COMPOSE_REMOTE_PATH}"
-            mkdir -p "${DOCKER_COMPOSE_REMOTE_PATH}/env"
-
-            # account
-            if [ -n "${DOPPLER_PROJECT:-}" ]; then
-              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/account.env"
-            else
-              doppler secrets download --project app --config account-prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/account.env"
-            fi
-
-            # match
-            if [ -n "${DOPPLER_PROJECT:-}" ]; then
-              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match.env"
-            else
-              doppler secrets download --project app --config match-prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match.env"
-            fi
-
-            # match-batch
-            if [ -n "${DOPPLER_PROJECT:-}" ]; then
-              doppler secrets download --project "${DOPPLER_PROJECT}" --config prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match-batch.env"
-            else
-              doppler secrets download --project app --config match-batch-prd --format docker --no-file > "${DOCKER_COMPOSE_REMOTE_PATH}/env/match-batch.env"
-            fi
-
-            # --- 4) 최신 이미지 pull & 재기동
-            docker-compose -f "${DOCKER_COMPOSE_REMOTE_PATH}/docker-compose.yml" pull
-            docker-compose -f "${DOCKER_COMPOSE_REMOTE_PATH}//docker-compose.yml" up -d
-
-            # (선택) 오래된 dangling 이미지/레이어 정리
-            docker image prune -f || true
-          EOF

@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 // 1) envSpec만 한 군데서 관리
 export const envSpec = {
   NODE_ENV: { joi: Joi.string().valid('development', 'production', 'test').default('development') },
-  PORT: { joi: Joi.number().default(3000) },
+  ACCOUNT_SERVICE_API_PORT: { joi: Joi.number().required() },
   JWT_SECRET: { joi: Joi.string().required() },
   JWT_ACCESS_EXPIRATION: { joi: Joi.string().default('1h') },
   JWT_REFRESH_EXPIRATION: { joi: Joi.string().default('30d') },
@@ -19,7 +19,10 @@ export const envSpec = {
   DATABASE_USERNAME: { joi: Joi.string().required() },
   DATABASE_PASSWORD: { joi: Joi.string().required() },
   DATABASE_NAME: { joi: Joi.string().default('ggt_account') },
-  PUBLIC_DATA_API_KEY: { joi: Joi.string().required() }
+  PUBLIC_DATA_API_KEY: { joi: Joi.string().required() },
+  ADMIN_PASSWORD : { joi : Joi.string().required() },
+  REDIS_HOST : { joi: Joi.string().required() },
+  REDIS_PORT : { joi: Joi.string().required() }
 } as const;
 
 // 2) 타입과 상수 자동 추출
