@@ -1,7 +1,8 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, Index, BaseEntity } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, Index } from 'typeorm';
 import { TenantOrmEntity } from './tenant';
 import { UserOrmEntity } from './user';
 import { IdpProvider } from './indentity-provider';
+import { BaseEntity } from '../base';
 
 @Entity({ name: 'user_identity' })
 @Unique('uk_user_identity', ['tenant', 'provider', 'providerSub'])

@@ -30,6 +30,21 @@ export interface PaginatedResult<T> {
   limit: number;
 }
 
+export interface UpdateTenantConfigInput {
+  signupPolicy?: 'invite' | 'open';
+  requirePhoneVerify?: boolean;
+  brandName?: string | null;
+  extra?: Record<string, any> | null;
+}
+
+export interface TenantConfigDto {
+  tenantId: string;
+  signupPolicy: 'invite' | 'open';
+  requirePhoneVerify: boolean;
+  brandName?: string | null;
+  extra?: Record<string, any> | null;
+}
+
 @Injectable()
 export abstract class TenantUsecase {
   abstract createTenant(input: CreateTenantInput): Promise<TenantDto>;
@@ -37,5 +52,7 @@ export abstract class TenantUsecase {
   abstract listTenants(query: ListTenantsQuery): Promise<PaginatedResult<TenantDto>>;
   abstract updateTenant(tenantId: string, input: UpdateTenantInput): Promise<TenantDto>;
   abstract deleteTenant(tenantId: string): Promise<void>;
+  abstract updateTenantConfig(tenantId: string, input: UpdateTenantConfigInput): Promise<TenantConfigDto>;
+  abstract getTenantConfig(tenantId: string): Promise<TenantConfigDto | null>;
 }
 
