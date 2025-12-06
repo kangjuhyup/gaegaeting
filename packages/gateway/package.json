@@ -33,8 +33,13 @@
     "dotenv": "^16.4.5",
     "graphql": "^16.12.0",
     "joi": "^18.0.2",
+    "nestjs-pino": "^4.0.0",
+    "pino": "^8.19.0",
+    "pino-http": "^9.0.0",
+    "pino-pretty": "^10.3.1",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "tslib": "^2.7.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
