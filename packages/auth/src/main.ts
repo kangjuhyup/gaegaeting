@@ -11,6 +11,9 @@ async function bootstrap() {
   // NestJS 애플리케이션 생성
   const app = await NestFactory.create(AppModule);
   
+  // 전역 prefix 설정
+  app.setGlobalPrefix('auth');
+  
   // 스웨거 설정
   const config = new DocumentBuilder()
     .setTitle('개개팅 API')
