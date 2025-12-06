@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import * as fs from 'fs';
 import { ENV_KEY } from './common/config/env.config';
 /**
  * 애플리케이션 부트스트랩
@@ -48,9 +47,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config, {
     deepScanRoutes: true,
   });
-  fs.writeFileSync('../../docs/auth/swagger-spec.json', JSON.stringify(document));
 
-  SwaggerModule.setup('docs', app, document,{
+  SwaggerModule.setup('docs', app, document, {
     swaggerOptions: { persistAuthorization: true },
   });
    
