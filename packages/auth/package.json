@@ -56,12 +56,20 @@
     "jwks-rsa": "^3.2.0",
     "mysql2": "^3.14.3",
     "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "solapi": "^5.5.3",
     "ts-morph": "^27.0.2",
     "typeorm": "^0.3.25",
-    "ulid": "^3.0.1"
+    "ulid": "^3.0.1",
+    "tslib": "^2.8.1",
+    "ioredis": "^5.7.0",
+    "redlock": "5.0.0-beta.2",
+    "nestjs-pino": "^4.0.0",
+    "pino": "^8.19.0",
+    "pino-http": "^9.0.0",
+    "pino-pretty": "^10.3.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
