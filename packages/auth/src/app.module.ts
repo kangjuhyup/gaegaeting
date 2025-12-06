@@ -7,6 +7,7 @@ import { join } from "path";
 import { ENV_KEY, validationSchema } from "./common/config/env.config";
 import { DatabaseModule, DatabaseSchema } from '@core/database';
 import { AdapterModule } from './adapter/adpater.module';
+import { HttpLoggerModule } from '@core/logger';
 
 // GraphQL 스키마 파일 경로 결정 (개발/프로덕션 환경 모두 지원)
 const getGraphQLSchemaPath = () => {
@@ -29,6 +30,11 @@ const getGraphQLSchemaPath = () => {
         allowUnknown: true,
         abortEarly: false,
       },
+    }),
+    // HTTP 로깅
+    HttpLoggerModule.forRoot({
+      name: 'Auth-API',
+      level: 'info',
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
