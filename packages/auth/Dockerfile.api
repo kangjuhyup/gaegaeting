@@ -45,8 +45,8 @@ COPY --from=builder /app/packages/core ./packages/core
 
 # 프로덕션 모드로 의존성 설치
 ENV NODE_ENV=production
-RUN yarn workspaces focus match --production
+RUN yarn workspaces focus auth --production
 
 
 # 애플리케이션 실행
-CMD ["node", "packages/match/dist/src/main.js"]
+CMD ["node", "packages/auth/dist/src/main.js"]
