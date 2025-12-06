@@ -22,6 +22,12 @@ import { OtpUsecase } from '../application/usecase/otp.usecase';
 import { OtpUsecaseImpl } from '../application/usecase/impl/otp.usecase.impl';
 import { UserUsecase } from '../application/usecase/user.usecase';
 import { UserUsecaseImpl } from '../application/usecase/impl/user.usecase.impl';
+import { AuthUsecase } from '../application/usecase/auth.usecase';
+import { AuthUsecaseImpl } from '../application/usecase/impl/auth.usecase.impl';
+import { TenantUsecase } from '../application/usecase/tenant.usecase';
+import { TenantUsecaseImpl } from '../application/usecase/impl/tenant.usecase.impl';
+import { TenantRepositoryPort } from '../domain/port/tenant-repository.port';
+import { TenantRepositoryAdapter } from './out/tenant-repository.adapter';
 import { UserAdminController } from './in/http/admin/v1/user-admin.controller';
 import { TenantAdminController } from './in/http/admin/v1/tenant-admin.controller';
 import { HealthController } from './in/http/health.controller';
@@ -67,10 +73,13 @@ import { ENV_KEY } from '../common/config/env.config';
     { provide: SocialSigninUseCase, useClass: SocialSigninUseCaseImpl },
     { provide: OtpUsecase, useClass: OtpUsecaseImpl },
     { provide: UserUsecase, useClass: UserUsecaseImpl },
+    { provide: AuthUsecase, useClass: AuthUsecaseImpl },
+    { provide: TenantUsecase, useClass: TenantUsecaseImpl },
     { provide: KakaoIdpPort, useClass: KakaoIdpAdapter },
     { provide: AppleIdpPort, useClass: AppleIdpAdapter },
     { provide: UserRepositoryPort, useClass: UserRepositoryAdapter },
     { provide: UserIdentityRepositoryPort, useClass: UserIdentityRepositoryAdapter },
+    { provide: TenantRepositoryPort, useClass: TenantRepositoryAdapter },
     { provide: TokenServicePort, useClass: JwtServiceAdapter },
     { provide: SmsApiPort, useClass: SolApiAdapter },
     { provide: OtpRepositoryPort, useClass: InMemoryOtpRepository },

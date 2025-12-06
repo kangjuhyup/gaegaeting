@@ -23,5 +23,9 @@ export class Tenant {
     }
     this.name = name;
   }
+
+  setPersistence(id: string, createdAt: Date, updatedAt: Date): Tenant {
+    return new Tenant(id, this.code, this.name, createdAt, updatedAt);
+  }
 }
 

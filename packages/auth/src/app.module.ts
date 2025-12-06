@@ -9,15 +9,10 @@ import { DatabaseModule, DatabaseSchema } from '@core/database';
 import { AdapterModule } from './adapter/adpater.module';
 import { HttpLoggerModule } from '@core/logger';
 
-// GraphQL 스키마 파일 경로 결정 (개발/프로덕션 환경 모두 지원)
+// GraphQL 스키마 파일 경로 결정
+// 개발 환경: __dirname은 src를 가리킴
+// 프로덕션 환경: __dirname은 dist/src를 가리킴 (nest-cli.json의 assets 설정으로 .graphql 파일이 복사됨)
 const getGraphQLSchemaPath = () => {
-  // __dirname은 빌드 후 dist/src를 가리킴
-  const isDist = __dirname.includes('dist');
-  if (isDist) {
-    // dist/src -> src로 변환
-    return join(__dirname.replace('dist/src', 'src'), 'adapter/in/gql/**/*.graphql');
-  }
-  // 개발 환경에서는 __dirname이 src를 가리킴
   return join(__dirname, 'adapter/in/gql/**/*.graphql');
 };
 
