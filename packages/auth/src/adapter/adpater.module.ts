@@ -26,6 +26,8 @@ import { AuthUsecase } from '../application/usecase/auth.usecase';
 import { AuthUsecaseImpl } from '../application/usecase/impl/auth.usecase.impl';
 import { TenantUsecase } from '../application/usecase/tenant.usecase';
 import { TenantUsecaseImpl } from '../application/usecase/impl/tenant.usecase.impl';
+import { SessionUsecase } from '../application/usecase/session.usecase';
+import { SessionUsecaseImpl } from '../application/usecase/impl/session.usecase.impl';
 import { TenantRepositoryPort } from '../domain/port/tenant-repository.port';
 import { TenantRepositoryAdapter } from './out/tenant-repository.adapter';
 import { UserAdminController } from './in/http/admin/v1/user-admin.controller';
@@ -75,6 +77,7 @@ import { ENV_KEY } from '../common/config/env.config';
     { provide: UserUsecase, useClass: UserUsecaseImpl },
     { provide: AuthUsecase, useClass: AuthUsecaseImpl },
     { provide: TenantUsecase, useClass: TenantUsecaseImpl },
+    { provide: SessionUsecase, useClass: SessionUsecaseImpl },
     { provide: KakaoIdpPort, useClass: KakaoIdpAdapter },
     { provide: AppleIdpPort, useClass: AppleIdpAdapter },
     { provide: UserRepositoryPort, useClass: UserRepositoryAdapter },
