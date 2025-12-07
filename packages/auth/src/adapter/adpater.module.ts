@@ -17,7 +17,7 @@ import { UserIdentityRepositoryPort } from '../domain/port/user-identity-reposit
 import { TokenServicePort } from '../application/port/token-service.port';
 import { SmsApiPort } from '../application/port/sms-api.port';
 import { OtpRepositoryPort } from '../application/port/otp-repository.port';
-import { InMemoryOtpRepository } from './out/otp-repository.inmemory';
+import { RedisOtpRepository } from './out/otp-repository.redis';
 import { OtpUsecase } from '../application/usecase/otp.usecase';
 import { OtpUsecaseImpl } from '../application/usecase/impl/otp.usecase.impl';
 import { UserUsecase } from '../application/usecase/user.usecase';
@@ -82,7 +82,7 @@ import { ENV_KEY } from '../common/config/env.config';
     { provide: TenantRepositoryPort, useClass: TenantRepositoryAdapter },
     { provide: TokenServicePort, useClass: JwtServiceAdapter },
     { provide: SmsApiPort, useClass: SolApiAdapter },
-    { provide: OtpRepositoryPort, useClass: InMemoryOtpRepository },
+    { provide: OtpRepositoryPort, useClass: RedisOtpRepository },
   ],
   exports: [],
 })
