@@ -215,13 +215,10 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
         },
       });
 
-      this.logger.log('ApolloGateway instance created, calling loadGatewayWithRetry()...');
-      // Gateway 서버 시작 (재시도 로직 포함)
-      await this.loadGatewayWithRetry();
-      this.logger.log('Gateway loaded successfully in onModuleInit()');
-
       this.logger.log('Creating ApolloServer instance...');
       // Apollo Server 초기화
+      // 주의: ApolloServer.start()가 자동으로 gateway.load()를 호출하므로
+      // 명시적으로 gateway.load()를 호출하지 않습니다
       this.server = new ApolloServer({
         gateway: this.gateway,
         introspection: true,
@@ -243,7 +240,8 @@ export class GatewayService implements OnModuleInit, OnModuleDestroy {
         ],
       });
 
-      this.logger.log('Starting ApolloServer...');
+      this.logger.log('Starting ApolloServer (this will automatically load the gateway)...');
+      // ApolloServer.start()가 내부적으로 gateway.load()를 호출합니다
       await this.server.start();
       this.logger.log('ApolloServer started successfully!');
       this.logger.log('GatewayService.onModuleInit() completed');
