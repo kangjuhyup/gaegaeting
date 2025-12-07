@@ -1,21 +1,27 @@
-import { UserEntity } from "@app/user/domain/model/user";
+import { UserAttachmentEntity } from "../model/user-attachment";
 import { UserProfileEntity } from "../model/user-profile";
 
 export abstract class UserRepositoryPort {
-  abstract insertUser(user: UserEntity): Promise<UserEntity>;
-  abstract selectUserFromId(id: string): Promise<UserEntity>;
+  abstract insertUserProfile(user: UserProfileEntity): Promise<UserProfileEntity>;
+  abstract selectUserProfileFromId(id: string): Promise<UserProfileEntity>;
 
-  abstract selectUserFromIdWithProfiles(id: string): Promise<UserEntity>;
-  abstract selectUserFromPhone(phoneNumber: string): Promise<UserEntity[]>;
+  abstract selectUserProfileFromPhone(phoneNumber: string): Promise<UserProfileEntity>;
 
-  abstract selectUserFromAuthProvider(providerType : number, providerId : string) : Promise<UserEntity|undefined>
-  abstract updateUser(user: UserEntity): Promise<UserEntity>;
+  abstract updateUserProfile(user: UserProfileEntity): Promise<UserProfileEntity>;
   abstract hardDeleteUser(id: string): Promise<void>;
 
-  abstract selectUserAttachment(userId: string, no : number) : Promise<UserProfileEntity>
-  abstract insertUserAttachment(userAttachment : UserProfileEntity) : Promise<UserProfileEntity>
-
-  abstract updateUserAttachmentActive(userId: string, no : number , active : boolean) : Promise<void>
-
+  abstract selectUserAttachment(userId: string, no : number) : Promise<UserAttachmentEntity>
+  abstract selectUserAttachments(userId: string) : Promise<UserAttachmentEntity[]>
+  abstract insertUserAttachment(userAttachment : UserAttachmentEntity) : Promise<UserAttachmentEntity>
+  abstract updateUserAttachment(userAttachment : UserAttachmentEntity) : Promise<UserAttachmentEntity>
+  /**
+   * 사용자 첨부파일의 활성화 상태를 직접 업데이트합니다.
+   * TypeORM의 update() 메서드를 사용하여 SELECT 없이 직접 UPDATE를 수행합니다.
+   * 
+   * @param userId 사용자 ID
+   * @param no 첨부파일 번호
+   * @param active 활성화 상태
+   */
+  abstract updateUserAttachmentActive(userId: string, no: number, active: boolean): Promise<void>
   abstract deleteUserAttachment(userId: string, no : number) : Promise<void>
 }
