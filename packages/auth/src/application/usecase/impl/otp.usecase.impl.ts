@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException, Logger, BadRequestException }
 import { SmsApiPort } from '../../port/sms-api.port';
 import { OtpRepositoryPort } from '../../port/otp-repository.port';
 import { UserRepositoryPort } from '../../../domain/port/user-repository.port';
+import { AuthPayloadDto, TokenServicePort } from '../../port/token-service.port';
 import { OtpUsecase, RequestOtpInput, VerifyOtpInput } from '../otp.usecase';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class OtpUsecaseImpl implements OtpUsecase {
     private readonly sms: SmsApiPort,
     private readonly otpRepo: OtpRepositoryPort,
     private readonly userRepo: UserRepositoryPort,
+    private readonly tokenService: TokenServicePort,
   ) {}
 
   async requestOtp(input: RequestOtpInput): Promise<{ sent: boolean }> {
@@ -45,7 +47,7 @@ export class OtpUsecaseImpl implements OtpUsecase {
     return { sent: true };
   }
 
-  async verifyOtp(input: VerifyOtpInput): Promise<{ verified: boolean }> {
+  async verifyOtp(input: VerifyOtpInput): Promise<{ verified: boolean; payload?: AuthPayloadDto }> {
     const { user, phoneNumber, code } = input;
     
     const ok = await this.otpRepo.verifyAndConsume(phoneNumber, code);
@@ -55,9 +57,19 @@ export class OtpUsecaseImpl implements OtpUsecase {
       user.verifyPhone();
       await this.userRepo.update(user);
       this.logger.log(`Phone verified for user: ${user.id}`);
+      
+      // 새로운 토큰 발급 (phoneVerified 정보 포함)
+      const payload = await this.tokenService.issueForUser({
+        userId: user.id,
+        tenantId: user.tenantId,
+        phoneVerified: true,
+        emailVerified: user.emailVerified,
+      });
+      
+      return { verified: true, payload };
     }
     
-    return { verified: ok };
+    return { verified: false };
   }
 
   private generateCode(): string {

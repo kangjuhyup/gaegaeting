@@ -34,6 +34,8 @@ export class JwtServiceAdapter extends TokenServicePort {
       sub: cmd.userId,
       tenantId: cmd.tenantId,
       iat,
+      ...(cmd.phoneVerified !== undefined && { phoneVerified: cmd.phoneVerified }),
+      ...(cmd.emailVerified !== undefined && { emailVerified: cmd.emailVerified }),
     };
 
     // expiresIn을 초 단위로 변환

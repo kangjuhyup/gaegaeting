@@ -1,6 +1,8 @@
 export interface IssueTokenCommand {
   tenantId: string;
   userId: string;
+  phoneVerified?: boolean;
+  emailVerified?: boolean;
 }
 
 export interface AuthPayloadDto {

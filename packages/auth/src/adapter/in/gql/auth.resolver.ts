@@ -152,9 +152,14 @@ export class AuthResolver{
     @Args('phoneNumber') phoneNumber: string,
     @Args('code') code: string,
     @UserPayload() user: User,
-  ): Promise<boolean> {
-    const { verified } = await this.otp.verifyOtp({ user, phoneNumber, code });
-    return verified;
+  ): Promise<AuthPayload> {
+    const { verified, payload } = await this.otp.verifyOtp({ user, phoneNumber, code });
+    
+    if (!verified || !payload) {
+      throw new Error('OTP verification failed');
+    }
+    
+    return payload;
   }
 
   @Query('myPermissions')
