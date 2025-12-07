@@ -1,12 +1,12 @@
 import { SocialSigninUseCaseImpl } from '../../../src/application/usecase/impl/social-signin.usecase.impl';
-import { KakaoIdpPort } from '../../../src/application/port/kakao-idp.port';
-import { AppleIdpPort } from '../../../src/application/port/apple-idp.port';
+import { KakaoIdpPort } from '../../../src/application/port/api/kakao-idp.port';
+import { AppleIdpPort } from '../../../src/application/port/api/apple-idp.port';
 import { TokenServicePort } from '../../../src/application/port/token-service.port';
 import { UserRepositoryPort } from '../../../src/domain/port/user-repository.port';
 import { UserIdentityRepositoryPort } from '../../../src/domain/port/user-identity-repository.port';
-import { KakaoIdpAdapter } from '../../../src/adapter/out/kakao-idp.adapter';
-import { UserRepositoryAdapter } from '../../../src/adapter/out/user-repository.adapter';
-import { UserIdentityRepositoryAdapter } from '../../../src/adapter/out/user-identity-repository.adapter';
+import { KakaoIdpAdapter } from '../../../src/adapter/out/api/kakao-idp.adapter';
+import { UserRepositoryAdapter } from '../../../src/adapter/out/repository/user-repository.adapter';
+import { UserIdentityRepositoryAdapter } from '../../../src/adapter/out/repository/user-identity-repository.adapter';
 import { SimpleTokenService } from '../../../src/adapter/out/jwt-service.adapter';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';

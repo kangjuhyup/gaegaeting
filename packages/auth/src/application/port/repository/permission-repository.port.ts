@@ -1,7 +1,8 @@
-import { Permission } from '../model/permission';
+import { Permission } from '../../../domain/model/permission';
+import { Tenant } from '../../../domain/model/tenant';
 
 export abstract class PermissionRepositoryPort {
-  abstract create(permission: Permission): Promise<Permission>;
+  abstract save(permission: Permission, tenant: Tenant): Promise<Permission>;
   abstract findById(id: string): Promise<Permission | null>;
   abstract findByCode(tenantId: string, code: string): Promise<Permission | null>;
   abstract findByTenantId(tenantId: string, resource?: string, page?: number, limit?: number): Promise<{ items: Permission[]; total: number }>;

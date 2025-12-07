@@ -1,7 +1,8 @@
-import { Role } from '../model/role';
+import { Role } from '../../../domain/model/role';
+import { Tenant } from '../../../domain/model/tenant';
 
 export abstract class RoleRepositoryPort {
-  abstract create(role: Role): Promise<Role>;
+  abstract save(role: Role, tenant: Tenant): Promise<Role>;
   abstract findById(id: string): Promise<Role | null>;
   abstract findByCode(tenantId: string, code: string): Promise<Role | null>;
   abstract findByTenantId(tenantId: string, page: number, limit: number): Promise<{ items: Role[]; total: number }>;

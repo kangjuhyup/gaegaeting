@@ -1,6 +1,6 @@
 import { SocialSigninUseCaseImpl } from '../../../src/application/usecase/impl/social-signin.usecase.impl';
-import { KakaoIdpPort } from '../../../src/application/port/kakao-idp.port';
-import { AppleIdpPort } from '../../../src/application/port/apple-idp.port';
+import { KakaoIdpPort } from '../../../src/application/port/api/kakao-idp.port';
+import { AppleIdpPort } from '../../../src/application/port/api/apple-idp.port';
 import { TokenServicePort } from '../../../src/application/port/token-service.port';
 import { UserRepositoryPort } from '../../../src/domain/port/user-repository.port';
 import { UserIdentityRepositoryPort } from '../../../src/domain/port/user-identity-repository.port';

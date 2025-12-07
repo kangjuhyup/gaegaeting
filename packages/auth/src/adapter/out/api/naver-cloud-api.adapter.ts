@@ -1,9 +1,9 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SmsApiPort } from '../../application/port/sms-api.port';
+import { SmsApiPort } from '../../../application/port/api/sms-api.port';
 import * as crypto from 'crypto';
 import * as https from 'https';
-import { ENV_KEY } from '../../common/config/env.config';
+import { ENV_KEY } from '../../../common/config/env.config';
 
 @Injectable()
 export class NaverCloudApiAdapter extends SmsApiPort {

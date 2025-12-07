@@ -4,4 +4,3 @@ export abstract class OtpRepositoryPort {
   abstract hasActiveCode(phoneNumber: string): Promise<boolean>;
 }
 
-

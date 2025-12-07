@@ -1,5 +1,6 @@
 import { Permission } from '@app/domain/model/permission';
-import { PermissionOrmEntity } from '@core/database';
+import { PermissionOrmEntity, TenantOrmEntity } from '@core/database';
+import { Tenant } from '@app/domain/model/tenant';
 
 export class PermissionMapper {
   static toDomain(orm: PermissionOrmEntity): Permission {
@@ -16,14 +17,14 @@ export class PermissionMapper {
     return permission.setPersistence(String(orm.id), orm.createdAt, orm.updatedAt);
   }
 
-  static toOrm(domain: Permission): Partial<PermissionOrmEntity> {
+  static toOrm(domain: Permission, tenant: Tenant): Partial<PermissionOrmEntity> {
     return {
       id: domain.id,
+      tenant: { id: tenant.id } as TenantOrmEntity,
       code: domain.code,
       resource: domain.resource,
       action: domain.action,
       description: domain.description,
-      updatedAt: domain.updatedAt,
     };
   }
 }

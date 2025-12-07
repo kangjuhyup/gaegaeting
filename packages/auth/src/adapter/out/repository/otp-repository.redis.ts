@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OtpRepositoryPort } from '../../application/port/otp-repository.port';
+import { OtpRepositoryPort } from '../../../application/port/repository/otp-repository.port';
 import { CacheService } from '@core/redis';
 
 interface OtpEntry {

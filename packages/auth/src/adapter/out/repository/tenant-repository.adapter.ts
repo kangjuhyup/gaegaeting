@@ -8,9 +8,9 @@ import {
   FindTenantByCodeQuery,
   FindTenantsQuery,
   FindTenantsResult,
-} from '../../domain/port/tenant-repository.port';
-import { Tenant } from '../../domain/model/tenant';
-import { TenantMapper } from './mapper/tenant.mapper';
+} from '../../../application/port/repository/tenant-repository.port';
+import { Tenant } from '../../../domain/model/tenant';
+import { TenantMapper } from '../mapper/tenant.mapper';
 
 @Injectable()
 export class TenantRepositoryAdapter implements TenantRepositoryPort {
@@ -21,8 +21,10 @@ export class TenantRepositoryAdapter implements TenantRepositoryPort {
     private readonly configRepo: Repository<TenantConfigOrmEntity>,
   ) {}
 
-  async create(tenant: Tenant): Promise<Tenant> {
+  async save(tenant: Tenant): Promise<Tenant> {
+    // 도메인 모델을 ORM 엔티티로 매핑
     const ormTenant = this.tenantRepo.create(TenantMapper.toOrm(tenant));
+    // save만 수행
     const saved = await this.tenantRepo.save(ormTenant);
     return TenantMapper.toDomain(saved);
   }

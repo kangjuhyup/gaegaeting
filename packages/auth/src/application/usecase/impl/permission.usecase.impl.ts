@@ -1,26 +1,25 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PermissionUsecase, CreatePermissionInput, UpdatePermissionInput, PermissionDto, ListPermissionsQuery, PaginatedResult, AssignPermissionToRoleInput } from '../permission.usecase';
-import { ulid } from 'ulid';
-import { PermissionRepositoryPort } from '@app/domain/port/permission-repository.port';
+import { PermissionServicePort } from '../../port/permission-service.port';
 import { Permission } from '@app/domain/model/permission';
 
 @Injectable()
 export class PermissionUsecaseImpl extends PermissionUsecase {
   constructor(
-    private readonly permissionRepo: PermissionRepositoryPort,
+    private readonly permissionService: PermissionServicePort,
   ) {
     super();
   }
 
   async createPermission(input: CreatePermissionInput): Promise<PermissionDto> {
     // 중복 체크
-    const existing = await this.permissionRepo.findByCode(input.tenantId, input.code);
+    const existing = await this.permissionService.findByCode(input.tenantId, input.code);
     if (existing) {
       throw new ConflictException(`Permission with code ${input.code} already exists`);
     }
 
-    const permission = Permission.create({
-      id: ulid(),
+    // Service에서 도메인 모델 생성 및 저장
+    const permission = await this.permissionService.createPermission({
       tenantId: input.tenantId,
       code: input.code,
       resource: input.resource,
@@ -28,12 +27,11 @@ export class PermissionUsecaseImpl extends PermissionUsecase {
       description: input.description,
     });
 
-    const saved = await this.permissionRepo.create(permission);
-    return this.toDto(saved);
+    return this.toDto(permission);
   }
 
   async getPermission(permissionId: string): Promise<PermissionDto | null> {
-    const permission = await this.permissionRepo.findById(permissionId);
+    const permission = await this.permissionService.findById(permissionId);
     if (!permission) return null;
     return this.toDto(permission);
   }
@@ -43,7 +41,7 @@ export class PermissionUsecaseImpl extends PermissionUsecase {
       return { items: [], total: 0, page: query.page, limit: query.limit };
     }
 
-    const result = await this.permissionRepo.findByTenantId(
+    const result = await this.permissionService.findByTenantId(
       query.tenantId,
       query.resource,
       query.page,
@@ -59,7 +57,7 @@ export class PermissionUsecaseImpl extends PermissionUsecase {
   }
 
   async updatePermission(permissionId: string, input: UpdatePermissionInput): Promise<PermissionDto> {
-    const permission = await this.permissionRepo.findById(permissionId);
+    const permission = await this.permissionService.findById(permissionId);
     if (!permission) {
       throw new NotFoundException('Permission not found');
     }
@@ -68,32 +66,32 @@ export class PermissionUsecaseImpl extends PermissionUsecase {
       permission.updateDescription(input.description);
     }
 
-    const updated = await this.permissionRepo.update(permission);
+    const updated = await this.permissionService.update(permission);
     return this.toDto(updated);
   }
 
   async deletePermission(permissionId: string): Promise<void> {
-    const permission = await this.permissionRepo.findById(permissionId);
+    const permission = await this.permissionService.findById(permissionId);
     if (!permission) {
       throw new NotFoundException('Permission not found');
     }
-    await this.permissionRepo.delete(permissionId);
+    await this.permissionService.delete(permissionId);
   }
 
   async assignPermissionToRole(input: AssignPermissionToRoleInput): Promise<void> {
-    const permission = await this.permissionRepo.findById(input.permissionId);
+    const permission = await this.permissionService.findById(input.permissionId);
     if (!permission) {
       throw new NotFoundException('Permission not found');
     }
-    await this.permissionRepo.assignPermissionToRole(input.roleId, input.permissionId);
+    await this.permissionService.assignPermissionToRole(input.roleId, input.permissionId);
   }
 
   async removePermissionFromRole(roleId: string, permissionId: string): Promise<void> {
-    await this.permissionRepo.removePermissionFromRole(roleId, permissionId);
+    await this.permissionService.removePermissionFromRole(roleId, permissionId);
   }
 
   async getRolePermissions(roleId: string): Promise<PermissionDto[]> {
-    const permissions = await this.permissionRepo.getRolePermissions(roleId);
+    const permissions = await this.permissionService.getRolePermissions(roleId);
     return permissions.map((p) => this.toDto(p));
   }
 

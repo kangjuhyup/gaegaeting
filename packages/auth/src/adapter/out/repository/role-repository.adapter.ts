@@ -1,39 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RoleOrmEntity, TenantOrmEntity, UserRoleOrmEntity, RolePermissionOrmEntity } from '@core/database';
-import { RoleRepositoryPort } from '../../domain/port/role-repository.port';
-import { Role } from '../../domain/model/role';
-import { RoleMapper } from './mapper/role.mapper';
-import { ulid } from 'ulid';
+import { RoleOrmEntity, UserRoleOrmEntity, RolePermissionOrmEntity } from '@core/database';
+import { RoleRepositoryPort } from '../../../application/port/repository/role-repository.port';
+import { Role } from '../../../domain/model/role';
+import { RoleMapper } from '../mapper/role.mapper';
+import { Tenant } from '@app/domain/model/tenant';
 
 @Injectable()
 export class RoleRepositoryAdapter implements RoleRepositoryPort {
   constructor(
     @InjectRepository(RoleOrmEntity)
     private readonly roleRepo: Repository<RoleOrmEntity>,
-    @InjectRepository(TenantOrmEntity)
-    private readonly tenantRepo: Repository<TenantOrmEntity>,
     @InjectRepository(UserRoleOrmEntity)
     private readonly userRoleRepo: Repository<UserRoleOrmEntity>,
     @InjectRepository(RolePermissionOrmEntity)
     private readonly rolePermissionRepo: Repository<RolePermissionOrmEntity>,
   ) {}
 
-  async create(role: Role): Promise<Role> {
-    const tenant = await this.tenantRepo.findOne({ where: { id: role.tenantId } });
-    if (!tenant) {
-      throw new Error('Tenant not found');
-    }
+  async save(role: Role, tenant: Tenant): Promise<Role> {
+    // 도메인 모델을 ORM 엔티티로 매핑 (Service에서 조회한 tenant 사용)
+    const ormRole = this.roleRepo.create(
+      RoleMapper.toOrm(role, tenant),
+    );
 
-    const ormRole = this.roleRepo.create({
-      id: role.id || ulid(),
-      tenant: { id: role.tenantId } as TenantOrmEntity,
-      code: role.code,
-      name: role.name,
-      description: role.description,
-    });
-
+    // save만 수행
     const saved = await this.roleRepo.save(ormRole);
     return RoleMapper.toDomain(saved);
   }

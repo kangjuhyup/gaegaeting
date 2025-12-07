@@ -1,6 +1,6 @@
 import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { OtpUsecaseImpl } from '../../../src/application/usecase/impl/otp.usecase.impl';
-import { SmsApiPort } from '../../../src/application/port/sms-api.port';
+import { SmsApiPort } from '../../../src/application/port/api/sms-api.port';
 import { OtpRepositoryPort } from '../../../src/application/port/otp-repository.port';
 import { UserRepositoryPort } from '../../../src/domain/port/user-repository.port';
 import { User } from '../../../src/domain/model/user';

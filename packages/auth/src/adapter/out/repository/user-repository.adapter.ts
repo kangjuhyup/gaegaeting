@@ -1,29 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
-import { UserOrmEntity, TenantOrmEntity, UserIdentityOrmEntity } from '@core/database';
-import { UserRepositoryPort, FindUserByIdQuery, FindUsersByTenantQuery, FindUsersResult, FindUserByPhoneQuery } from '../../domain/port/user-repository.port';
-import { User } from '../../domain/model/user';
-import { UserMapper } from './mapper/user.mapper';
+import { UserOrmEntity, UserIdentityOrmEntity } from '@core/database';
+import { UserRepositoryPort, FindUserByIdQuery, FindUsersByTenantQuery, FindUsersResult, FindUserByPhoneQuery } from '../../../application/port/repository/user-repository.port';
+import { User } from '../../../domain/model/user';
+import { UserMapper } from '../mapper/user.mapper';
+import { Tenant } from '@app/domain/model/tenant';
 
 @Injectable()
 export class UserRepositoryAdapter implements UserRepositoryPort {
   constructor(
     @InjectRepository(UserOrmEntity)
     private readonly userRepo: Repository<UserOrmEntity>,
-    @InjectRepository(TenantOrmEntity)
-    private readonly tenantRepo: Repository<TenantOrmEntity>,
     @InjectRepository(UserIdentityOrmEntity)
     private readonly identityRepo: Repository<UserIdentityOrmEntity>,
   ) {}
 
-  async create(user: User): Promise<User> {
-    const tenant = await this.tenantRepo.findOne({ where: { id: user.tenantId } });
-    if (!tenant) {
-      throw new Error(`Tenant not found: ${user.tenantId}`);
-    }
-
+  async save(user: User, tenant: Tenant): Promise<User> {
+    // 도메인 모델을 ORM 엔티티로 매핑 (Service에서 조회한 tenant 사용)
     const ormUser = this.userRepo.create(UserMapper.toOrm(user, tenant));
+    // save만 수행
     const saved = await this.userRepo.save(ormUser);
     return UserMapper.toDomain(saved);
   }
@@ -62,7 +58,7 @@ export class UserRepositoryAdapter implements UserRepositoryPort {
     };
   }
 
-  async update(user: User): Promise<User> {
+  async update(user: User, tenant: Tenant): Promise<User> {
     const existing = await this.userRepo.findOne({
       where: { id: user.id },
       relations: ['tenant'],
@@ -71,11 +67,7 @@ export class UserRepositoryAdapter implements UserRepositoryPort {
       throw new Error('User not found');
     }
 
-    const tenant = await this.tenantRepo.findOne({ where: { id: user.tenantId } });
-    if (!tenant) {
-      throw new Error(`Tenant not found: ${user.tenantId}`);
-    }
-
+    // 도메인 모델을 ORM 엔티티로 매핑 (Service에서 조회한 tenant 사용)
     const updated = this.userRepo.merge(existing, UserMapper.toOrm(user, tenant));
     const saved = await this.userRepo.save(updated);
     return UserMapper.toDomain(saved);

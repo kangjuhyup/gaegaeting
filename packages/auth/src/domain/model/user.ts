@@ -1,4 +1,5 @@
 import { PersistenceEntity } from '@core/model';
+import * as crypto from 'crypto';
 
 export type UserStatus = 'ACTIVE' | 'LOCKED' | 'DISABLED';
 
@@ -176,6 +177,25 @@ export class User extends PersistenceEntity<string, IUser> {
 
   getIdentity(provider: string): UserIdentity | undefined {
     return this.identities.find((i) => i.provider === provider);
+  }
+
+  /**
+   * 비밀번호를 해시화합니다.
+   */
+  static hashPassword(password: string): string {
+    return crypto.createHash('sha256').update(password).digest('hex');
+  }
+
+  /**
+   * 임시 비밀번호를 생성합니다.
+   */
+  static generateTempPassword(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
   }
 }
 

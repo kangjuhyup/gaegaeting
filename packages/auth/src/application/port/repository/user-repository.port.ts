@@ -1,4 +1,5 @@
-import { User } from '../model/user';
+import { User } from '../../../domain/model/user';
+import { Tenant } from '../../../domain/model/tenant';
 
 export interface FindUserByIdQuery {
   userId: string;
@@ -23,10 +24,10 @@ export interface FindUserByPhoneQuery {
 }
 
 export abstract class UserRepositoryPort {
-  abstract create(user: User): Promise<User>;
+  abstract save(user: User, tenant: Tenant): Promise<User>;
   abstract findById(query: FindUserByIdQuery): Promise<User | null>;
   abstract findByTenant(query: FindUsersByTenantQuery): Promise<FindUsersResult>;
-  abstract update(user: User): Promise<User>;
+  abstract update(user: User, tenant: Tenant): Promise<User>;
   abstract delete(userId: string): Promise<void>;
   abstract existsByEmail(tenantId: string, email: string): Promise<boolean>;
   abstract existsByUsername(tenantId: string, username: string): Promise<boolean>;

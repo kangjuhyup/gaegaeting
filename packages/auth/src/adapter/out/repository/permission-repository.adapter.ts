@@ -1,41 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PermissionOrmEntity, TenantOrmEntity, RolePermissionOrmEntity } from '@core/database';
-import { PermissionRepositoryPort } from '../../domain/port/permission-repository.port';
-import { Permission } from '../../domain/model/permission';
-import { PermissionMapper } from './mapper/permission.mapper';
-import { ulid } from 'ulid';
+import { PermissionOrmEntity, RolePermissionOrmEntity } from '@core/database';
+import { PermissionRepositoryPort } from '../../../application/port/repository/permission-repository.port';
+import { Permission } from '../../../domain/model/permission';
+import { Tenant } from '../../../domain/model/tenant';
+import { PermissionMapper } from '../mapper/permission.mapper';
 
 @Injectable()
 export class PermissionRepositoryAdapter implements PermissionRepositoryPort {
   constructor(
     @InjectRepository(PermissionOrmEntity)
     private readonly permissionRepo: Repository<PermissionOrmEntity>,
-    @InjectRepository(TenantOrmEntity)
-    private readonly tenantRepo: Repository<TenantOrmEntity>,
     @InjectRepository(RolePermissionOrmEntity)
     private readonly rolePermissionRepo: Repository<RolePermissionOrmEntity>,
   ) {}
 
-  async create(permission: Permission): Promise<Permission> {
-    const tenant = await this.tenantRepo.findOne({ where: { id: permission.tenantId } });
-    if (!tenant) {
-      throw new Error('Tenant not found');
-    }
+  async save(permission: Permission, tenant: Tenant): Promise<Permission> {
+    // 도메인 모델을 ORM 엔티티로 매핑 (Service에서 조회한 tenant 사용)
+    const ormPermission = this.permissionRepo.create(
+      PermissionMapper.toOrm(permission, tenant),
+    );
 
-    const ormPermission = this.permissionRepo.create({
-      id: permission.id || ulid(),
-      tenant: { id: permission.tenantId } as TenantOrmEntity,
-      code: permission.code,
-      resource: permission.resource,
-      action: permission.action,
-      description: permission.description,
-    });
-
+    // save만 수행
     const saved = await this.permissionRepo.save(ormPermission);
     return PermissionMapper.toDomain(saved);
   }
+
 
   async findById(id: string): Promise<Permission | null> {
     const permission = await this.permissionRepo.findOne({

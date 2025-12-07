@@ -1,38 +1,36 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { RoleUsecase, CreateRoleInput, UpdateRoleInput, RoleDto, ListRolesQuery, PaginatedResult, AssignRoleToUserInput } from '../role.usecase';
-import { ulid } from 'ulid';
-import { RoleRepositoryPort } from '@app/domain/port/role-repository.port';
+import { RoleServicePort } from '../../port/role-service.port';
 import { Role } from '@app/domain/model/role';
 
 @Injectable()
 export class RoleUsecaseImpl extends RoleUsecase {
   constructor(
-    private readonly roleRepo: RoleRepositoryPort,
+    private readonly roleService: RoleServicePort,
   ) {
     super();
   }
 
   async createRole(input: CreateRoleInput): Promise<RoleDto> {
     // 중복 체크
-    const existing = await this.roleRepo.findByCode(input.tenantId, input.code);
+    const existing = await this.roleService.findByCode(input.tenantId, input.code);
     if (existing) {
       throw new ConflictException(`Role with code ${input.code} already exists`);
     }
 
-    const role = Role.create({
-      id: ulid(),
+    // Service에서 도메인 모델 생성 및 저장
+    const role = await this.roleService.createRole({
       tenantId: input.tenantId,
       code: input.code,
       name: input.name,
       description: input.description,
     });
 
-    const saved = await this.roleRepo.create(role);
-    return this.toDto(saved);
+    return this.toDto(role);
   }
 
   async getRole(roleId: string): Promise<RoleDto | null> {
-    const role = await this.roleRepo.findById(roleId);
+    const role = await this.roleService.findById(roleId);
     if (!role) return null;
     return this.toDto(role);
   }
@@ -42,7 +40,7 @@ export class RoleUsecaseImpl extends RoleUsecase {
       return { items: [], total: 0, page: query.page, limit: query.limit };
     }
 
-    const result = await this.roleRepo.findByTenantId(query.tenantId, query.page, query.limit);
+    const result = await this.roleService.findByTenantId(query.tenantId, query.page, query.limit);
     return {
       items: result.items.map((r) => this.toDto(r)),
       total: result.total,
@@ -52,7 +50,7 @@ export class RoleUsecaseImpl extends RoleUsecase {
   }
 
   async updateRole(roleId: string, input: UpdateRoleInput): Promise<RoleDto> {
-    const role = await this.roleRepo.findById(roleId);
+    const role = await this.roleService.findById(roleId);
     if (!role) {
       throw new NotFoundException('Role not found');
     }
@@ -64,32 +62,32 @@ export class RoleUsecaseImpl extends RoleUsecase {
       role.updateDescription(input.description);
     }
 
-    const updated = await this.roleRepo.update(role);
+    const updated = await this.roleService.update(role);
     return this.toDto(updated);
   }
 
   async deleteRole(roleId: string): Promise<void> {
-    const role = await this.roleRepo.findById(roleId);
+    const role = await this.roleService.findById(roleId);
     if (!role) {
       throw new NotFoundException('Role not found');
     }
-    await this.roleRepo.delete(roleId);
+    await this.roleService.delete(roleId);
   }
 
   async assignRoleToUser(input: AssignRoleToUserInput): Promise<void> {
-    const role = await this.roleRepo.findById(input.roleId);
+    const role = await this.roleService.findById(input.roleId);
     if (!role) {
       throw new NotFoundException('Role not found');
     }
-    await this.roleRepo.assignRoleToUser(input.userId, input.roleId, input.clientId);
+    await this.roleService.assignRoleToUser(input.userId, input.roleId, input.clientId);
   }
 
   async removeRoleFromUser(userId: string, roleId: string, clientId?: string): Promise<void> {
-    await this.roleRepo.removeRoleFromUser(userId, roleId, clientId);
+    await this.roleService.removeRoleFromUser(userId, roleId, clientId);
   }
 
   async getUserRoles(userId: string, clientId?: string): Promise<RoleDto[]> {
-    const roles = await this.roleRepo.getUserRoles(userId, clientId);
+    const roles = await this.roleService.getUserRoles(userId, clientId);
     return roles.map((r) => this.toDto(r));
   }
 

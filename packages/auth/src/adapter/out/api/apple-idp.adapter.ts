@@ -1,7 +1,7 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AppleClaims, AppleIdpPort } from '../../application/port/apple-idp.port';
-import { ENV_KEY } from '../../common/config/env.config';
+import { AppleClaims, AppleIdpPort } from '../../../application/port/api/apple-idp.port';
+import { ENV_KEY } from '../../../common/config/env.config';
 import * as jwt from 'jsonwebtoken';
 import * as jwksClient from 'jwks-rsa';
 

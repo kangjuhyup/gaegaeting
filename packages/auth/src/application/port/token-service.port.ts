@@ -3,6 +3,8 @@ export interface IssueTokenCommand {
   userId: string;
   phoneVerified?: boolean;
   emailVerified?: boolean;
+  roles?: string[];
+  permissions?: string[];
 }
 
 export interface AuthPayloadDto {
@@ -17,6 +19,8 @@ export interface TokenMetadata {
   iat: number;
   exp: number;
   type?: 'access' | 'refresh';
+  roles?: string[];
+  permissions?: string[];
 }
 
 export abstract class TokenServicePort {

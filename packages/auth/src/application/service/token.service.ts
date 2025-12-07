@@ -1,18 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { AuthPayloadDto, IssueTokenCommand, TokenServicePort, TokenMetadata } from '../../application/port/token-service.port';
-import { ENV_KEY } from '@app/common/config/env.config';
+import { TokenServicePort, IssueTokenCommand, AuthPayloadDto, TokenMetadata } from '../port/token-service.port';
+import { JwtPort } from '../port/jwt.port';
 import { CacheService } from '@core/redis';
+import { ENV_KEY } from '@app/common/config/env.config';
 import { createHash } from 'crypto';
 
 @Injectable()
-export class JwtServiceAdapter extends TokenServicePort {
-
-  private readonly logger = new Logger(JwtServiceAdapter.name);
+export class TokenService extends TokenServicePort {
+  private readonly logger = new Logger(TokenService.name);
 
   constructor(
-    private readonly jwtService: JwtService,
+    private readonly jwtPort: JwtPort,
     private readonly configService: ConfigService,
     private readonly cacheService: CacheService,
   ) {
@@ -36,6 +35,8 @@ export class JwtServiceAdapter extends TokenServicePort {
       iat,
       ...(cmd.phoneVerified !== undefined && { phoneVerified: cmd.phoneVerified }),
       ...(cmd.emailVerified !== undefined && { emailVerified: cmd.emailVerified }),
+      ...(cmd.roles && cmd.roles.length > 0 && { roles: cmd.roles }),
+      ...(cmd.permissions && cmd.permissions.length > 0 && { permissions: cmd.permissions }),
     };
 
     // expiresIn을 초 단위로 변환
@@ -43,13 +44,13 @@ export class JwtServiceAdapter extends TokenServicePort {
     const refreshTokenExpiresInSeconds = this.parseExpirationToSeconds(refreshExpiration);
 
     // Access Token 발급
-    const accessToken = await this.jwtService.signAsync(payload, {
+    const accessToken = await this.jwtPort.sign(payload, {
       secret,
       expiresIn: expiresInSeconds,
     });
 
     // Refresh Token 발급
-    const refreshToken = await this.jwtService.signAsync(
+    const refreshToken = await this.jwtPort.sign(
       { ...payload, type: 'refresh' },
       {
         secret,
@@ -59,6 +60,7 @@ export class JwtServiceAdapter extends TokenServicePort {
 
     this.logger.log(`Issued access token: ${accessToken}`);
     this.logger.log(`Issued refresh token: ${refreshToken}`);
+    
     // 토큰을 Redis에 저장
     const accessTokenKey = this.getTokenKey(accessToken, 'access');
     const refreshTokenKey = this.getTokenKey(refreshToken, 'refresh');
@@ -69,6 +71,8 @@ export class JwtServiceAdapter extends TokenServicePort {
       iat,
       exp: iat + expiresInSeconds,
       type: 'access',
+      ...(cmd.roles && cmd.roles.length > 0 && { roles: cmd.roles }),
+      ...(cmd.permissions && cmd.permissions.length > 0 && { permissions: cmd.permissions }),
     };
 
     const refreshTokenMetadata: TokenMetadata = {
@@ -102,7 +106,7 @@ export class JwtServiceAdapter extends TokenServicePort {
         return null;
       }
 
-      const decoded = await this.jwtService.verifyAsync(token, { secret });
+      const decoded = await this.jwtPort.verify(token, { secret });
       
       // Redis에서 토큰 확인 (블랙리스트 체크)
       const tokenType = decoded.type || 'access';
@@ -117,7 +121,12 @@ export class JwtServiceAdapter extends TokenServicePort {
         return null;
       }
 
-      return metadata;
+      // JWT payload에서 roles와 permissions 포함 (Redis에 없을 수도 있으므로)
+      return {
+        ...metadata,
+        ...(decoded.roles && { roles: decoded.roles }),
+        ...(decoded.permissions && { permissions: decoded.permissions }),
+      };
     } catch (error) {
       return null;
     }
@@ -131,7 +140,7 @@ export class JwtServiceAdapter extends TokenServicePort {
         return;
       }
 
-      const decoded = await this.jwtService.verifyAsync(token, { secret });
+      const decoded = await this.jwtPort.verify(token, { secret });
       const tokenType = decoded.type || 'access';
       const tokenKey = this.getTokenKey(token, tokenType);
 
@@ -252,5 +261,4 @@ export class JwtServiceAdapter extends TokenServicePort {
     }
   }
 }
-
 

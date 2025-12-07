@@ -1,5 +1,6 @@
 import { Role } from '@app/domain/model/role';
-import { RoleOrmEntity } from '@core/database';
+import { RoleOrmEntity, TenantOrmEntity } from '@core/database';
+import { Tenant } from '@app/domain/model/tenant';
 
 export class RoleMapper {
   static toDomain(orm: RoleOrmEntity): Role {
@@ -15,13 +16,13 @@ export class RoleMapper {
     return role.setPersistence(String(orm.id), orm.createdAt, orm.updatedAt);
   }
 
-  static toOrm(domain: Role): Partial<RoleOrmEntity> {
+  static toOrm(domain: Role, tenant: Tenant): Partial<RoleOrmEntity> {
     return {
       id: domain.id,
+      tenant: { id: tenant.id } as TenantOrmEntity,
       code: domain.code,
       name: domain.name,
       description: domain.description,
-      updatedAt: domain.updatedAt,
     };
   }
 }

@@ -1,4 +1,4 @@
-import { Tenant } from '../model/tenant';
+import { Tenant } from '../../../domain/model/tenant';
 
 export interface FindTenantByIdQuery {
   tenantId: string;
@@ -20,7 +20,7 @@ export interface FindTenantsResult {
 }
 
 export abstract class TenantRepositoryPort {
-  abstract create(tenant: Tenant): Promise<Tenant>;
+  abstract save(tenant: Tenant): Promise<Tenant>;
   abstract findById(query: FindTenantByIdQuery): Promise<Tenant | null>;
   abstract findByCode(query: FindTenantByCodeQuery): Promise<Tenant | null>;
   abstract findMany(query: FindTenantsQuery): Promise<FindTenantsResult>;
