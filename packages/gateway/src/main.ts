@@ -11,14 +11,28 @@ import { json } from 'body-parser';
  */
 async function bootstrap() {
   // NestJS 애플리케이션 생성
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+  });
 
   // Gateway Service 가져오기
   const gatewayService = app.get(GatewayService);
-  const server = gatewayService.getServer();
+  
+  // 서버가 초기화될 때까지 대기
+  // onModuleInit()이 비동기로 실행되므로 잠시 대기
+  let server = gatewayService.getServer();
+  const maxWaitTime = 30000; // 30초
+  const checkInterval = 100; // 100ms마다 확인
+  let elapsed = 0;
+  
+  while (!server && elapsed < maxWaitTime) {
+    await new Promise((resolve) => setTimeout(resolve, checkInterval));
+    server = gatewayService.getServer();
+    elapsed += checkInterval;
+  }
 
   if (!server) {
-    throw new Error('Gateway server is not initialized');
+    throw new Error('Gateway server is not initialized after 30 seconds');
   }
 
   // CORS 설정
