@@ -28,25 +28,25 @@ RUN yarn workspace auth build
 # 실행 스테이지
 FROM node:20-alpine AS runner
 
-# 작업 디렉토리 설정
 WORKDIR /app
 
-# 패키지 매니저 설치
 RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
-# 필요한 파일만 복사
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/yarn.lock ./yarn.lock
-COPY --from=builder /app/.yarnrc.yml ./.yarnrc.yml
-COPY --from=builder /app/.yarn ./.yarn
+# 필요한 파일들 복사
 COPY --from=builder /app/packages/auth/package.json ./packages/auth/package.json
 COPY --from=builder /app/packages/auth/dist ./packages/auth/dist
 COPY --from=builder /app/packages/core ./packages/core
 
-# 프로덕션 모드로 의존성 설치
-ENV NODE_ENV=production
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/yarn.lock ./yarn.lock
+COPY --from=builder /app/.yarnrc.yml ./.yarnrc.yml
+COPY --from=builder /app/.yarn ./.yarn
+COPY --from=builder /app/.pnp.cjs ./.pnp.cjs
+COPY --from=builder /app/.pnp.loader.mjs ./.pnp.loader.mjs
+
 RUN yarn workspaces focus auth --production
 
+ENV NODE_ENV=production
 
-# 애플리케이션 실행
-CMD ["node", "packages/auth/dist/src/main.js"]
+# yarn workspace 로 실행
+CMD ["yarn", "workspace", "auth", "start:prod"]

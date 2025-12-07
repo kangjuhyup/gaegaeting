@@ -1,4 +1,4 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn, OneToMany, Unique, BaseEntity } from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn, OneToMany, Unique } from 'typeorm';
 import { ClientOrmEntity } from './client';
 import { UserOrmEntity } from './user';
 import { GroupOrmEntity } from './group';
@@ -7,6 +7,7 @@ import { PermissionOrmEntity } from './permission';
 import { IdentityProviderOrmEntity } from './indentity-provider';
 import { UserIdentityOrmEntity } from './user-identity';
 import { TenantClientOrmEntity } from './tenant-client';
+import { BaseEntity } from '../base';
 
 @Entity({ name: 'tenant' })
 @Unique('uk_tenant_code', ['code'])

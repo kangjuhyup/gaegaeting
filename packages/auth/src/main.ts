@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import * as fs from 'fs';
 import { ENV_KEY } from './common/config/env.config';
 /**
  * 애플리케이션 부트스트랩
@@ -11,6 +10,9 @@ import { ENV_KEY } from './common/config/env.config';
 async function bootstrap() {
   // NestJS 애플리케이션 생성
   const app = await NestFactory.create(AppModule);
+  
+  // 전역 prefix 설정
+  app.setGlobalPrefix('auth');
   
   // 스웨거 설정
   const config = new DocumentBuilder()
@@ -48,12 +50,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config, {
     deepScanRoutes: true,
   });
-  fs.writeFileSync('../../docs/auth/swagger-spec.json', JSON.stringify(document));
 
-  SwaggerModule.setup('docs', app, document,{
+  SwaggerModule.setup('docs', app, document, {
     swaggerOptions: { persistAuthorization: true },
   });
-  
+   
   // 전역 파이프 설정 (유효성 검증)
   app.useGlobalPipes(new ValidationPipe({
     transform: true,

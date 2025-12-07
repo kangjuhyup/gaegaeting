@@ -1,17 +1,15 @@
 import { SocialSigninUseCaseImpl } from '../../../src/application/usecase/impl/social-signin.usecase.impl';
-import { KakaoIdpPort } from '../../../src/application/port/kakao-idp.port';
-import { AppleIdpPort } from '../../../src/application/port/apple-idp.port';
+import { KakaoIdpPort } from '../../../src/application/port/api/kakao-idp.port';
+import { AppleIdpPort } from '../../../src/application/port/api/apple-idp.port';
 import { TokenServicePort } from '../../../src/application/port/token-service.port';
-import { UserRepositoryPort } from '../../../src/domain/port/user-repository.port';
-import { UserIdentityRepositoryPort } from '../../../src/domain/port/user-identity-repository.port';
+import { UserServicePort } from '../../../src/application/port/user-service.port';
 import { User } from '../../../src/domain/model/user';
 
 describe('SocialSigninUseCaseImpl (UNIT)', () => {
   let usecase: SocialSigninUseCaseImpl;
   let kakaoIdp: jest.Mocked<KakaoIdpPort>;
   let appleIdp: jest.Mocked<AppleIdpPort>;
-  let userRepo: jest.Mocked<UserRepositoryPort>;
-  let identityRepo: jest.Mocked<UserIdentityRepositoryPort>;
+  let userService: jest.Mocked<UserServicePort>;
   let tokenService: jest.Mocked<TokenServicePort>;
 
   beforeEach(() => {
@@ -25,21 +23,19 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
       verifyIdToken: jest.fn(),
     } as jest.Mocked<AppleIdpPort>;
 
-    userRepo = {
-      create: jest.fn(),
+    userService = {
       findById: jest.fn(),
-      findByTenant: jest.fn(),
       update: jest.fn(),
+      create: jest.fn(),
+      findByIdentity: jest.fn(),
       delete: jest.fn(),
+      findByTenant: jest.fn(),
       existsByEmail: jest.fn(),
       existsByUsername: jest.fn(),
-      findByIdentity: jest.fn(),
-      findByPhone: jest.fn(),
-    } as jest.Mocked<UserRepositoryPort>;
-
-    identityRepo = {
-      create: jest.fn(),
-    } as jest.Mocked<UserIdentityRepositoryPort>;
+      getUserRolesAndPermissions: jest.fn(),
+      createIdentity: jest.fn(),
+      createUserFromSocialProfile: jest.fn(),
+    } as jest.Mocked<UserServicePort>;
 
     tokenService = {
       issueForUser: jest.fn(),
@@ -52,8 +48,7 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
     usecase = new SocialSigninUseCaseImpl(
       kakaoIdp,
       appleIdp,
-      userRepo,
-      identityRepo,
+      userService,
       tokenService,
     );
   });
@@ -86,7 +81,7 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
       expiresIn: 900,
     };
 
-    it('should return auth payload for existing user', async () => {
+    it('[signinWithKakao] - 기존 사용자가 있을 때 인증 페이로드를 반환해야 함', async () => {
       // Arrange
       const existingUser = User.create({
         id: 'existing-user-id',
@@ -97,7 +92,8 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
 
       kakaoIdp.exchangeAuthCode.mockResolvedValue(mockTokenResponse);
       kakaoIdp.getProfile.mockResolvedValue(mockKakaoProfile);
-      userRepo.findByIdentity.mockResolvedValue(existingUser);
+      userService.createUserFromSocialProfile.mockResolvedValue(existingUser);
+      userService.getUserRolesAndPermissions.mockResolvedValue({ roles: ['user'], permissions: ['read'] });
       tokenService.issueForUser.mockResolvedValue(mockAuthPayload);
 
       // Act
@@ -109,21 +105,27 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
 
       // Assert
       expect(result).toEqual(mockAuthPayload);
-      expect(kakaoIdp.exchangeAuthCode).toHaveBeenCalledWith(tenantId, authCode, redirectUri);
+      expect(kakaoIdp.exchangeAuthCode).toHaveBeenCalledWith(authCode, redirectUri);
       expect(kakaoIdp.getProfile).toHaveBeenCalledWith(accessToken);
-      expect(userRepo.findByIdentity).toHaveBeenCalledWith(tenantId, 'kakao', kakaoUserId);
-      expect(tokenService.issueForUser).toHaveBeenCalledWith({ tenantId, userId: existingUser.id });
-      expect(userRepo.create).not.toHaveBeenCalled();
-      expect(identityRepo.create).not.toHaveBeenCalled();
+      expect(userService.createUserFromSocialProfile).toHaveBeenCalledWith({
+        tenantId,
+        provider: 'kakao',
+        providerSub: kakaoUserId,
+        username: userNickname,
+        email: userEmail,
+        profileJson: mockKakaoProfile.raw,
+      });
+      expect(userService.getUserRolesAndPermissions).toHaveBeenCalledWith(existingUser.id);
+      expect(tokenService.issueForUser).toHaveBeenCalledWith({
+        tenantId,
+        userId: existingUser.id,
+        roles: ['user'],
+        permissions: ['read'],
+      });
     });
 
-    it('should create new user and identity when user does not exist', async () => {
+    it('[signinWithKakao] - 사용자가 없을 때 새 사용자와 Identity를 생성해야 함', async () => {
       // Arrange
-      kakaoIdp.exchangeAuthCode.mockResolvedValue(mockTokenResponse);
-      kakaoIdp.getProfile.mockResolvedValue(mockKakaoProfile);
-      userRepo.findByIdentity.mockResolvedValue(null);
-      
-      // 새로 생성될 사용자
       const newUser = User.create({
         id: 'new-user-id',
         tenantId,
@@ -131,8 +133,10 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
         email: userEmail,
       });
 
-      userRepo.create.mockResolvedValue(newUser);
-      identityRepo.create.mockResolvedValue(undefined as any);
+      kakaoIdp.exchangeAuthCode.mockResolvedValue(mockTokenResponse);
+      kakaoIdp.getProfile.mockResolvedValue(mockKakaoProfile);
+      userService.createUserFromSocialProfile.mockResolvedValue(newUser);
+      userService.getUserRolesAndPermissions.mockResolvedValue({ roles: [], permissions: [] });
       tokenService.issueForUser.mockResolvedValue(mockAuthPayload);
 
       // Act
@@ -144,22 +148,24 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
 
       // Assert
       expect(result).toEqual(mockAuthPayload);
-      expect(kakaoIdp.exchangeAuthCode).toHaveBeenCalledWith(tenantId, authCode, redirectUri);
-      expect(kakaoIdp.getProfile).toHaveBeenCalledWith(accessToken);
-      expect(userRepo.findByIdentity).toHaveBeenCalledWith(tenantId, 'kakao', kakaoUserId);
-      expect(userRepo.create).toHaveBeenCalledTimes(1);
-      expect(identityRepo.create).toHaveBeenCalledWith({
+      expect(userService.createUserFromSocialProfile).toHaveBeenCalledWith({
         tenantId,
-        userId: newUser.id,
         provider: 'kakao',
         providerSub: kakaoUserId,
+        username: userNickname,
         email: userEmail,
         profileJson: mockKakaoProfile.raw,
       });
-      expect(tokenService.issueForUser).toHaveBeenCalledWith({ tenantId, userId: newUser.id });
+      expect(userService.getUserRolesAndPermissions).toHaveBeenCalledWith(newUser.id);
+      expect(tokenService.issueForUser).toHaveBeenCalledWith({
+        tenantId,
+        userId: newUser.id,
+        roles: [],
+        permissions: [],
+      });
     });
 
-    it('should use default username when nickname is not provided', async () => {
+    it('[signinWithKakao] - 닉네임이 없을 때 기본 username을 사용해야 함', async () => {
       // Arrange
       const profileWithoutNickname = {
         id: kakaoUserId,
@@ -167,10 +173,6 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
         raw: { id: kakaoUserId, email: userEmail },
       };
 
-      kakaoIdp.exchangeAuthCode.mockResolvedValue(mockTokenResponse);
-      kakaoIdp.getProfile.mockResolvedValue(profileWithoutNickname);
-      userRepo.findByIdentity.mockResolvedValue(null);
-      
       const newUser = User.create({
         id: 'new-user-id',
         tenantId,
@@ -178,8 +180,10 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
         email: userEmail,
       });
 
-      userRepo.create.mockResolvedValue(newUser);
-      identityRepo.create.mockResolvedValue(undefined as any);
+      kakaoIdp.exchangeAuthCode.mockResolvedValue(mockTokenResponse);
+      kakaoIdp.getProfile.mockResolvedValue(profileWithoutNickname);
+      userService.createUserFromSocialProfile.mockResolvedValue(newUser);
+      userService.getUserRolesAndPermissions.mockResolvedValue({ roles: [], permissions: [] });
       tokenService.issueForUser.mockResolvedValue(mockAuthPayload);
 
       // Act
@@ -191,12 +195,17 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
 
       // Assert
       expect(result).toEqual(mockAuthPayload);
-      expect(userRepo.create).toHaveBeenCalledTimes(1);
-      const createCall = userRepo.create.mock.calls[0][0];
-      expect(createCall.username).toBe(`kakao_${kakaoUserId}`);
+      expect(userService.createUserFromSocialProfile).toHaveBeenCalledWith({
+        tenantId,
+        provider: 'kakao',
+        providerSub: kakaoUserId,
+        username: undefined, // nickname이 없으면 undefined 전달
+        email: userEmail,
+        profileJson: profileWithoutNickname.raw,
+      });
     });
 
-    it('should handle redirectUri being undefined', async () => {
+    it('[signinWithKakao] - redirectUri가 undefined일 때 처리해야 함', async () => {
       // Arrange
       const existingUser = User.create({
         id: 'existing-user-id',
@@ -207,7 +216,8 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
 
       kakaoIdp.exchangeAuthCode.mockResolvedValue(mockTokenResponse);
       kakaoIdp.getProfile.mockResolvedValue(mockKakaoProfile);
-      userRepo.findByIdentity.mockResolvedValue(existingUser);
+      userService.createUserFromSocialProfile.mockResolvedValue(existingUser);
+      userService.getUserRolesAndPermissions.mockResolvedValue({ roles: [], permissions: [] });
       tokenService.issueForUser.mockResolvedValue(mockAuthPayload);
 
       // Act
@@ -218,7 +228,7 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
 
       // Assert
       expect(result).toEqual(mockAuthPayload);
-      expect(kakaoIdp.exchangeAuthCode).toHaveBeenCalledWith(tenantId, authCode, undefined);
+      expect(kakaoIdp.exchangeAuthCode).toHaveBeenCalledWith(authCode, undefined);
     });
   });
 });

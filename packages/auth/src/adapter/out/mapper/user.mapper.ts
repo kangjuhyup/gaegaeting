@@ -1,5 +1,6 @@
-import { UserOrmEntity, UserIdentityOrmEntity } from '@core/database';
+import { UserOrmEntity, UserIdentityOrmEntity, TenantOrmEntity } from '@core/database';
 import { User, UserIdentity } from '../../../domain/model/user';
+import { Tenant } from '../../../domain/model/tenant';
 
 export class UserMapper {
   static toDomain(orm: UserOrmEntity, identities?: UserIdentityOrmEntity[]): User {
@@ -28,10 +29,10 @@ export class UserMapper {
     return user.setPersistence(orm.id, orm.createdAt, orm.updatedAt);
   }
 
-  static toOrm(domain: User, tenant: any): Partial<UserOrmEntity> {
+  static toOrm(domain: User, tenant: Tenant): Partial<UserOrmEntity> {
     return {
       id: domain.id,
-      tenant,
+      tenant: { id: tenant.id } as TenantOrmEntity,
       username: domain.username,
       email: domain.email ?? undefined,
       emailVerified: domain.emailVerified,

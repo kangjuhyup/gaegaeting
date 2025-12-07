@@ -18,7 +18,8 @@
     "test:watch": "jest --watch --testPathIgnorePatterns='\\.e2e\\.spec\\.ts$'",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --testRegex='\\.e2e\\.spec\\.ts$'"
+    "test:e2e": "jest --testRegex='\\.e2e\\.spec\\.ts$'",
+    "swagger:generate": "ts-node -r tsconfig-paths/register src/scripts/generate-swagger.ts"
   },
   "dependencies": {
     "@apollo/server": "^5.2.0",
@@ -51,15 +52,23 @@
     "dotenv": "^16.4.5",
     "graphql": "^16.12.0",
     "graphql-subscriptions": "^3.0.0",
+    "ioredis": "^5.7.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.2.0",
     "mysql2": "^3.14.3",
+    "nestjs-pino": "^4.0.0",
     "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "pino": "^8.19.0",
+    "pino-http": "^9.0.0",
+    "pino-pretty": "^10.3.1",
+    "redlock": "5.0.0-beta.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "solapi": "^5.5.3",
     "ts-morph": "^27.0.2",
+    "tslib": "^2.8.1",
     "typeorm": "^0.3.25",
     "ulid": "^3.0.1"
   },

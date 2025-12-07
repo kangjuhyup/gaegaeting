@@ -10,7 +10,8 @@ export const envSpec = {
   DATABASE_PORT: { joi: Joi.number().required() },
   DATABASE_USERNAME: { joi: Joi.string().required() },
   DATABASE_PASSWORD: { joi: Joi.string().required() },
-  DATABASE_NAME: { joi: Joi.string().required() },
+  AUTH_DATABASE_NAME: { joi: Joi.string().required() },
+  DATABASE_NAME: { joi: Joi.string().optional() },
   DATABASE_LOG: { joi: Joi.boolean().default(true) },
   DATABASE_SYNCHRONIZE: { joi: Joi.boolean().default(false) },
 
@@ -57,7 +58,13 @@ export const ENV_KEY: { [K in EnvKey]: K } = Object.keys(envSpec).reduce(
 
 export const validationSchema = Joi.object(
   Object.fromEntries(Object.entries(envSpec).map(([k, v]) => [k, v.joi]))
-);
+).custom((value, helpers) => {
+  // DATABASE_NAME이 없으면 AUTH_DATABASE_NAME의 값을 사용
+  if (!value.DATABASE_NAME && value.AUTH_DATABASE_NAME) {
+    value.DATABASE_NAME = value.AUTH_DATABASE_NAME;
+  }
+  return value;
+});
 
 type EnvSpecToType<T extends Record<string, { joi: Joi.Schema }>> = {
   [K in keyof T]: T[K]['joi'] extends Joi.StringSchema
