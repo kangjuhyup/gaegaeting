@@ -1,5 +1,5 @@
 {
-  "include": ["./src", "test/application/usecase/social-signin.usecase.spec.ts"],
+  "include": ["./src", "./test/**/*"],
   "extends" : "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",

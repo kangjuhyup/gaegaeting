@@ -1,13 +1,20 @@
-export class Role {
-  constructor(
-    public readonly id: string,
-    public readonly tenantId: string,
-    public readonly code: string,
-    public name: string,
-    public description: string | null,
-    public readonly createdAt: Date,
-    public readonly updatedAt: Date,
-  ) {}
+import { PersistenceEntity } from '@core/model';
+
+interface IRole {
+  tenantId: string;
+  code: string;
+  name: string;
+  description: string | null;
+}
+
+export class Role extends PersistenceEntity<string, IRole> {
+  private constructor(param: IRole, id?: string) {
+    super(param, id);
+  }
+
+  static of(param: IRole, id?: string): Role {
+    return new Role(param, id);
+  }
 
   static create(params: {
     id: string;
@@ -23,25 +30,41 @@ export class Role {
       throw new Error('Role name is required');
     }
     return new Role(
+      {
+        tenantId: params.tenantId,
+        code: params.code,
+        name: params.name,
+        description: params.description ?? null,
+      },
       params.id,
-      params.tenantId,
-      params.code,
-      params.name,
-      params.description ?? null,
-      new Date(),
-      new Date(),
     );
+  }
+
+  get tenantId(): string {
+    return this.etc.tenantId;
+  }
+
+  get code(): string {
+    return this.etc.code;
+  }
+
+  get name(): string {
+    return this.etc.name;
+  }
+
+  get description(): string | null {
+    return this.etc.description;
   }
 
   updateName(name: string): void {
     if (!name || name.length === 0) {
       throw new Error('Role name cannot be empty');
     }
-    this.name = name;
+    this.etc.name = name;
   }
 
   updateDescription(description: string | null): void {
-    this.description = description;
+    this.etc.description = description;
   }
 }
 

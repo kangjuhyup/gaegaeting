@@ -1,6 +1,7 @@
 // jest.setup.js
 // Jest 테스트 실행 전에 설정되는 파일입니다.
 
+
 // 테스트 타임아웃 설정
 jest.setTimeout(30000);
 

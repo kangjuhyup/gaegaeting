@@ -42,10 +42,12 @@ export class AuthUsecaseImpl implements AuthUsecase {
     // 기존 리프레시 토큰 폐기
     await this.tokenService.revokeToken(cmd.refreshToken);
 
-    // 새로운 토큰 발급
+    // 새로운 토큰 발급 (기존 토큰의 역할/권한 정보 재사용)
     const newTokens = await this.tokenService.issueForUser({
       userId: metadata.userId,
       tenantId: metadata.tenantId,
+      roles: metadata.roles,
+      permissions: metadata.permissions,
     });
 
     return {

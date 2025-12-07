@@ -1,4 +1,5 @@
 import { UserUsecase, CreateUserInput, UpdateUserInput } from '@app/application/usecase/user.usecase';
+import { SessionUsecase } from '@app/application/usecase/session.usecase';
 import { UserStatus } from '@core/database';
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, Patch } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -7,7 +8,10 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 @ApiBearerAuth('admin-token')
 @Controller('admin/v1/users')
 export class UserAdminController {
-  constructor(private readonly userUsecase: UserUsecase) {}
+  constructor(
+    private readonly userUsecase: UserUsecase,
+    private readonly sessionUsecase: SessionUsecase,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: '사용자 생성' })
@@ -65,15 +69,15 @@ export class UserAdminController {
   @Get(':userId/sessions')
   @ApiOperation({ summary: '사용자 활성 세션 조회' })
   async getUserSessions(@Param('userId') userId: string) {
-    // TODO: SessionUsecase 연결
-    return { sessions: [] };
+    const sessions = await this.sessionUsecase.getUserSessions(userId);
+    return { sessions };
   }
 
   @Delete(':userId/sessions')
   @ApiOperation({ summary: '사용자 모든 세션 종료' })
   async terminateAllSessions(@Param('userId') userId: string) {
-    // TODO: SessionUsecase 연결
-    return { success: true, terminated: 0 };
+    const result = await this.sessionUsecase.terminateAllUserSessions(userId);
+    return { success: true, terminated: result.terminated };
   }
 }
 

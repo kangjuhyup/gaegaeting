@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { GraphqlAuthGuard } from '../../../src/common/guard/graphql-auth.guard';
 import { ENV_KEY } from '../../../src/common/config/env.config';
-import { UserRepositoryPort } from '../../../src/domain/port/user-repository.port';
+import { UserRepositoryPort } from '../../../src/application/port/repository/user-repository.port';
 import { User } from '../../../src/domain/model/user';
 
 // GqlExecutionContext 모킹

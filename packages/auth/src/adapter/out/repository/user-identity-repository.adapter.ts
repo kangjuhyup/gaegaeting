@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserIdentityOrmEntity, TenantOrmEntity, UserOrmEntity } from '@core/database';
-import { UserIdentityRepositoryPort, CreateUserIdentityCommand } from '../../domain/port/user-identity-repository.port';
+import { UserIdentityRepositoryPort, CreateUserIdentityCommand } from '../../../application/port/repository/user-identity-repository.port';
 
 @Injectable()
 export class UserIdentityRepositoryAdapter implements UserIdentityRepositoryPort {

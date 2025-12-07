@@ -1,14 +1,21 @@
-export class Permission {
-  constructor(
-    public readonly id: string,
-    public readonly tenantId: string,
-    public readonly code: string,
-    public readonly resource: string | null,
-    public readonly action: string | null,
-    public description: string | null,
-    public readonly createdAt: Date,
-    public readonly updatedAt: Date,
-  ) {}
+import { PersistenceEntity } from '@core/model';
+
+interface IPermission {
+  tenantId: string;
+  code: string;
+  resource: string | null;
+  action: string | null;
+  description: string | null;
+}
+
+export class Permission extends PersistenceEntity<string, IPermission> {
+  private constructor(param: IPermission, id?: string) {
+    super(param, id);
+  }
+
+  static of(param: IPermission, id?: string): Permission {
+    return new Permission(param, id);
+  }
 
   static create(params: {
     id: string;
@@ -22,25 +29,45 @@ export class Permission {
       throw new Error('Permission code is required');
     }
     return new Permission(
+      {
+        tenantId: params.tenantId,
+        code: params.code,
+        resource: params.resource ?? null,
+        action: params.action ?? null,
+        description: params.description ?? null,
+      },
       params.id,
-      params.tenantId,
-      params.code,
-      params.resource ?? null,
-      params.action ?? null,
-      params.description ?? null,
-      new Date(),
-      new Date(),
     );
   }
 
+  get tenantId(): string {
+    return this.etc.tenantId;
+  }
+
+  get code(): string {
+    return this.etc.code;
+  }
+
+  get resource(): string | null {
+    return this.etc.resource;
+  }
+
+  get action(): string | null {
+    return this.etc.action;
+  }
+
+  get description(): string | null {
+    return this.etc.description;
+  }
+
   updateDescription(description: string | null): void {
-    this.description = description;
+    this.etc.description = description;
   }
 
   matches(resource: string, action: string): boolean {
-    if (this.resource === '*' && this.action === '*') return true;
-    if (this.resource === resource && this.action === '*') return true;
-    if (this.resource === resource && this.action === action) return true;
+    if (this.etc.resource === '*' && this.etc.action === '*') return true;
+    if (this.etc.resource === resource && this.etc.action === '*') return true;
+    if (this.etc.resource === resource && this.etc.action === action) return true;
     return false;
   }
 }

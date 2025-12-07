@@ -3,11 +3,13 @@ import { Tenant } from '../../../domain/model/tenant';
 
 export class TenantMapper {
   static toDomain(orm: TenantOrmEntity): Tenant {
-    const tenant = Tenant.create({
-      id: orm.id,
-      code: orm.code,
-      name: orm.name,
-    });
+    const tenant = Tenant.of(
+      {
+        code: orm.code,
+        name: orm.name,
+      },
+      orm.id,
+    );
     return tenant.setPersistence(orm.id, orm.createdAt, orm.updatedAt);
   }
 

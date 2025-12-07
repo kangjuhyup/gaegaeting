@@ -3,7 +3,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ENV_KEY } from '@app/common/config/env.config';
-import { UserRepositoryPort } from '@app/domain/port/user-repository.port';
+import { UserRepositoryPort } from '@app/application/port/repository/user-repository.port';
 import { User } from '@app/domain/model/user';
 
 @Injectable()

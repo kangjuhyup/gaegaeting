@@ -1,13 +1,20 @@
-export class Group {
-  constructor(
-    public readonly id: string,
-    public readonly tenantId: string,
-    public readonly code: string,
-    public name: string,
-    public parentId: string | null,
-    public readonly createdAt: Date,
-    public readonly updatedAt: Date,
-  ) {}
+import { PersistenceEntity } from '@core/model';
+
+interface IGroup {
+  tenantId: string;
+  code: string;
+  name: string;
+  parentId: string | null;
+}
+
+export class Group extends PersistenceEntity<string, IGroup> {
+  private constructor(param: IGroup, id?: string) {
+    super(param, id);
+  }
+
+  static of(param: IGroup, id?: string): Group {
+    return new Group(param, id);
+  }
 
   static create(params: {
     id: string;
@@ -23,32 +30,48 @@ export class Group {
       throw new Error('Group name is required');
     }
     return new Group(
+      {
+        tenantId: params.tenantId,
+        code: params.code,
+        name: params.name,
+        parentId: params.parentId ?? null,
+      },
       params.id,
-      params.tenantId,
-      params.code,
-      params.name,
-      params.parentId ?? null,
-      new Date(),
-      new Date(),
     );
+  }
+
+  get tenantId(): string {
+    return this.etc.tenantId;
+  }
+
+  get code(): string {
+    return this.etc.code;
+  }
+
+  get name(): string {
+    return this.etc.name;
+  }
+
+  get parentId(): string | null {
+    return this.etc.parentId;
   }
 
   updateName(name: string): void {
     if (!name || name.length === 0) {
       throw new Error('Group name cannot be empty');
     }
-    this.name = name;
+    this.etc.name = name;
   }
 
   updateParent(parentId: string | null): void {
     if (parentId === this.id) {
       throw new Error('Group cannot be its own parent');
     }
-    this.parentId = parentId;
+    this.etc.parentId = parentId;
   }
 
   hasParent(): boolean {
-    return this.parentId !== null;
+    return this.etc.parentId !== null;
   }
 }
 

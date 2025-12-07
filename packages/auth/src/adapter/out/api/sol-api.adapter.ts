@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { SmsApiPort } from "../../application/port/sms-api.port";
+import { SmsApiPort } from "../../../application/port/api/sms-api.port";
 import { ConfigService } from "@nestjs/config";
 import { SolapiMessageService } from "solapi";
 import { ENV_KEY } from "@app/common/config/env.config";

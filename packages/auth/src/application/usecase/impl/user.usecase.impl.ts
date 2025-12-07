@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ulid } from 'ulid';
-import * as crypto from 'crypto';
 import { User } from '../../../domain/model/user';
-import { UserRepositoryPort } from '../../../domain/port/user-repository.port';
+import { UserServicePort } from '../../port/user-service.port';
 import {
   UserUsecase,
   CreateUserInput,
@@ -16,24 +15,24 @@ import {
 @Injectable()
 export class UserUsecaseImpl implements UserUsecase {
   constructor(
-    private readonly userRepo: UserRepositoryPort,
+    private readonly userService: UserServicePort,
   ) {}
 
   async createUser(input: CreateUserInput): Promise<UserDto> {
     // 중복 체크
     if (input.email) {
-      const exists = await this.userRepo.existsByEmail(input.tenantId, input.email);
+      const exists = await this.userService.existsByEmail(input.tenantId, input.email);
       if (exists) {
         throw new Error('Email already exists');
       }
     }
 
-    const existsUsername = await this.userRepo.existsByUsername(input.tenantId, input.username);
+    const existsUsername = await this.userService.existsByUsername(input.tenantId, input.username);
     if (existsUsername) {
       throw new Error('Username already exists');
     }
 
-    const passwordHash = input.password ? this.hashPassword(input.password) : undefined;
+    const passwordHash = input.password ? User.hashPassword(input.password) : undefined;
 
     const user = User.create({
       id: ulid(),
@@ -47,12 +46,12 @@ export class UserUsecaseImpl implements UserUsecase {
       user.setPasswordHash(passwordHash);
     }
 
-    const saved = await this.userRepo.create(user);
+    const saved = await this.userService.create(user);
     return this.toDto(saved);
   }
 
   async getUser(userId: string): Promise<UserDto | null> {
-    const user = await this.userRepo.findById({ userId });
+    const user = await this.userService.findById(userId);
     if (!user) return null;
     return this.toDto(user);
   }
@@ -62,7 +61,7 @@ export class UserUsecaseImpl implements UserUsecase {
       throw new Error('tenantId is required');
     }
 
-    const result = await this.userRepo.findByTenant({
+    const result = await this.userService.findByTenant({
       tenantId: query.tenantId,
       status: query.status,
       search: query.search,
@@ -79,7 +78,7 @@ export class UserUsecaseImpl implements UserUsecase {
   }
 
   async updateUser(userId: string, input: UpdateUserInput): Promise<UserDto> {
-    const user = await this.userRepo.findById({ userId });
+    const user = await this.userService.findById(userId);
     if (!user) {
       throw new Error('User not found');
     }
@@ -100,42 +99,38 @@ export class UserUsecaseImpl implements UserUsecase {
       user.setPhoneVerified(input.phoneVerified);
     }
 
-    const saved = await this.userRepo.update(user);
+    const saved = await this.userService.update(user);
     return this.toDto(saved);
   }
 
   async deleteUser(userId: string): Promise<void> {
-    await this.userRepo.delete(userId);
+    await this.userService.delete(userId);
   }
 
   async updateUserStatus(userId: string, status: UserStatus): Promise<UserDto> {
-    const user = await this.userRepo.findById({ userId });
+    const user = await this.userService.findById(userId);
     if (!user) {
       throw new Error('User not found');
     }
 
     user.setStatus(status);
-    const saved = await this.userRepo.update(user);
+    const saved = await this.userService.update(user);
     return this.toDto(saved);
   }
 
   async resetPassword(userId: string): Promise<{ tempPassword: string }> {
-    const user = await this.userRepo.findById({ userId });
+    const user = await this.userService.findById(userId);
     if (!user) {
       throw new Error('User not found');
     }
 
-    const tempPassword = this.generateTempPassword();
-    const passwordHash = this.hashPassword(tempPassword);
+    const tempPassword = User.generateTempPassword();
+    const passwordHash = User.hashPassword(tempPassword);
     
     user.setPasswordHash(passwordHash);
-    await this.userRepo.update(user);
+    await this.userService.update(user);
 
     return { tempPassword };
-  }
-
-  private hashPassword(password: string): string {
-    return crypto.createHash('sha256').update(password).digest('hex');
   }
 
   private toDto(user: User): UserDto {
@@ -151,15 +146,6 @@ export class UserUsecaseImpl implements UserUsecase {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
-  }
-
-  private generateTempPassword(): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-    let password = '';
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
   }
 }
 
