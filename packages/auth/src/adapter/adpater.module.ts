@@ -30,6 +30,14 @@ import { SessionUsecase } from '../application/usecase/session.usecase';
 import { SessionUsecaseImpl } from '../application/usecase/impl/session.usecase.impl';
 import { TenantRepositoryPort } from '../domain/port/tenant-repository.port';
 import { TenantRepositoryAdapter } from './out/tenant-repository.adapter';
+import { RoleRepositoryPort } from '../domain/port/role-repository.port';
+import { RoleRepositoryAdapter } from './out/role-repository.adapter';
+import { PermissionRepositoryPort } from '../domain/port/permission-repository.port';
+import { PermissionRepositoryAdapter } from './out/permission-repository.adapter';
+import { RoleUsecase } from '../application/usecase/role.usecase';
+import { RoleUsecaseImpl } from '../application/usecase/impl/role.usecase.impl';
+import { PermissionUsecase } from '../application/usecase/permission.usecase';
+import { PermissionUsecaseImpl } from '../application/usecase/impl/permission.usecase.impl';
 import { UserAdminController } from './in/http/admin/v1/user-admin.controller';
 import { TenantAdminController } from './in/http/admin/v1/tenant-admin.controller';
 import { RoleAdminController } from './in/http/admin/v1/role-admin.controller';
@@ -80,11 +88,15 @@ import { ENV_KEY } from '../common/config/env.config';
     { provide: AuthUsecase, useClass: AuthUsecaseImpl },
     { provide: TenantUsecase, useClass: TenantUsecaseImpl },
     { provide: SessionUsecase, useClass: SessionUsecaseImpl },
+    { provide: RoleUsecase, useClass: RoleUsecaseImpl },
+    { provide: PermissionUsecase, useClass: PermissionUsecaseImpl },
     { provide: KakaoIdpPort, useClass: KakaoIdpAdapter },
     { provide: AppleIdpPort, useClass: AppleIdpAdapter },
     { provide: UserRepositoryPort, useClass: UserRepositoryAdapter },
     { provide: UserIdentityRepositoryPort, useClass: UserIdentityRepositoryAdapter },
     { provide: TenantRepositoryPort, useClass: TenantRepositoryAdapter },
+    { provide: RoleRepositoryPort, useClass: RoleRepositoryAdapter },
+    { provide: PermissionRepositoryPort, useClass: PermissionRepositoryAdapter },
     { provide: TokenServicePort, useClass: JwtServiceAdapter },
     { provide: SmsApiPort, useClass: SolApiAdapter },
     { provide: OtpRepositoryPort, useClass: RedisOtpRepository },
