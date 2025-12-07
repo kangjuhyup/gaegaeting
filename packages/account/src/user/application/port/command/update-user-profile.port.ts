@@ -1,8 +1,8 @@
 import { UserGender, UserRegion } from "@app/user/domain/enum/user.enum";
-import { UserEntity } from "@app/user/domain/model/user";
+import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 import { Command } from "@nestjs/cqrs";
 
-export class UpdateUserCommand extends Command<UserEntity> {
+export class UpdateUserProfileCommand extends Command<UserProfileEntity> {
   constructor(
     public readonly id: string,
     public readonly data: {
@@ -10,7 +10,6 @@ export class UpdateUserCommand extends Command<UserEntity> {
       gender?: UserGender;
       region?: UserRegion;
       bio?: string;
-      phoneNumber? : string;
     },
   ) {
     super();

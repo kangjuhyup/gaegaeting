@@ -1626,6 +1626,7 @@ __metadata:
     "@nestjs/common": "npm:^10.0.0"
     "@nestjs/config": "npm:^3.3.0"
     "@nestjs/core": "npm:^10.0.0"
+    "@nestjs/graphql": "npm:^13.2.0"
     "@nestjs/jwt": "npm:^10.2.0"
     "@nestjs/passport": "npm:^10.0.3"
     "@nestjs/schematics": "npm:^10.0.0"
@@ -1662,6 +1663,7 @@ __metadata:
     "@nestjs/common": ^10.0.0
     "@nestjs/config": ^3.3.0
     "@nestjs/core": ^10.0.0
+    "@nestjs/graphql": ^13.0.0
     "@nestjs/jwt": ^10.2.0
     "@nestjs/passport": ^10.0.3
     passport-jwt: ^4.0.1
@@ -5502,6 +5504,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "account@workspace:packages/account"
   dependencies:
+    "@apollo/server": "npm:^5.2.0"
+    "@apollo/subgraph": "npm:^2.12.1"
+    "@as-integrations/express5": "npm:^1.1.2"
     "@core/auth": "npm:*"
     "@core/database": "npm:*"
     "@core/http": "npm:*"
@@ -5510,6 +5515,7 @@ __metadata:
     "@core/redis": "npm:*"
     "@core/storage": "npm:*"
     "@core/util": "npm:*"
+    "@nestjs/apollo": "npm:^13.2.1"
     "@nestjs/axios": "npm:^3.1.3"
     "@nestjs/cli": "npm:^10.0.0"
     "@nestjs/common": "npm:^10.0.0"
@@ -5517,6 +5523,7 @@ __metadata:
     "@nestjs/core": "npm:^10.0.0"
     "@nestjs/cqrs": "npm:^11.0.3"
     "@nestjs/event-emitter": "npm:^3.0.1"
+    "@nestjs/graphql": "npm:^13.2.0"
     "@nestjs/jwt": "npm:^10.2.0"
     "@nestjs/passport": "npm:^10.0.3"
     "@nestjs/platform-express": "npm:^10.0.0"
@@ -5532,6 +5539,7 @@ __metadata:
     "@types/supertest": "npm:^6.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
     "@typescript-eslint/parser": "npm:^6.0.0"
+    apollo-server-express: "npm:^3.13.0"
     axios: "npm:^1.7.9"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.14.1"
@@ -5540,6 +5548,8 @@ __metadata:
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.2.1"
     eslint-plugin-unused-imports: "npm:^4.1.4"
+    graphql: "npm:^16.12.0"
+    graphql-subscriptions: "npm:^3.0.0"
     jest: "npm:^29.5.0"
     jest-util: "npm:^30.0.5"
     joi: "npm:^17.13.3"
@@ -5556,6 +5566,7 @@ __metadata:
     ts-jest: "npm:^29.1.0"
     ts-loader: "npm:^9.5.1"
     ts-mockito: "npm:^2.6.1"
+    ts-morph: "npm:^27.0.2"
     ts-node: "npm:^10.9.1"
     tsconfig-paths: "npm:^4.2.0"
     tsconfig-paths-jest: "npm:^0.0.1"
