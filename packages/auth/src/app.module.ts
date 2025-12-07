@@ -37,6 +37,7 @@ const getGraphQLSchemaPath = () => {
       definitions: {
         path: join(process.cwd(), './src/adapter/in/gql/graphql.ts'),
       },
+      path: '/auth/graphql',
       playground: true,
       introspection: true,
     }),
