@@ -72,18 +72,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/composition@npm:2.12.1":
-  version: 2.12.1
-  resolution: "@apollo/composition@npm:2.12.1"
-  dependencies:
-    "@apollo/federation-internals": "npm:2.12.1"
-    "@apollo/query-graphs": "npm:2.12.1"
-  peerDependencies:
-    graphql: ^16.5.0
-  checksum: 10c0/b174b48fec654102500c2fe3f70a434403666e9f8886458f5e26279d49f92e29926ccc397d243066120d4b61ab5efd57ffb2e1adfe254478e4cd8e070b6e5876
-  languageName: node
-  linkType: hard
-
 "@apollo/federation-internals@npm:2.12.1":
   version: 2.12.1
   resolution: "@apollo/federation-internals@npm:2.12.1"
