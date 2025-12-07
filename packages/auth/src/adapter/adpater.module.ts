@@ -32,6 +32,7 @@ import { TenantRepositoryPort } from '../domain/port/tenant-repository.port';
 import { TenantRepositoryAdapter } from './out/tenant-repository.adapter';
 import { UserAdminController } from './in/http/admin/v1/user-admin.controller';
 import { TenantAdminController } from './in/http/admin/v1/tenant-admin.controller';
+import { RoleAdminController } from './in/http/admin/v1/role-admin.controller';
 import { HealthController } from './in/http/health.controller';
 import { TestController } from './in/http/test.controller';
 import { SolApiAdapter } from './out/sol-api.adapter';
@@ -66,6 +67,7 @@ import { ENV_KEY } from '../common/config/env.config';
     HealthController,
     UserAdminController,
     TenantAdminController,
+    RoleAdminController,
     TestController,
   ],
   providers: [
