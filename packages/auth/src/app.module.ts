@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { GraphQLModule } from "@nestjs/graphql";
-import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
+import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo";
 import { JwtModule } from "@nestjs/jwt";
 import { join } from "path";
 import { ENV_KEY, validationSchema } from "./common/config/env.config";
@@ -31,8 +31,8 @@ const getGraphQLSchemaPath = () => {
       name: 'Auth-API',
       level: 'info',
     }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      driver: ApolloFederationDriver,
       typePaths: [getGraphQLSchemaPath()],
       definitions: {
         path: join(process.cwd(), './src/adapter/in/gql/graphql.ts'),
@@ -40,6 +40,7 @@ const getGraphQLSchemaPath = () => {
       path: '/auth/graphql',
       playground: true,
       introspection: true,
+      // ApolloFederationDriver를 사용하면 자동으로 Federation이 활성화됩니다
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
