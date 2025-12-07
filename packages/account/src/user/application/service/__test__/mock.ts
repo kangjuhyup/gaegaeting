@@ -1,4 +1,3 @@
-import { AuthInternalApiPort } from "@app/user/domain/port/auth-internal-api.port";
 import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { UserStoragePort } from "@app/user/domain/port/user-storage.port";
 
@@ -22,7 +21,3 @@ export const mockUserStoragePort = {
             deleteProfileImage: jest.fn(),
             hasMetadata: jest.fn()
         } as jest.Mocked<UserStoragePort>;
-
-export const mockAuthInternalApiPort = {
-    setUserId : jest.fn()
-} as jest.Mocked<AuthInternalApiPort>

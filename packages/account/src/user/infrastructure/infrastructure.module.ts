@@ -7,8 +7,6 @@ import { StorageModule } from "@core/storage";
 import { UserStoragePort } from "../domain/port/user-storage.port";
 import { UserStorageAdapter } from "./adapter/outbound/api/user-storage.adapter";
 import { AdminUserContorller } from "./adapter/inbound/http/user/user.admin.controller";
-import { AuthApiPort } from "../domain/port/auth-api.port";
-import { AuthApiAdapter } from "./adapter/outbound/api/auth-api.adapter";
 import { HttpModule } from "@core/http";
 
 const providers : Provider[] = [
@@ -19,10 +17,6 @@ const providers : Provider[] = [
     {
         provide : UserStoragePort,
         useClass : UserStorageAdapter,
-    },
-    {
-        provide : AuthApiPort,
-        useClass : AuthApiAdapter,
     }
 ]
 

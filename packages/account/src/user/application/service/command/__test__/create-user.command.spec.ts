@@ -1,9 +1,8 @@
 import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
-import { mockAuthInternalApiPort, mockUserRepositoryPort } from "../../__test__/mock"
+import { mockUserRepositoryPort } from "../../__test__/mock"
 import { UserGender, UserRegion, UserStatus } from "@app/user/domain/enum/user.enum";
 import { UserEntity } from "@app/user/domain/model/user";
 import { CreateUserHandler } from "../create-user.command";
-import { AuthInternalApiPort } from "@app/user/domain/port/auth-internal-api.port";
 import { CreateUserCommand } from "@app/user/application/port/command/create-user.port";
 
 // Mock DataSource for @Transactional decorator
@@ -16,16 +15,14 @@ const mockDataSource = {
 describe('CreateUserHanlder 단위 테스트', () => {
 
     let userRepositoryPort : jest.Mocked<UserRepositoryPort>;
-    let authInternalApiPort : jest.Mocked<AuthInternalApiPort>;
 
     let createUserHandler : CreateUserHandler;
 
     beforeEach(() => {
         jest.clearAllMocks();
         userRepositoryPort = mockUserRepositoryPort
-        authInternalApiPort = mockAuthInternalApiPort
 
-        createUserHandler = new CreateUserHandler(userRepositoryPort, authInternalApiPort);
+        createUserHandler = new CreateUserHandler(userRepositoryPort);
         (createUserHandler as any).dataSource = mockDataSource;
     })
     
@@ -60,7 +57,7 @@ describe('CreateUserHanlder 단위 테스트', () => {
         )).rejects.toThrow('이미 존재하는 사용자입니다.');
     })
 
-    it('존재하지 않는 사용자라면 UserEntity를 저장 후 AuthEntity 를 업데이트한다.', async () => {
+    it('존재하지 않는 사용자라면 UserEntity를 저장한다.', async () => {
         // Given
         const newUser = UserEntity.of({
             name : 'new-user',
@@ -96,9 +93,7 @@ describe('CreateUserHanlder 단위 테스트', () => {
         // Then
         // 1. 사용자 저장 메서드가 호출되었는지 확인
         expect(userRepositoryPort.insertUser).toHaveBeenCalledWith(newUser);
-        // 2. Auth 업데이트 메서드가 호출되었는지 확인
-        expect(authInternalApiPort.setUserId).toHaveBeenCalledWith(0,'kakao-provider-id', 'new-user-id');
-        // 3. 반환된 사용자가 저장된 사용자와 일치하는지 확인
+        // 2. 반환된 사용자가 저장된 사용자와 일치하는지 확인
         expect(result).toBe(savedUser);
     })
 })

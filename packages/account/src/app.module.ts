@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { validationSchema } from './config/env.config';
 import { CqrsModule } from '@nestjs/cqrs';
-import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { JwtAuthModule } from '@core/auth';
 import { DatabaseModule, DatabaseSchema } from '@core/database';
@@ -66,7 +65,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     EventEmitterModule.forRoot(),
     // 도메인 모듈
     UserModule,
-    AuthModule,
     PetModule
   ],
   controllers : [

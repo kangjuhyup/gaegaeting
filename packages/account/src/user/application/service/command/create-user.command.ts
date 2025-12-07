@@ -3,13 +3,11 @@ import { CreateUserCommand } from "../../port/command/create-user.port";
 import { UserRepositoryPort } from "@app/user/domain/port/user-repository.port";
 import { UserEntity } from "@app/user/domain/model/user";
 import { Transactional } from "@core/database";
-import { AuthApiPort } from "@app/user/domain/port/auth-api.port";
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand, UserEntity> {
   constructor(
-    private readonly userRepository: UserRepositoryPort,
-    private readonly authApi : AuthApiPort
+    private readonly userRepository: UserRepositoryPort
   ) {}
 
   @Transactional()
@@ -23,7 +21,7 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand, Use
       throw new Error("이미 존재하는 사용자입니다.");
     }
     const user = await this.userRepository.insertUser(command.user);
-    await this.authApi.setUserId(command.providerType, command.providerId, user.id);
+    // TODO: auth 서비스로 userId 설정 로직 이동 필요
     return user;
   }
 }

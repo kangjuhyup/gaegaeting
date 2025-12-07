@@ -11,7 +11,6 @@ import { GetPresignedUrlResponse } from './dto/response/get-presgined.response';
 import { GeneratePetPresignedCommand } from '@app/pet/application/port/command/generate-pet-presigned.port';
 import { UpdatePetBody } from './dto/request/update-pet.request';
 import { UpdatePetCommand } from '@app/pet/application/port/command/update-pet.port';
-import { AuthApiPort } from '@app/pet/domain/port/auth-api.port';
 
 @ApiTags('Account','Pet')
 @Controller('pets')
@@ -19,7 +18,6 @@ export class PetController {
   constructor(
     private readonly queryBus : QueryBus,
     private readonly commandBus : CommandBus,
-    private readonly authApi: AuthApiPort,
   ) {}
 
   @Post()
@@ -32,18 +30,8 @@ export class PetController {
   ): Promise<any> {
     const pet = await this.commandBus.execute(new RegisterPetCommand(user,body.toDomain(user.userId)));
 
-    // 새 액세스 토큰 발급 (pet_registered: true)
-    const accessToken = await this.authApi.createTokenForUser(
-      user.userId,
-      user.socialProvider,
-      user.socialId,
-      { petRegistered: true },
-    );
-
-    return {
-      ...PetResponse.of(user.userId, [pet]),
-      accessToken,
-    };
+    // TODO: auth 서비스로 토큰 발급 로직 이동 필요
+    return PetResponse.of(user.userId, [pet]);
   }
 
   @Get()

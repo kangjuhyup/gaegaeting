@@ -1,6 +1,5 @@
 import { PersistenceEntity } from "@core/model";
 import { UserGender, UserRegion, UserStatus } from "../enum/user.enum";
-import { AuthEntity } from "@app/auth/domain/model/auth";
 import { UserProfileEntity } from "./user-profile";
 
 
