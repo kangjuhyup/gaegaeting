@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@apollo/server": "^5.2.0",
+    "@apollo/subgraph": "^2.12.1",
     "@as-integrations/express5": "^1.1.2",
     "@core/auth": "*",
     "@core/database": "*",

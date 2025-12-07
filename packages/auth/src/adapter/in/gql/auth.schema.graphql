@@ -1,5 +1,9 @@
 scalar DateTime
 
+# Federation 지원을 위한 스키마 확장
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"])
+
 type AuthPayload {
   accessToken: String!
   refreshToken: String!
