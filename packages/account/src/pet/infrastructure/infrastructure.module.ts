@@ -1,26 +1,29 @@
-import { DatabaseModule, DatabaseSchema } from "@core/database";
 import { Module, Provider } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { PetController } from "./adapter/inbound/http/pet/pet.controller";
 import { StorageModule } from "@core/storage";
-import { PetRepositoryPort } from "../domain/port/pet-repository.port";
-import { PetOrmRepository } from "./adapter/outbound/persistence/pet.orm.repository";
 import { PetOrmMapper } from "./adapter/outbound/persistence/mapper/pet-orm";
-import { PetStoragePort } from "../domain/port/pet-storage.port";
+import { PetStoragePort } from "./port/pet-storage.port";
 import { PetStorageAdpater } from "./adapter/outbound/api/pet-storage.adpater";
 import { PetProfileOrmMapper } from "./adapter/outbound/persistence/mapper/pet-profile-orm";
 import { HttpModule } from "@core/http";
-import { PetCertificationPort } from "../domain/port/pet-certification.port";
+import { PetCertificationPort } from "./port/pet-certification.port";
 import { PetCertificationAdapter } from "./adapter/outbound/api/pet-certification.adapter";
-import { AuthApiPort } from "../domain/port/auth-api.port";
-import { AuthApiAdapter } from "./adapter/outbound/api/auth-api.adapter";
+import { PetProfileRepositoryPort } from "./port/pet-profile-repository.port";
+import { PetProfileOrmRepository } from "./adapter/outbound/persistence/pet-profile-orm.repository";
+import { PetAttachmentOrmRepository } from "./adapter/outbound/persistence/pet-attachment-orm.repository";
+import { PetAttachmentRepositoryPort } from "./port/pet-attachment-repository.port";
 
 const providers : Provider[] = [
     PetOrmMapper,
     PetProfileOrmMapper,
+    // 개별 리포지토리
     {
-        provide : PetRepositoryPort,
-        useClass : PetOrmRepository
+        provide : PetProfileRepositoryPort,
+        useClass : PetProfileOrmRepository
+    },
+    {
+        provide : PetAttachmentRepositoryPort,
+        useClass : PetAttachmentOrmRepository
     },
     {
         provide : PetStoragePort,
@@ -29,10 +32,6 @@ const providers : Provider[] = [
     {
         provide : PetCertificationPort,
         useClass : PetCertificationAdapter
-    },
-    {
-        provide : AuthApiPort,
-        useClass : AuthApiAdapter
     }
 ]
 
@@ -60,7 +59,6 @@ const providers : Provider[] = [
         })
     ],
     controllers : [
-        PetController,
     ],
     providers : providers,
     exports : providers,

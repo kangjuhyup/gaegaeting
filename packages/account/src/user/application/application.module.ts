@@ -1,20 +1,24 @@
 import { Module, Provider } from "@nestjs/common";
-import { CreateUserHandler } from "./service/command/create-user.command";
-import { UpdateUserHandler } from "./service/command/update-user.command";
-import { GetUserHandler } from "./service/query/get-user.query";
+import { UpdateUserProfileHandler } from "./service/command/update-user-profile.command";
+import { GetUserProfileHandler } from "./service/query/get-user-profile.query";
 import { UserInfraStructureModule } from "../infrastructure/infrastructure.module";
 import { GenerateUserPresignedUrlHandler } from "./service/command/generate-user-presigned.command";
+import { CreateUserProfileHandler } from "./service/command/create-user-profile.command";
+import { ReviewUserImageHandler } from "./service/command/review-user-image.command";
+import { DeleteProfileImageHandler } from "./service/command/delete-profile-image.command";
 
 
 const providers : Provider[] = [
     
     // Query
-    GetUserHandler,
+    GetUserProfileHandler,
 
     // Command
-    CreateUserHandler,
-    UpdateUserHandler,
+    CreateUserProfileHandler,
+    UpdateUserProfileHandler,
     GenerateUserPresignedUrlHandler,
+    ReviewUserImageHandler,
+    DeleteProfileImageHandler,
 ]
 
 @Module({

@@ -1,6 +1,5 @@
 import { AccountUserPhoneVerifiedV1Payload } from "@app/common/payload";
 import { Topics } from "@app/common/topic";
-import { UpdateUserCommand } from "@app/user/application/port/command/update-user.port";
 import { CommandBus, EventsHandler } from "@nestjs/cqrs";
 import { OnEvent } from "@nestjs/event-emitter";
 
@@ -12,6 +11,5 @@ export class PariEventHandler {
 
     @OnEvent(Topics.ACCOUNT_USER_PHONE_VERIFIED_V1)
     async handleMatchPairCreatedEvent(payload : AccountUserPhoneVerifiedV1Payload) {
-        await this.commandBus.execute(new UpdateUserCommand(payload.userId, { phoneNumber : payload.phoneNumber }))
     }
 }

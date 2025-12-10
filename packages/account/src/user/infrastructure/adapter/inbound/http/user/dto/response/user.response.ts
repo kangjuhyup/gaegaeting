@@ -1,4 +1,5 @@
-import { UserEntity } from "@app/user/domain/model/user";
+import { UserAttachmentEntity } from "@app/user/domain/model/user-attachment";
+import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class UserResponse {
@@ -41,7 +42,7 @@ export class UserResponse {
     this.profileImages = profileImages;
   }
 
-  static fromDomain(user: UserEntity): UserResponse {
+  static fromDomain(user: UserProfileEntity, profileImages: UserAttachmentEntity[]): UserResponse {
     return new UserResponse(
       user.id,
       user.nickname,
@@ -49,7 +50,7 @@ export class UserResponse {
       user.region.label,
       user.bio,
       user.phoneNumber,
-      user.profiles?.map((p) => p.path)
+      profileImages.map((p) => p.path)
     );
   }
 }

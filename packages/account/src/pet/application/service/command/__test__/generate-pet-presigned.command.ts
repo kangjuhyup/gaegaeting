@@ -1,23 +1,23 @@
-import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port"
-import { PetStoragePort } from "@app/pet/domain/port/pet-storage.port"
+import { PetStoragePort } from "@app/pet/infrastructure/port/pet-storage.port"
 import { GeneratePetPresignedUrlHandler } from '../generate-pet-presigned.command';
-import { mockPetRepositoryPort, mockPetStoragePort } from "../../__test__/mock";
+import { mockPetAttachmentRepositoryPort, mockPetStoragePort } from "../../__test__/mock";
 import { GeneratePetPresignedCommand } from "@app/pet/application/port/command/generate-pet-presigned.port";
 import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
+import { PetAttachmentRepositoryPort } from "@app/pet/infrastructure/port/pet-attachment-repository.port";
 
 describe('GeneratePetPresignedUrlHandler 단위 테스트', () => {
     
     let petStoragePort : jest.Mocked<PetStoragePort>
-    let petRepositoryPort : jest.Mocked<PetRepositoryPort>
+    let petAttachmentRepositoryPort : jest.Mocked<PetAttachmentRepositoryPort>
     
     let generatePetPresignedUrlHandler : GeneratePetPresignedUrlHandler
 
     beforeEach(() => {
-        petRepositoryPort = mockPetRepositoryPort,
+        petAttachmentRepositoryPort = mockPetAttachmentRepositoryPort,
         petStoragePort = mockPetStoragePort
 
-        generatePetPresignedUrlHandler = new GeneratePetPresignedUrlHandler(petStoragePort,petRepositoryPort)
+        generatePetPresignedUrlHandler = new GeneratePetPresignedUrlHandler(petStoragePort,petAttachmentRepositoryPort)
     })
 
     it('PresignedUrl 을 생성 후 PetProfileEntity 를 비활성화 상태로 저장한다.', async () => {
@@ -35,16 +35,16 @@ describe('GeneratePetPresignedUrlHandler 단위 테스트', () => {
         
         // Mock 설정
         petStoragePort.getPresignedUrl.mockResolvedValue(expectedPresignedUrl);
-        petRepositoryPort.insertPetAttachment.mockResolvedValue(undefined);
+        petAttachmentRepositoryPort.insertPetAttachment.mockResolvedValue(undefined);
         
         // When
         const result = await generatePetPresignedUrlHandler.execute(command);
         
         // Then
         expect(petStoragePort.getPresignedUrl).toHaveBeenCalledWith(petId, no);
-        expect(petRepositoryPort.insertPetAttachment).toHaveBeenCalled();
+        expect(petAttachmentRepositoryPort.insertPetAttachment).toHaveBeenCalled();
         
-        const petProfileArg = petRepositoryPort.insertPetAttachment.mock.calls[0][0];
+        const petProfileArg = petAttachmentRepositoryPort.insertPetAttachment.mock.calls[0][0];
         expect(petProfileArg).toBeInstanceOf(PetProfileEntity);
         expect(petProfileArg.path).toBe(mockPresignedUrl.path);
         expect(petProfileArg.isActive).toBe(false);

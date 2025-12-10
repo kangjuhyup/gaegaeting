@@ -6,7 +6,7 @@ import { SocialSigninUseCase } from '../../../application/usecase/social-signin.
 import { OtpUsecase } from '../../../application/usecase/otp.usecase';
 import { PubSub } from 'graphql-subscriptions';
 import { UserUsecase } from '@app/application/usecase/user.usecase';
-import { GraphqlAuthGuard } from '@app/common/guard/graphql-auth.guard';
+import { GraphqlAuthGuard } from '@core/auth';
 import { User } from '@app/domain/model/user';
 import { AuthUsecase } from '@app/application/usecase/auth.usecase';
 import {

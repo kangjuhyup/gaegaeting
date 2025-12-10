@@ -2,7 +2,7 @@ import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { GraphqlAuthGuard } from '../../../src/common/guard/graphql-auth.guard';
+import { GraphqlAuthGuard } from '@core/auth';
 import { ENV_KEY } from '../../../src/common/config/env.config';
 import { UserRepositoryPort } from '../../../src/application/port/repository/user-repository.port';
 import { User } from '../../../src/domain/model/user';

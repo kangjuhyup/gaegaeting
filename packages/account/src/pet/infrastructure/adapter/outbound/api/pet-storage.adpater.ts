@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PetStoragePort } from "@app/pet/domain/port/pet-storage.port";
+import { PetStoragePort } from "@app/pet/infrastructure/port/pet-storage.port";
 import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { StorageService } from "@core/storage";
 
