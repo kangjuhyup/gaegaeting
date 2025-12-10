@@ -1,0 +1,265 @@
+import {
+  ApolloGateway,
+  IntrospectAndCompose,
+  RemoteGraphQLDataSource,
+} from '@apollo/gateway';
+import { ApolloServer, BaseContext } from '@apollo/server';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+
+type Subgraph = { name: string; url: string };
+
+class Logger {
+  private name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  log(message: string) {
+    console.log(`[${this.name}] ${message}`);
+  }
+
+  error(message: string) {
+    console.error(`[${this.name}] ${message}`);
+  }
+
+  debug(message: string) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug(`[${this.name}] ${message}`);
+    }
+  }
+}
+
+export class Gateway {
+  private readonly logger = new Logger('Gateway');
+  private gateway!: ApolloGateway;
+  private server!: ApolloServer<BaseContext>;
+
+  /**
+   * 서브그래프 서비스 목록 가져오기
+   */
+  private getSubgraphServices(): Subgraph[] {
+    const authServiceUrl =
+      process.env.AUTH_SERVICE_URL ?? 'http://127.0.0.1:3300/auth/graphql';
+
+    const accountServiceUrl =
+      process.env.ACCOUNT_SERVICE_URL ??
+      'http://127.0.0.1:2800/account/graphql';
+
+    const services: Subgraph[] = [
+      { name: 'auth', url: authServiceUrl },
+      { name: 'account', url: accountServiceUrl },
+      // { name: 'match', url: process.env.MATCH_SERVICE_URL },
+      // { name: 'chat', url: process.env.CHAT_SERVICE_URL },
+    ];
+
+    return services.filter((s) => !!s.url);
+  }
+
+  /**
+   * 서브그래프 로깅
+   */
+  private logSubgraphs(subgraphs: Subgraph[]): void {
+    this.logger.log(
+      `Initializing Apollo Gateway with ${subgraphs.length} subgraph(s): ` +
+        subgraphs.map((s) => `${s.name} (${s.url})`).join(', '),
+    );
+
+    subgraphs.forEach((s) =>
+      this.logger.log(`Subgraph service: ${s.name} -> ${s.url}`),
+    );
+  }
+
+  /**
+   * 개발/디버그용 서브그래프 헬스 체크
+   */
+  private async probeSubgraphs(subgraphs: Subgraph[]): Promise<void> {
+    this.logger.log('Probing subgraphs (connectivity & _service.sdl)...');
+
+    await Promise.all(
+      subgraphs.map(async (service) => {
+        try {
+          await this.runProbeQuery(
+            service,
+            '[1/2] connection test',
+            '{ __typename }',
+          );
+          await this.runProbeQuery(
+            service,
+            '[2/2] _service { sdl }',
+            'query { _service { sdl } }',
+          );
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          this.logger.error(
+            `✗ Error probing subgraph ${service.name} at ${service.url}: ${message}`,
+          );
+        }
+      }),
+    );
+
+    this.logger.log('Subgraph probing finished');
+  }
+
+  private async runProbeQuery(
+    service: Subgraph,
+    label: string,
+    query: string,
+  ): Promise<void> {
+    const { name, url } = service;
+    this.logger.log(`${name}: ${label}`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10_000);
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: JSON.stringify({ query }),
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
+
+    if (!res.ok) {
+      const body = await res.text();
+      this.logger.error(
+        `${name}: ${label} failed – ${res.status} ${res.statusText}`,
+      );
+      this.logger.error(body.substring(0, 1000));
+      return;
+    }
+
+    const json = await res.json();
+    if (json.errors) {
+      this.logger.error(
+        `${name}: ${label} GraphQL errors: ${JSON.stringify(json.errors)}`,
+      );
+      return;
+    }
+
+    this.logger.log(`${name}: ${label} ✓`);
+  }
+
+  /**
+   * Apollo Gateway 생성
+   */
+  private createGateway(subgraphs: Subgraph[]): ApolloGateway {
+    return new ApolloGateway({
+      supergraphSdl: new IntrospectAndCompose({
+        subgraphs,
+        subgraphHealthCheck: false,
+        pollIntervalInMs: 10_000,
+      }),
+      buildService: ({ name, url }) =>
+        new RemoteGraphQLDataSource({
+          url,
+          willSendRequest: ({ request, context }) => {
+            this.logger.debug(`Sending request to ${name} at ${url}`);
+
+            if (!request.http?.headers) return;
+
+            // CSRF 우회용
+            request.http.headers.set('X-Requested-With', 'XMLHttpRequest');
+
+            // context.headers 를 그대로 전달
+            if (context?.headers && typeof context.headers === 'object') {
+              Object.entries(context.headers).forEach(([key, value]) => {
+                if (typeof value === 'string' && value) {
+                  request.http!.headers.set(key, value);
+                }
+              });
+            }
+          },
+        }),
+    });
+  }
+
+  /**
+   * Apollo Server 생성
+   */
+  private async createApolloServer(
+    gateway: ApolloGateway,
+  ): Promise<ApolloServer<BaseContext>> {
+    // 개발 환경에서는 Sandbox, 프로덕션에서는 GraphOS Studio 사용
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+
+    const server = new ApolloServer<BaseContext>({
+      gateway,
+      introspection: true,
+      plugins: [
+        // Apollo Sandbox 활성화 (개발 환경)
+        // 프로덕션에서는 ApolloServerPluginLandingPageProductionDefault 사용 가능
+        ApolloServerPluginLandingPageLocalDefault({
+          embed: true,
+          includeCookies: false,
+        }),
+      ],
+    });
+
+    this.logger.log(
+      'Starting ApolloServer (gateway will be loaded automatically)...',
+    );
+    if (isDevelopment) {
+      this.logger.log('Apollo Sandbox is enabled for development');
+    }
+    await server.start();
+    this.logger.log('ApolloServer started successfully');
+
+    return server;
+  }
+
+  /**
+   * Gateway 초기화
+   */
+  async initialize(): Promise<void> {
+    this.logger.log('Gateway initialization started');
+
+    const subgraphs = this.getSubgraphServices();
+    if (!subgraphs.length) {
+      throw new Error(
+        'No subgraph services configured. At least one subgraph service URL must be set.',
+      );
+    }
+
+    this.logSubgraphs(subgraphs);
+
+    // 개발환경에서만 서브그래프 헬스 체크
+    if (process.env.NODE_ENV !== 'production') {
+      await this.probeSubgraphs(subgraphs);
+    }
+
+    this.gateway = this.createGateway(subgraphs);
+    this.server = await this.createApolloServer(this.gateway);
+    this.logger.log('Gateway initialization completed');
+  }
+
+  /**
+   * Gateway 종료
+   */
+  async shutdown(): Promise<void> {
+    if (this.server) {
+      await this.server.stop();
+    }
+    if (this.gateway) {
+      await this.gateway.stop();
+    }
+    this.logger.log('Gateway shutdown completed');
+  }
+
+  /**
+   * Apollo Server 인스턴스 가져오기
+   */
+  getServer(): ApolloServer<BaseContext> {
+    return this.server;
+  }
+
+  /**
+   * Apollo Gateway 인스턴스 가져오기
+   */
+  getGateway(): ApolloGateway {
+    return this.gateway;
+  }
+}
+
