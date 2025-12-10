@@ -4,7 +4,7 @@ scalar DateTime
 extend schema
   @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"])
 
-type User @key(fields: "id") {
+type UserProfile @key(fields: "id") {
   id: ID!
   name: String!
   nickname: String!
@@ -64,13 +64,13 @@ input UpdateUserProfileInput {
 }
 
 type Query {
-  me: User! # 내 프로필 조회
-  user(id: ID!): User # 특정 사용자 조회
+  myProfile: UserProfile! # 내 프로필 조회
+  profile(id: ID!): UserProfile # 특정 사용자 조회
 }
 
 type Mutation {
-  createProfile(input: CreateUserProfileInput!): User! # 내 프로필 생성
-  updateProfile(id: ID!, input: UpdateUserProfileInput!): User! # 내 프로필 수정
+  createProfile(input: CreateUserProfileInput!): UserProfile! # 내 프로필 생성
+  updateProfile(id: ID!, input: UpdateUserProfileInput!): UserProfile! # 내 프로필 수정
   generatePresignedUrl(imageNo: Int!): PresignedUrl! # 프로필 이미지 PresignedUrl 생성
   deleteProfileImage(imageNo: Int!): Boolean! # 프로필 이미지 삭제
 }

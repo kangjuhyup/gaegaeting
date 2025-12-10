@@ -8,7 +8,7 @@ import { GetUserProfileQuery } from '@app/user/application/port/query/get-user-p
 import { GenerateUserPresignedCommand } from '@app/user/application/port/command/generate-presigned.port';
 import { DeleteProfileImageCommand } from '@app/user/application/port/command/delete-profile-image.port';
 import { UserProfileEntity } from '@app/user/domain/model/user-profile';
-import { User as GraphQLUser, PresignedUrl, CreateUserProfileInput, UpdateUserProfileInput } from './graphql';
+import { PresignedUrl, CreateUserProfileInput, UpdateUserProfileInput } from './graphql';
 import { UserGraphQLDto } from './dto/user.graphql.dto';
 
 @Resolver('User')
@@ -20,13 +20,13 @@ export class UserResolver {
 
   @Query()
   @UseGuards(GraphqlAuthGuard)
-  async me(@UserParam() user: UserPrincipal): Promise<GraphQLUser> {
+  async myProfile(@UserParam() user: UserPrincipal): Promise<any> {
     const userProfile = await this.queryBus.execute(new GetUserProfileQuery(user.userId));
     return UserGraphQLDto.fromDomain(userProfile.profile, userProfile.profileImages);
   }
 
   @Query()
-  async user(@Args('id') id: string): Promise<GraphQLUser | null> {
+  async profile(@Args('id') id: string): Promise<any | null> {
     const user = await this.queryBus.execute(new GetUserProfileQuery(id));
     return user ? UserGraphQLDto.fromDomain(user.profile, user.profileImages) : null;
   }
@@ -36,7 +36,7 @@ export class UserResolver {
   async createProfile(
     @UserParam() user: UserPrincipal,
     @Args('input') input: CreateUserProfileInput,
-  ): Promise<GraphQLUser> {
+  ): Promise<any> {
     const userData = UserGraphQLDto.toDomainEntity(input);
     const userProfileEntity = UserProfileEntity.of(userData, user.userId);
     const profile = await this.commandBus.execute(
@@ -50,7 +50,7 @@ export class UserResolver {
   async updateProfile(
     @Args('id') id: string,
     @Args('input') input: UpdateUserProfileInput,
-  ): Promise<GraphQLUser> {
+  ): Promise<any> {
     const updateData = UserGraphQLDto.toUpdateData(input);
     const user = await this.commandBus.execute(new UpdateUserProfileCommand(id, updateData));
     return UserGraphQLDto.fromDomain(user);

@@ -1,7 +1,7 @@
 import { UserProfileEntity, IUserProfile } from '@app/user/domain/model/user-profile';
 import { UserGender, UserRegion } from '@app/user/domain/enum/user.enum';
 import { UserProfileStatus } from '@core/database';
-import { User as GraphQLUser, CreateUserProfileInput, UpdateUserProfileInput, PresignedUrl as GraphQLPresignedUrl } from '../graphql';
+import {  CreateUserProfileInput, UpdateUserProfileInput, PresignedUrl as GraphQLPresignedUrl } from '../graphql';
 import { PresignedUrl } from '@app/common/vo/presigned-url';
 import { UserAttachmentEntity } from '@app/user/domain/model/user-attachment';
 
@@ -16,7 +16,7 @@ export class UserGraphQLDto {
    * @param user 사용자 프로필 엔티티
    * @param profileImages 프로필 이미지 엔티티 배열 (선택적)
    */
-  static fromDomain(user: UserProfileEntity, profileImages?: UserAttachmentEntity[]): GraphQLUser {
+  static fromDomain(user: UserProfileEntity, profileImages?: UserAttachmentEntity[]): any {
     return {
       id: user.id,
       name: user.name,
@@ -86,20 +86,20 @@ export class UserGraphQLDto {
   }
 
   // Enum 변환 메서드들
-  private static toGraphQLGender(gender: UserGender): GraphQLUser['gender'] {
-    return gender.label as GraphQLUser['gender'];
+  private static toGraphQLGender(gender: UserGender): any['gender'] {
+    return gender.label as any['gender'];
   }
 
   private static toDomainGender(gender: 'MALE' | 'FEMALE'): UserGender {
     return gender === 'MALE' ? UserGender.MALE : UserGender.FEMALE;
   }
 
-  private static toGraphQLRegion(region: UserRegion): GraphQLUser['region'] {
-    return region.label as GraphQLUser['region'];
+  private static toGraphQLRegion(region: UserRegion): any['region'] {
+    return region.label as any['region'];
   }
 
-  private static toDomainRegion(region: GraphQLUser['region']): UserRegion {
-    const regionMap: Record<GraphQLUser['region'], UserRegion> = {
+  private static toDomainRegion(region: any['region']): UserRegion {
+    const regionMap: Record<any['region'], UserRegion> = {
       SEOUL: UserRegion.SEOUL,
       GYEONGGI: UserRegion.GYEONGGI,
       INCHEON: UserRegion.INCHEON,
@@ -112,8 +112,8 @@ export class UserGraphQLDto {
     return regionMap[region];
   }
 
-  private static toGraphQLStatus(status: UserProfileStatus): GraphQLUser['status'] {
-    return status.label as GraphQLUser['status'];
+  private static toGraphQLStatus(status: UserProfileStatus): any['status'] {
+    return status.label as any['status'];
   }
 }
 
