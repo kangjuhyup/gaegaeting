@@ -57,7 +57,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       definitions: {
         path: USER_GRAPHQL_DEFINITIONS_PATH,
       },
-      path: '/graphql',
+      // 전역 prefix(account)를 포함한 절대 경로로 명시적으로 설정
+      path: '/account/graphql',
       playground: true,
       introspection: true,
     }),
