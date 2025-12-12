@@ -13,9 +13,7 @@ COPY . .
 # 의존성 설치
 RUN yarn install
 
-# @core 패키지들 먼저 빌드
-RUN yarn workspace @core/logger build
-
+# Gateway 빌드 (TypeScript 컴파일)
 RUN yarn workspace gateway build
 
 # 실행 스테이지
@@ -28,7 +26,6 @@ RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 # 필요한 파일들 복사
 COPY --from=builder /app/packages/gateway/package.json ./packages/gateway/package.json
 COPY --from=builder /app/packages/gateway/dist ./packages/gateway/dist
-COPY --from=builder /app/packages/core ./packages/core
 
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/yarn.lock ./yarn.lock
@@ -37,9 +34,14 @@ COPY --from=builder /app/.yarn ./.yarn
 COPY --from=builder /app/.pnp.cjs ./.pnp.cjs
 COPY --from=builder /app/.pnp.loader.mjs ./.pnp.loader.mjs
 
+# 프로덕션 의존성만 설치
 RUN yarn workspaces focus gateway --production
 
 ENV NODE_ENV=production
 
-# yarn workspace 로 실행
-CMD ["yarn", "workspace", "gateway", "start:prod"]
+# 포트 노출
+EXPOSE 4000
+
+# Gateway 실행
+WORKDIR /app/packages/gateway
+CMD ["node", "dist/src/main.js"]
