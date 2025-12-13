@@ -4,11 +4,12 @@ import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { GetUserProfileQuery } from "@app/user/application/port/query/get-user-profile.port";
 import { UserResponse } from "./dto/response/user.response";
 import { ReviewUserImageCommand } from "@app/user/application/port/command/review-user-image.port";
-import { AccessGuard } from "@core/auth";
+import { AccessGuard, Roles } from "@core/auth";
 import { ApiBearerAuth, ApiOperation, ApiResponse } from "@nestjs/swagger";
 
 @Controller('/admin/users')
 @UseGuards(AccessGuard)
+@Roles('ADMIN')
 export class AdminUserContorller {
 
     constructor(
