@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { InternalAuthController } from '../../src/adapter/in/http/internal/internal-auth.controller';
+import { InternalAuthController } from '../../../../../src/adapter/in/http/internal/internal-auth.controller';
 
 describe('InternalAuthController', () => {
   const makeRes = () =>
