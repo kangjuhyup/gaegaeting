@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { validationSchema } from './config/env.config';
+import { ENV_KEY, validationSchema } from './config/env.config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
@@ -73,9 +73,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       inject : [ConfigService],
       useFactory : (configService : ConfigService) => {
         // JWT 관련 환경변수 가져오기
-        const secret = configService.get<string>('JWT_SECRET', 'secret_key_for_development');
-        const accessExpiresIn = configService.get<number>('JWT_ACCESS_EXPIRATION', 3600); // 기본값 1시간
-        const refreshExpiresIn = configService.get<number>('JWT_REFRESH_EXPIRATION', 604800); // 기본값 7일
+        const secret = configService.get<string>(ENV_KEY.JWT_SECRET, 'secret_key_for_development');
+        const accessExpiresIn = configService.get<number>(ENV_KEY.JWT_ACCESS_EXPIRATION);
+        const refreshExpiresIn = configService.get<number>(ENV_KEY.JWT_REFRESH_EXPIRATION,);
         const userServiceHost = configService.get<string>('USER_SERVICE_HOST', 'http://localhost:3000');
         return {
           secret,
