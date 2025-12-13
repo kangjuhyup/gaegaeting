@@ -8,15 +8,55 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/kangjuhyup/gaegaeting
-    targetRevision: develop
-    path: infra/k3s/helm/argocd-chart
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-cd
+    targetRevision: "5.51.6"
     helm:
       releaseName: argocd
-      valueFiles:
-        # values는 기존 파일을 그대로 재사용(중복 복사 방지)
-        - ../argocd/values.yaml
-      dependencyUpdate: true
+      values: |
+        global:
+          image:
+            tag: "v2.9.3"
+
+        controller:
+          replicas: 1
+
+        server:
+          replicas: 2
+          extraArgs:
+            - --insecure
+          ingress:
+            enabled: true
+            ingressClassName: traefik
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+              traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+              traefik.ingress.kubernetes.io/router.tls: "true"
+            hosts:
+              - argo.gaegaeting.app
+            paths:
+              - /
+            pathType: Prefix
+            tls:
+              - secretName: argocd-server-tls
+                hosts:
+                  - argo.gaegaeting.app
+
+          config:
+            url: https://argo.gaegaeting.app
+            application.instanceLabelKey: argocd.argoproj.io/instance
+            users.anonymous.enabled: "false"
+            repositories: |
+              - type: git
+                url: https://github.com/kangjuhyup/gaegaeting
+
+          rbacConfig:
+            policy.default: role:readonly
+
+          # server.insecure=true를 명시적으로 켜서(현재 해결책) 307 루프 재발 방지
+        configs:
+          params:
+            server.insecure: "true"
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd

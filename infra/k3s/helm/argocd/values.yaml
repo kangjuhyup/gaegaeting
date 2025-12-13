@@ -42,7 +42,7 @@ server:
 
   ## ArgoCD Server configuration
   config:
-    url: https://argocd.gaegaeting.com
+    url: https://argo.gaegaeting.app
     application.instanceLabelKey: argocd.argoproj.io/instance
 
     # Enable anonymous access (disable in production)
@@ -214,6 +214,10 @@ dex:
 
 ## Configs
 configs:
+  ## Chart params -> argocd-cmd-params-cm
+  ## 307 루프 방지: http 요청을 https로 강제 리다이렉트하지 않도록 설정
+  params:
+    server.insecure: "true"
   ## Secret for initial admin password
   secret:
     createSecret: true
