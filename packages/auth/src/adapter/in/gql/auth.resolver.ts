@@ -6,7 +6,7 @@ import { SocialSigninUseCase } from '../../../application/usecase/social-signin.
 import { OtpUsecase } from '../../../application/usecase/otp.usecase';
 import { PubSub } from 'graphql-subscriptions';
 import { UserUsecase } from '@app/application/usecase/user.usecase';
-import { GraphqlAuthGuard } from '@core/auth';
+import { GraphqlAccessGuard } from '@core/auth';
 import { User } from '@app/domain/model/user';
 import { AuthUsecase } from '@app/application/usecase/auth.usecase';
 import {
@@ -41,7 +41,7 @@ export class AuthResolver{
   }
 
   @Mutation('signout')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async signout(
     @Args('allDevices') allDevices: boolean | null,
     @UserPayload() user: User,
@@ -80,7 +80,7 @@ export class AuthResolver{
   }
 
   @Mutation('kakaoSignin')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async kakaoSignin(
     @Args('authCode') authCode: string,
     @Args('redirectUri') redirectUri: string | null,
@@ -90,7 +90,7 @@ export class AuthResolver{
   }
 
   @Mutation('appleSignin')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async appleSignin(
     @Args('idToken') idToken: string,
     @Args('authorizationCode') authorizationCode: string | null,
@@ -101,7 +101,7 @@ export class AuthResolver{
   }
 
   @Mutation('nativeSignin')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async nativeSignin(
     @Args('provider') provider: string,
     @Args('accessToken') accessToken: string,
@@ -121,7 +121,7 @@ export class AuthResolver{
   }
 
   @Query('me')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async me(@UserPayload() user: User): Promise<GraphQLUser> {
     return {
       id: user.id,
@@ -137,7 +137,7 @@ export class AuthResolver{
   }
 
   @Mutation('requestOtp')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async requestOtp(
     @Args('phoneNumber') phoneNumber: string,
     @UserPayload() user: User,
@@ -147,7 +147,7 @@ export class AuthResolver{
   }
 
   @Mutation('verifyOtp')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async verifyOtp(
     @Args('phoneNumber') phoneNumber: string,
     @Args('code') code: string,
@@ -163,21 +163,21 @@ export class AuthResolver{
   }
 
   @Query('myPermissions')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async myPermissions(@Args('clientId') clientId: string | null): Promise<string[]> {
     // TODO: 권한 조회 로직 구현
     return [];
   }
 
   @Mutation('linkIdentity')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async linkIdentity(@Args('input') input: LinkIdentityInput): Promise<boolean> {
     // TODO: Identity 연결 로직 구현
     return true;
   }
 
   @Mutation('unlinkIdentity')
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async unlinkIdentity(@Args('provider') provider: string): Promise<boolean> {
     // TODO: Identity 해제 로직 구현
     return true;

@@ -18,7 +18,7 @@ export class RoleMapper {
 
   static toOrm(domain: Role, tenant: Tenant): Partial<RoleOrmEntity> {
     return {
-      id: domain.id,
+      ...(domain.id !== undefined ? { id: domain.id } : {}),
       tenant: { id: tenant.id } as TenantOrmEntity,
       code: domain.code,
       name: domain.name,

@@ -3,7 +3,6 @@ import { Role } from '../../domain/model/role';
 import { RoleRepositoryPort } from '../port/repository/role-repository.port';
 import { TenantRepositoryPort } from '../port/repository/tenant-repository.port';
 import { RoleServicePort, CreateRoleCommand } from '../port/role-service.port';
-import { ulid } from 'ulid';
 
 @Injectable()
 export class RoleService extends RoleServicePort {
@@ -23,7 +22,6 @@ export class RoleService extends RoleServicePort {
 
     // 도메인 모델 생성
     const role = Role.create({
-      id: ulid(),
       tenantId: command.tenantId,
       code: command.code,
       name: command.name,
