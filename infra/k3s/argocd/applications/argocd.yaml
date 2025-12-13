@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/kangjuhyup/gaegaeting
+    targetRevision: develop
+    path: infra/k3s/helm/argocd-chart
+    helm:
+      releaseName: argocd
+      valueFiles:
+        # values는 기존 파일을 그대로 재사용(중복 복사 방지)
+        - ../argocd/values.yaml
+      dependencyUpdate: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+

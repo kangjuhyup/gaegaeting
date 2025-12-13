@@ -1,0 +1,11 @@
+apiVersion: v2
+name: argocd-self-managed
+description: Wrapper chart to deploy Argo CD via GitOps (dependency on argo/argo-cd)
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: argo-cd
+    version: "5.51.6"
+    repository: "https://argoproj.github.io/argo-helm"
+
