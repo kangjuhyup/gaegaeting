@@ -17,7 +17,7 @@ export class Role extends PersistenceEntity<string, IRole> {
   }
 
   static create(params: {
-    id: string;
+    id?: string;
     tenantId: string;
     code: string;
     name: string;
