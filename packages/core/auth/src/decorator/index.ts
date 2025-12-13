@@ -1,4 +1,3 @@
-export * from './auth-provider.decorator';
 export * from './user.decorator';
-export * from './admin.decorator';
-export * from './current-auth.decorator';
+export * from './roles.decorator';
+export * from './permissions.decorator';

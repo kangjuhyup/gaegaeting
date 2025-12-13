@@ -53,4 +53,4 @@ ENV NODE_ENV=production
 RUN yarn workspaces focus account --production
 
 # 애플리케이션 실행
-CMD ["node", "packages/account/dist/src/main.js"]
+CMD ["yarn", "workspace", "account", "start:prod"]

@@ -7,6 +7,9 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
+    # Attach Traefik ForwardAuth middleware (namespace-name@kubernetescrd)
+    # This will call auth service and, if present, propagate `x-jwt-payload` to the account upstream request.
+    traefik.ingress.kubernetes.io/router.middlewares: app-account-forwardauth@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:

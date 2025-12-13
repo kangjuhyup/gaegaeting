@@ -1,14 +1,15 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { UserParam, UserPrincipal, GraphqlAuthGuard } from '@core/auth';
+import { UserParam, UserPrincipal, GraphqlAccessGuard } from '@core/auth';
 import { RegisterPetCommand } from '@app/pet/application/port/command/register-pet.port';
 import { UpdatePetCommand } from '@app/pet/application/port/command/update-pet.port';
+import { CertifyPetCommand } from '@app/pet/application/port/command/certify-pet.port';
 import { GetPetsQuery } from '@app/pet/application/port/query/get-pets.port';
 import { GetPetQuery } from '@app/pet/application/port/query/get-pet.port';
 import { GeneratePetPresignedCommand } from '@app/pet/application/port/command/generate-pet-presigned.port';
 import { PetEntity } from '@app/pet/domain/model/pet';
-import { Pet as GraphQLPet, CreatePetInput, UpdatePetInput, PresignedUrl } from './graphql';
+import { Pet as GraphQLPet, CreatePetInput, UpdatePetInput, CertifyPetInput, PresignedUrl } from './graphql';
 import { PetGraphQLDto } from './dto/pet.graphql.dto';
 
 @Resolver('Pet')
@@ -19,7 +20,7 @@ export class PetResolver {
   ) {}
 
   @Query()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async pets(@UserParam() user: UserPrincipal): Promise<GraphQLPet[]> {
     const pets = await this.queryBus.execute(new GetPetsQuery(user.userId));
     return pets.map(pet => PetGraphQLDto.fromDomain(pet));
@@ -32,14 +33,14 @@ export class PetResolver {
   }
 
   @Query()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async petsByUserId(@Args('userId') userId: string): Promise<GraphQLPet[]> {
     const pets = await this.queryBus.execute(new GetPetsQuery(userId));
     return pets.map(pet => PetGraphQLDto.fromDomain(pet));
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async createPet(
     @UserParam() user: UserPrincipal,
     @Args('input') input: CreatePetInput,
@@ -51,7 +52,7 @@ export class PetResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async updatePet(
     @UserParam() user: UserPrincipal,
     @Args('id') id: number,
@@ -63,7 +64,19 @@ export class PetResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
+  async certifyPet(
+    @Args('id') id: number,
+    @Args('input') input: CertifyPetInput,
+  ): Promise<GraphQLPet> {
+    const pet = await this.commandBus.execute(
+      new CertifyPetCommand(id, input.userName, input.certificationCode),
+    );
+    return PetGraphQLDto.fromDomain(pet);
+  }
+
+  @Mutation()
+  @UseGuards(GraphqlAccessGuard)
   async deletePet(
     @UserParam() user: UserPrincipal,
     @Args('id') id: number,
@@ -73,7 +86,7 @@ export class PetResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async generatePetPresignedUrl(
     @Args('petId') petId: number,
     @Args('imageNo') imageNo: number,
@@ -85,7 +98,7 @@ export class PetResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async deletePetImage(
     @UserParam() user: UserPrincipal,
     @Args('petId') petId: number,

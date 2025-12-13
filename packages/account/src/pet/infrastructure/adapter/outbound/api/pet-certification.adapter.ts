@@ -3,6 +3,7 @@ import { PetCertificationPort } from "@app/pet/infrastructure/port/pet-certifica
 import { FetchHttpClient } from "@core/http";
 import { ConfigService } from "@nestjs/config";
 import { PetCeritifcationResponse } from "./dto/pet-certification.dto";
+import { ENV_KEY } from "@app/config/env.config";
 
 @Injectable()
 export class PetCertificationAdapter implements PetCertificationPort {
@@ -13,7 +14,7 @@ export class PetCertificationAdapter implements PetCertificationPort {
         @Inject('HTTP_CLIENT_ACCOUNT-PET') private readonly fetchClient : FetchHttpClient,
         private readonly config : ConfigService
     ){
-        this.API_KEY = this.config.get<string>('PUBLIC_DATA_API_KEY');
+        this.API_KEY = this.config.get<string>(ENV_KEY.PUBLIC_DATA_API_KEY);
     }
 
     /**
