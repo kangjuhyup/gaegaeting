@@ -76,12 +76,10 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         const secret = configService.get<string>(ENV_KEY.JWT_SECRET, 'secret_key_for_development');
         const accessExpiresIn = configService.get<number>(ENV_KEY.JWT_ACCESS_EXPIRATION);
         const refreshExpiresIn = configService.get<number>(ENV_KEY.JWT_REFRESH_EXPIRATION,);
-        const userServiceHost = configService.get<string>('USER_SERVICE_HOST', 'http://localhost:3000');
         return {
           secret,
           accessExpiresIn,
           refreshExpiresIn,
-          userServiceHost
         };
       },
     }),

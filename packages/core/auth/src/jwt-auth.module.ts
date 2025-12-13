@@ -25,11 +25,6 @@ export interface AuthModuleOptions {
      * 리프레시 토큰 만료 시간 (초 단위 숫자)
      */
     refreshExpiresIn: number;
-
-    /**
-     * UserPrincipal 을 조회하기 위한 서비스 호스트
-     */
-    userServiceHost : string;
 }
 
 /**
