@@ -24,16 +24,19 @@ export class GetUserProfileHandler implements IQueryHandler<GetUserProfileQuery,
   }> {
     const profile = await this.userProfileRepository.selectUserProfileFromId(query.userId);
     const attachments = await this.userAttachmentRepository.selectUserAttachments(query.userId);
-    const profileImages = await Promise.all(
+    const profileImages = (await Promise.all(
       attachments.map(async (profileImage) => {
-        const hasMetadata = await this.userStoragePort.hasMetadata(query.userId, profileImage.id.no);
-        if(!hasMetadata) {
-          //TODO: slack 알림 전송
+        const hasMetadata = await this.userStoragePort.hasMetadata(
+          query.userId,
+          profileImage.id.no,
+        );
+        if (!hasMetadata) {
+          // TODO: slack 알림 전송
           return null;
         }
         return profileImage;
-      }).filter(Boolean)
-    )
+      }),
+    )).filter(Boolean) as UserAttachmentEntity[];
     return {
       profile,
       profileImages
