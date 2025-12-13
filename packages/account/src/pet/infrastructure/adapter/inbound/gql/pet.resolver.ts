@@ -4,11 +4,12 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UserParam, UserPrincipal, GraphqlAuthGuard } from '@core/auth';
 import { RegisterPetCommand } from '@app/pet/application/port/command/register-pet.port';
 import { UpdatePetCommand } from '@app/pet/application/port/command/update-pet.port';
+import { CertifyPetCommand } from '@app/pet/application/port/command/certify-pet.port';
 import { GetPetsQuery } from '@app/pet/application/port/query/get-pets.port';
 import { GetPetQuery } from '@app/pet/application/port/query/get-pet.port';
 import { GeneratePetPresignedCommand } from '@app/pet/application/port/command/generate-pet-presigned.port';
 import { PetEntity } from '@app/pet/domain/model/pet';
-import { Pet as GraphQLPet, CreatePetInput, UpdatePetInput, PresignedUrl } from './graphql';
+import { Pet as GraphQLPet, CreatePetInput, UpdatePetInput, CertifyPetInput, PresignedUrl } from './graphql';
 import { PetGraphQLDto } from './dto/pet.graphql.dto';
 
 @Resolver('Pet')
@@ -59,6 +60,18 @@ export class PetResolver {
   ): Promise<GraphQLPet> {
     const updateData = PetGraphQLDto.toUpdateData(input);
     const pet = await this.commandBus.execute(new UpdatePetCommand(id, user, updateData));
+    return PetGraphQLDto.fromDomain(pet);
+  }
+
+  @Mutation()
+  @UseGuards(GraphqlAuthGuard)
+  async certifyPet(
+    @Args('id') id: number,
+    @Args('input') input: CertifyPetInput,
+  ): Promise<GraphQLPet> {
+    const pet = await this.commandBus.execute(
+      new CertifyPetCommand(id, input.userName, input.certificationCode),
+    );
     return PetGraphQLDto.fromDomain(pet);
   }
 

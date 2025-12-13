@@ -73,7 +73,6 @@ input CreatePetInput {
   size: PetSize!
   personalities: [PetPersonality!]!
   description: String
-  certificationCode: String
 }
 
 input UpdatePetInput {
@@ -81,7 +80,11 @@ input UpdatePetInput {
   age: Int
   personalities: [PetPersonality!]
   description: String
-  certificationCode: String
+}
+
+input CertifyPetInput {
+  userName: String!
+  certificationCode: String!
 }
 
 extend type Query {
@@ -93,6 +96,7 @@ extend type Query {
 extend type Mutation {
   createPet(input: CreatePetInput!): Pet! # 반려동물 추가
   updatePet(id: Int!, input: UpdatePetInput!): Pet! # 반려동물 정보 갱신
+  certifyPet(id: Int!, input: CertifyPetInput!): Pet! # 반려동물 등록번호 인증
   deletePet(id: Int!): Boolean! # 반려동물 삭제
   generatePetPresignedUrl(petId: Int!, imageNo: Int!): PresignedUrl! # 반려동물 이미지 PresignedUrl 생성
   deletePetImage(petId: Int!, imageNo: Int!): Boolean! # 반려동물 이미지 삭제

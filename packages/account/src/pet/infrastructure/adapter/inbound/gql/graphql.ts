@@ -55,7 +55,6 @@ export interface CreatePetInput {
     size: PetSize;
     personalities: PetPersonality[];
     description?: Nullable<string>;
-    certificationCode?: Nullable<string>;
 }
 
 export interface UpdatePetInput {
@@ -63,7 +62,11 @@ export interface UpdatePetInput {
     age?: Nullable<number>;
     personalities?: Nullable<PetPersonality[]>;
     description?: Nullable<string>;
-    certificationCode?: Nullable<string>;
+}
+
+export interface CertifyPetInput {
+    userName: string;
+    certificationCode: string;
 }
 
 export interface Pet {
@@ -96,6 +99,7 @@ export interface IQuery {
 export interface IMutation {
     createPet(input: CreatePetInput): Pet | Promise<Pet>;
     updatePet(id: number, input: UpdatePetInput): Pet | Promise<Pet>;
+    certifyPet(id: number, input: CertifyPetInput): Pet | Promise<Pet>;
     deletePet(id: number): boolean | Promise<boolean>;
     generatePetPresignedUrl(petId: number, imageNo: number): PresignedUrl | Promise<PresignedUrl>;
     deletePetImage(petId: number, imageNo: number): boolean | Promise<boolean>;
