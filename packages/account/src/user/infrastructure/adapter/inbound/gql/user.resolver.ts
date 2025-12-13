@@ -1,7 +1,7 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { UserParam, UserPrincipal, GraphqlAuthGuard } from '@core/auth';
+import { UserParam, UserPrincipal, GraphqlAccessGuard } from '@core/auth';
 import { CreateUserProfileCommand } from '@app/user/application/port/command/create-user-profile.port';
 import { UpdateUserProfileCommand } from '@app/user/application/port/command/update-user-profile.port';
 import { GetUserProfileQuery } from '@app/user/application/port/query/get-user-profile.port';
@@ -19,7 +19,7 @@ export class UserResolver {
   ) {}
 
   @Query()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async myProfile(@UserParam() user: UserPrincipal): Promise<any> {
     const userProfile = await this.queryBus.execute(new GetUserProfileQuery(user.userId));
     return UserGraphQLDto.fromDomain(userProfile.profile, userProfile.profileImages);
@@ -32,7 +32,7 @@ export class UserResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async createProfile(
     @UserParam() user: UserPrincipal,
     @Args('input') input: CreateUserProfileInput,
@@ -46,7 +46,7 @@ export class UserResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async updateProfile(
     @Args('id') id: string,
     @Args('input') input: UpdateUserProfileInput,
@@ -57,7 +57,7 @@ export class UserResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async generatePresignedUrl(
     @UserParam() user: UserPrincipal,
     @Args('imageNo') imageNo: number,
@@ -69,7 +69,7 @@ export class UserResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async deleteProfileImage(
     @UserParam() user: UserPrincipal,
     @Args('imageNo') imageNo: number,

@@ -1628,12 +1628,10 @@ __metadata:
     "@nestjs/core": "npm:^10.0.0"
     "@nestjs/graphql": "npm:^13.2.0"
     "@nestjs/jwt": "npm:^10.2.0"
-    "@nestjs/passport": "npm:^10.0.3"
     "@nestjs/schematics": "npm:^10.0.0"
     "@nestjs/testing": "npm:^10.0.0"
     "@types/jest": "npm:^29.5.2"
     "@types/node": "npm:^20.3.1"
-    "@types/passport-jwt": "npm:^4"
     "@types/supertest": "npm:^6.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
     "@typescript-eslint/parser": "npm:^6.0.0"
@@ -1642,9 +1640,9 @@ __metadata:
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.2.1"
     eslint-plugin-unused-imports: "npm:^4.1.4"
+    graphql: "npm:^16.12.0"
     jest: "npm:^29.5.0"
     jest-util: "npm:^30.0.5"
-    passport-jwt: "npm:^4.0.1"
     prettier: "npm:^3.0.0"
     reflect-metadata: "npm:^0.2.0"
     rxjs: "npm:^7.8.1"
@@ -1665,8 +1663,6 @@ __metadata:
     "@nestjs/core": ^10.0.0
     "@nestjs/graphql": ^13.0.0
     "@nestjs/jwt": ^10.2.0
-    "@nestjs/passport": ^10.0.3
-    passport-jwt: ^4.0.1
     reflect-metadata: ^0.2.0
     rxjs: ^7.8.1
     tslib: ^2.7.0

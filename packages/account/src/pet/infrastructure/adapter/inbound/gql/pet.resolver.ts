@@ -1,7 +1,7 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { UserParam, UserPrincipal, GraphqlAuthGuard } from '@core/auth';
+import { UserParam, UserPrincipal, GraphqlAccessGuard } from '@core/auth';
 import { RegisterPetCommand } from '@app/pet/application/port/command/register-pet.port';
 import { UpdatePetCommand } from '@app/pet/application/port/command/update-pet.port';
 import { CertifyPetCommand } from '@app/pet/application/port/command/certify-pet.port';
@@ -20,7 +20,7 @@ export class PetResolver {
   ) {}
 
   @Query()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async pets(@UserParam() user: UserPrincipal): Promise<GraphQLPet[]> {
     const pets = await this.queryBus.execute(new GetPetsQuery(user.userId));
     return pets.map(pet => PetGraphQLDto.fromDomain(pet));
@@ -33,14 +33,14 @@ export class PetResolver {
   }
 
   @Query()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async petsByUserId(@Args('userId') userId: string): Promise<GraphQLPet[]> {
     const pets = await this.queryBus.execute(new GetPetsQuery(userId));
     return pets.map(pet => PetGraphQLDto.fromDomain(pet));
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async createPet(
     @UserParam() user: UserPrincipal,
     @Args('input') input: CreatePetInput,
@@ -52,7 +52,7 @@ export class PetResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async updatePet(
     @UserParam() user: UserPrincipal,
     @Args('id') id: number,
@@ -64,7 +64,7 @@ export class PetResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async certifyPet(
     @Args('id') id: number,
     @Args('input') input: CertifyPetInput,
@@ -76,7 +76,7 @@ export class PetResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async deletePet(
     @UserParam() user: UserPrincipal,
     @Args('id') id: number,
@@ -86,7 +86,7 @@ export class PetResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async generatePetPresignedUrl(
     @Args('petId') petId: number,
     @Args('imageNo') imageNo: number,
@@ -98,7 +98,7 @@ export class PetResolver {
   }
 
   @Mutation()
-  @UseGuards(GraphqlAuthGuard)
+  @UseGuards(GraphqlAccessGuard)
   async deletePetImage(
     @UserParam() user: UserPrincipal,
     @Args('petId') petId: number,
