@@ -13,7 +13,6 @@ export class UpdatePetCommand extends Command<PetEntity> {
             age? : number,
             personalities?: PetPersonality[];
             description? : string;
-            certificationCode? : string;
         }
     ) {
         super();

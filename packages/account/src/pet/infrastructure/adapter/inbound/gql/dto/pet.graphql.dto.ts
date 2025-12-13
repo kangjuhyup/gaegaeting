@@ -46,7 +46,6 @@ export class PetGraphQLDto {
     description: string;
     userId: string;
     certification: boolean;
-    certificationCode?: string;
   } {
     return {
       name: input.name,
@@ -58,7 +57,6 @@ export class PetGraphQLDto {
       description: input.description || '',
       userId: userId,
       certification: false,
-      certificationCode: input.certificationCode,
     };
   }
 
@@ -70,14 +68,12 @@ export class PetGraphQLDto {
     age?: number;
     personalities?: PetPersonality[];
     description?: string;
-    certificationCode?: string;
   } {
     const updateData: {
       name?: string;
       age?: number;
       personalities?: PetPersonality[];
       description?: string;
-      certificationCode?: string;
     } = {};
 
     if (input.name !== undefined) {
@@ -91,9 +87,6 @@ export class PetGraphQLDto {
     }
     if (input.description !== undefined) {
       updateData.description = input.description;
-    }
-    if (input.certificationCode !== undefined) {
-      updateData.certificationCode = input.certificationCode;
     }
 
     return updateData;
