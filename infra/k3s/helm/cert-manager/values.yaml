@@ -1,0 +1,25 @@
+## cert-manager (jetstack/cert-manager)
+## - installCRDs=true is required for first-time installs
+installCRDs: true
+
+global:
+  leaderElection:
+    namespace: cert-manager
+
+replicaCount: 1
+
+webhook:
+  replicaCount: 1
+
+cainjector:
+  replicaCount: 1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+

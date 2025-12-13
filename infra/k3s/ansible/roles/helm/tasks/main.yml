@@ -166,6 +166,35 @@
   when: item.enabled | default(true)
   register: helm_deploy_result
 
+- name: Wait for cert-manager webhook to be ready (required before creating ClusterIssuer)
+  shell: |
+    kubectl -n cert-manager rollout status deployment/cert-manager-webhook --timeout=180s
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  when: (cert_manager.enabled | default(true)) | bool
+  changed_when: false
+
+- name: Create/Update ClusterIssuer letsencrypt-prod (HTTP-01 via Traefik)
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: /etc/rancher/k3s/k3s.yaml
+    definition:
+      apiVersion: cert-manager.io/v1
+      kind: ClusterIssuer
+      metadata:
+        name: letsencrypt-prod
+      spec:
+        acme:
+          email: "{{ cert_manager.acme_email }}"
+          server: https://acme-v02.api.letsencrypt.org/directory
+          privateKeySecretRef:
+            name: letsencrypt-prod-account-key
+          solvers:
+            - http01:
+                ingress:
+                  class: traefik
+  when: (cert_manager.enabled | default(true)) | bool
+
 - name: Display Helm deployment status
   debug:
     msg: |

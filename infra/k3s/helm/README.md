@@ -74,6 +74,7 @@ ansible-playbook -i inventory/hosts.yml playbooks/site.yml --tags helm --extra-v
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add elastic https://helm.elastic.co
 helm repo add argo https://argoproj.github.io/argo-helm
+helm repo add jetstack https://charts.jetstack.io
 helm repo update
 
 # MySQL 배포
@@ -104,6 +105,40 @@ helm install argocd argo/argo-cd \
   --namespace argocd \
   --create-namespace \
   -f argocd/values.yaml
+```
+
+## (필수) TLS 자동 발급을 위한 cert-manager
+
+Ingress TLS(`cert-manager.io/cluster-issuer: letsencrypt-prod`)를 사용하므로,
+클러스터에 `cert-manager`와 `ClusterIssuer/letsencrypt-prod`가 먼저 있어야 합니다.
+
+- **Ansible 자동 배포**: `site.yml --tags helm` 실행 시 `cert-manager` + `letsencrypt-prod`도 함께 설치/생성됩니다.
+- **수동 배포**:
+
+```bash
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+helm upgrade --install cert-manager jetstack/cert-manager \
+  -n cert-manager --create-namespace \
+  -f cert-manager/values.yaml
+
+kubectl apply -f - <<'YAML'
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    email: admin@gaegaeting.app
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: traefik
+YAML
 ```
 
 ## Doppler 환경 변수 설정
