@@ -1,0 +1,19 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: account-forwardauth
+  namespace: app
+spec:
+  forwardAuth:
+    # Assumption: auth service exposes an endpoint that:
+    # - returns 200 for valid tokens (and ideally 200 even when Authorization is missing)
+    # - returns 401/403 for invalid tokens
+    # - sets `x-jwt-payload` response header when Authorization is present+valid
+    address: http://auth:2799/auth/internal/verify
+    trustForwardHeader: true
+    authRequestHeaders:
+      - Authorization
+    authResponseHeaders:
+      - x-jwt-payload
+
+
