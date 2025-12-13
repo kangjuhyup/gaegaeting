@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisCacheModule } from '@core/redis';
 import { AuthResolver } from './in/gql/auth.resolver';
@@ -55,9 +55,9 @@ import { TenantAdminController } from './in/http/admin/v1/tenant-admin.controlle
 import { RoleAdminController } from './in/http/admin/v1/role-admin.controller';
 import { HealthController } from './in/http/health.controller';
 import { TestController } from './in/http/test.controller';
+import { InternalAuthController } from './in/http/internal/internal-auth.controller';
 import { SolApiAdapter } from './out/api/sol-api.adapter';
 import { InitService } from '@app/common/service/init.service';
-import { GraphqlAuthGuard } from '@core/auth';
 import { ENV_KEY } from '../common/config/env.config';
 
 @Module({
@@ -85,6 +85,7 @@ import { ENV_KEY } from '../common/config/env.config';
   ],
   controllers: [
     HealthController,
+    InternalAuthController,
     UserAdminController,
     TenantAdminController,
     RoleAdminController,
@@ -92,16 +93,6 @@ import { ENV_KEY } from '../common/config/env.config';
   ],
   providers: [
     InitService,
-    {
-      provide: GraphqlAuthGuard,
-      useFactory: (jwtService: JwtService, configService: ConfigService, userRepository: UserRepositoryPort) => {
-        const guard = new GraphqlAuthGuard(jwtService, configService);
-        // UserRepositoryPort를 guard에 주입하기 위해 private 필드에 직접 설정
-        (guard as any).userRepository = userRepository;
-        return guard;
-      },
-      inject: [JwtService, ConfigService, UserRepositoryPort],
-    },
     AuthResolver,
     { provide: UserServicePort, useClass: UserService },
     { provide: OtpServicePort, useClass: OtpService },
