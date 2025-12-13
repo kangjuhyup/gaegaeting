@@ -79,3 +79,9 @@ backup:
   schedule: "0 2 * * *"  # 매일 오전 2시
   retention_days: 7
   storage_path: "/var/backups/k3s"
+
+# cert-manager / Let's Encrypt 설정 (Ingress TLS 자동 발급용)
+cert_manager:
+  enabled: true
+  # Let's Encrypt 계정 이메일 (필요시 inventory/group_vars에서 override 권장)
+  acme_email: "kkunjuhyup@gmail.com"
