@@ -2,3 +2,7 @@
 /.yarn/releases/*    binary
 /.yarn/plugins/**/*  binary
 /.pnp.*              binary linguist-generated
+
+# yarn.lock merge 전략: union으로 자동 병합 시도
+# conflict 발생 시 한쪽을 선택하고 yarn install로 재생성
+yarn.lock            merge=union

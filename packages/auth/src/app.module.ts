@@ -1,22 +1,18 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { GraphQLModule } from "@nestjs/graphql";
-import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
+import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo";
 import { JwtModule } from "@nestjs/jwt";
 import { join } from "path";
 import { ENV_KEY, validationSchema } from "./common/config/env.config";
 import { DatabaseModule, DatabaseSchema } from '@core/database';
 import { AdapterModule } from './adapter/adpater.module';
+import { HttpLoggerModule } from '@core/logger';
 
-// GraphQL 스키마 파일 경로 결정 (개발/프로덕션 환경 모두 지원)
+// GraphQL 스키마 파일 경로 결정
+// 개발 환경: __dirname은 src를 가리킴
+// 프로덕션 환경: __dirname은 dist/src를 가리킴 (nest-cli.json의 assets 설정으로 .graphql 파일이 복사됨)
 const getGraphQLSchemaPath = () => {
-  // __dirname은 빌드 후 dist/src를 가리킴
-  const isDist = __dirname.includes('dist');
-  if (isDist) {
-    // dist/src -> src로 변환
-    return join(__dirname.replace('dist/src', 'src'), 'adapter/in/gql/**/*.graphql');
-  }
-  // 개발 환경에서는 __dirname이 src를 가리킴
   return join(__dirname, 'adapter/in/gql/**/*.graphql');
 };
 
@@ -30,14 +26,21 @@ const getGraphQLSchemaPath = () => {
         abortEarly: false,
       },
     }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
+    // HTTP 로깅
+    HttpLoggerModule.forRoot({
+      name: 'Auth-API',
+      level: 'info',
+    }),
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      driver: ApolloFederationDriver,
       typePaths: [getGraphQLSchemaPath()],
       definitions: {
         path: join(process.cwd(), './src/adapter/in/gql/graphql.ts'),
       },
+      path: '/auth/graphql',
       playground: true,
       introspection: true,
+      // ApolloFederationDriver를 사용하면 자동으로 Federation이 활성화됩니다
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

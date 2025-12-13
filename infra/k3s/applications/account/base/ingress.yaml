@@ -17,10 +17,10 @@ spec:
     - host: api.gaegaeting.app
       http:
         paths:
-          - path: /
+          - path: /account
             pathType: Prefix
             backend:
               service:
                 name: account
                 port:
-                  number: 3000
+                  number: 2800

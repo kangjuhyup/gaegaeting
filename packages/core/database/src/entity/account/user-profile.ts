@@ -3,6 +3,8 @@ import { PetProfileOrmEntity } from "./pet-profile";
 import { ulid } from "ulid";
 import { UserAttachmentOrmEntity } from "./user-attachment";
 import { BaseEntity } from "../base";
+import { UserProfileStatus } from "./enum/user-profile-status";
+import { ValueEnumTransformer } from "../../transformer/value-enum.transformer";
 
 /**
  * 사용자 엔티티
@@ -14,7 +16,7 @@ import { BaseEntity } from "../base";
 export class UserProfileOrmEntity extends BaseEntity{
   /**
    * 사용자 ID
-   * ulid를 사용하여 자동 생성됩니다.
+   * Auth 의 UserEntity ID 와 동일합니다.
    */
   @PrimaryColumn({ type: 'char', length: 26, name: 'id' })
   id: string = ulid();
@@ -24,17 +26,6 @@ export class UserProfileOrmEntity extends BaseEntity{
    */
   @Column({ type : 'varchar', length: 50, nullable : false, name: 'name' })
   name : string;
-  /**
-   * 이메일
-   */
-  @Column({ type: 'varchar', length: 255, unique: true, name: 'email', nullable : true })
-  email?: string;
-
-  /**
-   * 비밀번호 해시
-   */
-  @Column({ type: 'varchar', length: 255, nullable : true, name: 'password_hash' })
-  passwordHash?: string;
 
   /**
    * 닉네임
@@ -75,20 +66,24 @@ export class UserProfileOrmEntity extends BaseEntity{
   bio?: string;
 
   /**
-   * 전화번호
-   */
-  @Column({ type: 'varchar', length: 20, nullable: true, name: 'phone_number' })
-  phoneNumber?: string;
-
-  /**
    * 회원 상태
+   * 
+   * 사용자 프로필의 활성화 상태를 나타냅니다.
+   * 기본값은 ACTIVE(0)입니다.
+   * 
+   * @see UserProfileStatus
+   * - ACTIVE(0): 활성화 상태
+   * - INACTIVE(1): 비활성화 상태
+   * - SUSPENDED(2): 정지 상태
+   * - DELETED(3): 삭제 상태
    */
   @Column({ 
     type: 'tinyint', 
-    default: 0, 
+    default: UserProfileStatus.ACTIVE.value, 
     name: 'status',
+    transformer: new ValueEnumTransformer(UserProfileStatus),
   })
-  status: number;
+  status: UserProfileStatus;
 
   /**
    * 사용자가 소유한 강아지들

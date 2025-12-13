@@ -1,15 +1,15 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { RegisterPetCommand } from "../../port/command/register-pet.port";
 import { PetEntity } from "@app/pet/domain/model/pet";
-import { PetRepositoryPort } from "@app/pet/domain/port/pet-repository.port";
-import { PetCertificationPort } from "@app/pet/domain/port/pet-certification.port";
+import { PetProfileRepositoryPort } from "@app/pet/infrastructure/port/pet-profile-repository.port";
+import { PetCertificationPort } from "@app/pet/infrastructure/port/pet-certification.port";
 import { Transactional } from "@core/database";
 
 @CommandHandler(RegisterPetCommand)
 export class RegisterPetHandler implements ICommandHandler<RegisterPetCommand,PetEntity> {
 
     constructor(
-        private readonly petRepository : PetRepositoryPort,
+        private readonly petProfileRepository : PetProfileRepositoryPort,
         private readonly petCeritifcationPort : PetCertificationPort
     ) {}
     @Transactional()
@@ -21,6 +21,6 @@ export class RegisterPetHandler implements ICommandHandler<RegisterPetCommand,Pe
             }
             command.pet.successCert();
         }
-        return await this.petRepository.insertPet(command.pet);
+        return await this.petProfileRepository.insertPet(command.pet);
     }
 }

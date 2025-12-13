@@ -1,4 +1,5 @@
 import { User } from '../../domain/model/user';
+import { AuthPayloadDto } from '../port/token-service.port';
 
 export interface RequestOtpInput {
   user: User;
@@ -13,5 +14,5 @@ export interface VerifyOtpInput {
 
 export abstract class OtpUsecase {
   abstract requestOtp(input: RequestOtpInput): Promise<{ sent: boolean }>;
-  abstract verifyOtp(input: VerifyOtpInput): Promise<{ verified: boolean }>;
+  abstract verifyOtp(input: VerifyOtpInput): Promise<{ verified: boolean; payload?: AuthPayloadDto }>;
 }

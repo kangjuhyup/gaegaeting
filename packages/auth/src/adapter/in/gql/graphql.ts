@@ -63,7 +63,7 @@ export interface IMutation {
     appleSignin(idToken: string, authorizationCode?: Nullable<string>, user?: Nullable<string>): AuthPayload | Promise<AuthPayload>;
     nativeSignin(provider: string, accessToken: string, refreshToken?: Nullable<string>, expiresIn?: Nullable<number>, tokenType?: Nullable<string>): AuthPayload | Promise<AuthPayload>;
     requestOtp(phoneNumber: string): boolean | Promise<boolean>;
-    verifyOtp(phoneNumber: string, code: string): boolean | Promise<boolean>;
+    verifyOtp(phoneNumber: string, code: string): AuthPayload | Promise<AuthPayload>;
 }
 
 export interface ISubscription {

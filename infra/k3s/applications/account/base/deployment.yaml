@@ -17,11 +17,11 @@ spec:
     spec:
       containers:
         - name: account
-          image: ghcr.io/kangjuhyup/gaegaeting/account:latest
+          image: ghcr.io/kangjuhyup/gaegaeting/account-api:latest
           imagePullPolicy: Always
           ports:
             - name: http
-              containerPort: 3000
+              containerPort: 2800
               protocol: TCP
           env:
             - name: NODE_ENV
@@ -38,8 +38,8 @@ spec:
               cpu: "500m"
           livenessProbe:
             httpGet:
-              path: /health
-              port: 3000
+              path: /account/health
+              port: 2800
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -47,8 +47,8 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /health
-              port: 3000
+              path: /account/health
+              port: 2800
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5

@@ -1,16 +1,27 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { TenantOrmEntity } from '@core/database';
-import { UserRepositoryPort } from '@app/domain/port/user-repository.port';
+import { UserRepositoryPort } from '@app/application/port/repository/user-repository.port';
 import { User } from '@app/domain/model/user';
+import { TenantMapper } from '@app/adapter/out/mapper/tenant.mapper';
 import { createHash } from 'crypto';
+import { ConfigService } from '@nestjs/config';
+import { ENV_KEY } from '../config/env.config';
 
 @Injectable()
 export class InitService implements OnModuleInit {
+
+  private readonly rootId : string;
+  private readonly rootPassword : string;
+
   constructor(
     private readonly dataSource: DataSource,
     private readonly userRepository: UserRepositoryPort,
-  ) {}
+    private readonly config : ConfigService,
+  ) {
+    this.rootId = this.config.get(ENV_KEY.AUTH_ROOT_ID);
+    this.rootPassword = this.config.get(ENV_KEY.AUTH_ROOT_PASSWORD);
+  }
 
   async onModuleInit() {
     await this.initializeDefaultTenant();
@@ -47,7 +58,7 @@ export class InitService implements OnModuleInit {
     }
 
     // username으로 기존 admin 사용자 확인
-    const existsAdmin = await this.userRepository.existsByUsername(tenant.id, 'admin');
+    const existsAdmin = await this.userRepository.existsByUsername(tenant.id, this.rootId);
     if (existsAdmin) {
       console.log('✅ Admin user already exists');
       return;
@@ -55,21 +66,24 @@ export class InitService implements OnModuleInit {
 
     // 비밀번호 해싱 (SHA-256)
     const passwordHash = createHash('sha256')
-      .update('Pa55word')
+      .update(this.rootPassword)
       .digest('hex');
 
     const adminUser = User.create({
-      id: 'admin',
+      id: this.rootId,
       tenantId: String(tenant.id),
-      username: 'admin',
-      email: 'admin@gaegaeting.com',
+      username: 'root',
+      email: 'root@gaegaeting.com',
     });
 
     adminUser.setPasswordHash(passwordHash);
     adminUser.setStatus('ACTIVE');
 
-    await this.userRepository.create(adminUser);
-    console.log('✅ Admin user created (username: admin, password: Pa55word)');
+    // Tenant 도메인 모델로 변환
+    const tenantDomain = TenantMapper.toDomain(tenant);
+
+    await this.userRepository.save(adminUser, tenantDomain);
+    console.log(`✅ Admin user created (username: ${this.rootId}, password: ${this.rootPassword})`);
   }
 }
 

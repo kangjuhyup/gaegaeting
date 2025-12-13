@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, UseGuards } from "@nestjs/common";
 import { ReviewUserImagesRequestBody } from "./dto/request/review-user-images";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
-import { GetUserQuery } from "@app/user/application/port/query/get-user.port";
+import { GetUserProfileQuery } from "@app/user/application/port/query/get-user-profile.port";
 import { UserResponse } from "./dto/response/user.response";
 import { ReviewUserImageCommand } from "@app/user/application/port/command/review-user-image.port";
 import { AccessGuard, AdminGuard } from "@core/auth";
@@ -21,10 +21,10 @@ export class AdminUserContorller {
     @ApiResponse({ status : 200, type : () => UserResponse })
     @ApiBearerAuth('admin-token')
     async getUser(
-        @Param() userId : string
+        @Param('userId') userId : string
     ) {
-        const user = await this.queryBus.execute(new GetUserQuery(userId))
-        return UserResponse.fromDomain(user)
+        const user = await this.queryBus.execute(new GetUserProfileQuery(userId))
+        return UserResponse.fromDomain(user.profile, user.profileImages)
     }
 
     @Patch('images/:userId')
@@ -33,7 +33,7 @@ export class AdminUserContorller {
     @ApiResponse({ status : 204 })
     @ApiBearerAuth('admin-token')
     async reviewUserImage(
-        @Param() userId : string,
+        @Param('userId') userId : string,
         @Body() body : ReviewUserImagesRequestBody
     ) {
         await this.commandBus.execute(new ReviewUserImageCommand(userId,body.path,body.approve))
