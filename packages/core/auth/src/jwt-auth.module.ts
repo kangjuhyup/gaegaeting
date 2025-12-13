@@ -1,16 +1,8 @@
 import { DynamicModule, Module, Type, Provider, Global } from "@nestjs/common";
 import { JwtModule, JwtService } from "@nestjs/jwt";
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { PassportModule } from "@nestjs/passport";
-import { JwtStrategy } from "./strategy/jwt.strategy";
 import { JwtTokenService } from "./service/jwt-token.service";
-import { AdminTokenService } from "./service/admin-token.service";
 import { AccessGuard } from "./guard/access.guard";
-import { AdminGuard } from "./guard/admin.guard";
-import { FlexibleAuthGuard } from "./guard/flexible-auth.guard";
-import { AuthConfigValidator, AuthConfigValidationError } from "./config/auth-config.validator";
-import { UserService } from "./service/user.service";
-import { UserGuard } from "./guard/user.guard";
+import { GraphqlAccessGuard } from "./guard";
 
 // AUTH_MODULE_OPTIONS 상수 정의
 export const AUTH_MODULE_OPTIONS = 'AUTH_MODULE_OPTIONS';
@@ -72,7 +64,6 @@ export class JwtAuthModule {
         return {
             module: JwtAuthModule,
             imports: [
-                PassportModule.register({ defaultStrategy: 'jwt' }),
                 JwtModule.register({
                     secret: options.secret,
                     signOptions: {
@@ -86,13 +77,6 @@ export class JwtAuthModule {
                     useValue: options,
                 },
                 {
-                    provide: JwtStrategy,
-                    useFactory: (authOptions: AuthModuleOptions) => {
-                        return new JwtStrategy(authOptions.secret);
-                    },
-                    inject: [AUTH_MODULE_OPTIONS]
-                },
-                {
                     provide: JwtTokenService,
                     useFactory: (authOptions: AuthModuleOptions, jwtService: JwtService) => {
                         return new JwtTokenService(
@@ -104,38 +88,14 @@ export class JwtAuthModule {
                     },
                     inject: [AUTH_MODULE_OPTIONS, JwtService]
                 },
-                {
-                    provide: AdminTokenService,
-                    useFactory: (authOptions: AuthModuleOptions, jwtService: JwtService) => {
-                        return new AdminTokenService(
-                            jwtService,
-                            authOptions.secret,
-                            authOptions.accessExpiresIn,
-                            authOptions.refreshExpiresIn
-                        );
-                    },
-                    inject: [AUTH_MODULE_OPTIONS, JwtService]
-                },
-                {
-                    provide: UserService,
-                    useFactory: (authOptions: AuthModuleOptions) => {
-                        return new UserService(authOptions.userServiceHost);
-                    },
-                    inject: [AUTH_MODULE_OPTIONS]
-                },
                 AccessGuard,
-                AdminGuard,
-                FlexibleAuthGuard,
+                GraphqlAccessGuard
             ],
             exports: [
                 JwtModule,
                 JwtTokenService,
-                AdminTokenService,
-                UserService,
                 AccessGuard,
-                UserGuard,
-                AdminGuard,
-                FlexibleAuthGuard,
+                GraphqlAccessGuard
             ],
         };
     }
@@ -154,7 +114,6 @@ export class JwtAuthModule {
             module: JwtAuthModule,
             imports: [
                 ...(options.imports || []),
-                PassportModule.register({ defaultStrategy: 'jwt' }),
                 JwtModule.registerAsync({
                     imports: options.imports || [],
                     inject: options.inject || [],
@@ -172,13 +131,6 @@ export class JwtAuthModule {
             providers: [
                 ...asyncProviders,
                 {
-                    provide: JwtStrategy,
-                    useFactory: async (authOptions: AuthModuleOptions) => {
-                        return new JwtStrategy(authOptions.secret);
-                    },
-                    inject: [AUTH_MODULE_OPTIONS]
-                },
-                {
                     provide: JwtTokenService,
                     useFactory: async (authOptions: AuthModuleOptions, jwtService: JwtService) => {
                         return new JwtTokenService(
@@ -190,39 +142,14 @@ export class JwtAuthModule {
                     },
                     inject: [AUTH_MODULE_OPTIONS, JwtService]
                 },
-                {
-                    provide: AdminTokenService,
-                    useFactory: async (authOptions: AuthModuleOptions, jwtService: JwtService) => {
-                        return new AdminTokenService(
-                            jwtService,
-                            authOptions.secret,
-                            authOptions.accessExpiresIn,
-                            authOptions.refreshExpiresIn
-                        );
-                    },
-                    inject: [AUTH_MODULE_OPTIONS, JwtService]
-                },
-                {
-                    provide : UserService,
-                    useFactory : async (authOptions: AuthModuleOptions) => {
-                        return new UserService(authOptions.userServiceHost);
-                    },
-                    inject : [AUTH_MODULE_OPTIONS]
-                },
                 AccessGuard,
-                UserGuard,
-                AdminGuard,
-                FlexibleAuthGuard,
+                GraphqlAccessGuard
             ],
             exports: [
                 JwtModule,
                 JwtTokenService,
-                AdminTokenService,
-                UserService,
                 AccessGuard,
-                UserGuard,
-                AdminGuard,
-                FlexibleAuthGuard,
+                GraphqlAccessGuard,
             ],
         };
     }
