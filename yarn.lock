@@ -5461,6 +5461,8 @@ __metadata:
     "@apollo/server": "npm:^5.2.0"
     "@apollo/subgraph": "npm:^2.12.1"
     "@as-integrations/express5": "npm:^1.1.2"
+    "@aws-sdk/client-s3": "npm:^3.864.0"
+    "@aws-sdk/s3-request-presigner": "npm:^3.864.0"
     "@core/auth": "npm:*"
     "@core/database": "npm:*"
     "@core/http": "npm:*"
