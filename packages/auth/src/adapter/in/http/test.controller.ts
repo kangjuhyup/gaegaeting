@@ -23,7 +23,7 @@ export class TestController {
     @Res() res: Response,
   ): Promise<void> {
     // 카카오 로그인 URL 생성
-    const redirectUri = `${req.protocol}://${req.get('host')}/test/${provider}/callback`;
+    const redirectUri = `${req.protocol}://${req.get('host')}/auth/test/${provider}/callback`;
     let authUrl = '';
 
     if (provider === 'kakao') {
