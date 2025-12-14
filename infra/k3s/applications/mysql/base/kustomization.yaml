@@ -2,7 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - namespace.yaml
   - mysql-configmap.yaml
   - mysql-replication-init.yaml
   - mysql-master-svc.yaml

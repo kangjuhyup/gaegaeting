@@ -33,7 +33,7 @@ jobs:
           CONTEXT=$(echo "$SOURCE_BRANCH" | cut -d'/' -f1)
 
           # 허용된 브랜치 패턴 체크
-          ALLOWED_CONTEXTS=("account" "match" "chat" "payments" "auth", "gateway")
+          ALLOWED_CONTEXTS=("account" "match" "chat" "payments" "auth" "gateway")
           if [[ " ${ALLOWED_CONTEXTS[@]} " =~ " ${CONTEXT} " ]]; then
             echo "should_build=true" >> $GITHUB_OUTPUT
 
@@ -99,13 +99,13 @@ jobs:
           cache: 'yarn'
       - run: yarn install --immutable
 
-      - name: Build & Push ${{ steps.branch-info.outputs.service_name }}
+      - name: Build & Push ${{ steps.branch-info.outputs.image_name }}
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ${{ steps.branch-info.outputs.dockerfile }}
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ steps.branch-info.outputs.image_name }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ steps.branch-info.outputs.image_name }}:${{ github.sha }}
