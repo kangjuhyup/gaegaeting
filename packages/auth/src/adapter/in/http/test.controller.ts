@@ -15,7 +15,7 @@ export class TestController {
   ) {}
 
   @Get(':provider')
-  @ApiOperation({ summary: '소셜 로그인 페이지 요청' })
+  @ApiOperation({ summary: '소셜 로그인 페이지 요청(테스트용)' })
   @ApiResponse({ status: 302, description: '소셜로그인 페이지 리다이렉트' })
   async getSocialLoginPage(
     @Param('provider') provider: string,
@@ -23,7 +23,7 @@ export class TestController {
     @Res() res: Response,
   ): Promise<void> {
     // 카카오 로그인 URL 생성
-    const redirectUri = `${req.protocol}://${req.get('host')}/test/${provider}/callback`;
+    const redirectUri = `${req.protocol}://${req.get('host')}/auth/test/${provider}/callback`;
     let authUrl = '';
 
     if (provider === 'kakao') {
