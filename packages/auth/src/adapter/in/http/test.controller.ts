@@ -68,7 +68,7 @@ export class TestController {
     let result;
 
     if (provider === 'kakao') {
-      const redirectUri = `${this.getExternalBaseUrl(req)}/test/${provider}/callback`;
+      const redirectUri = `${this.getExternalBaseUrl(req)}/auth/test/${provider}/callback`;
       result = await this.socialSignin.signinWithKakao({
         tenantId: '1',
         authCode: code,
@@ -109,7 +109,7 @@ export class TestController {
     let result;
 
     if (provider === 'kakao') {
-      const redirectUri = `${this.getExternalBaseUrl(req)}/test/${provider}/callback`;
+      const redirectUri = `${this.getExternalBaseUrl(req)}/auth/test/${provider}/callback`;
       result = await this.socialSignin.signinWithKakao({
         tenantId: '1',
         authCode: body.code,
