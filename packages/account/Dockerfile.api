@@ -13,6 +13,11 @@ COPY . .
 # 의존성 설치
 RUN yarn install
 
+RUN cd /app/packages/account && echo "=== NEST-CLI ===" && cat nest-cli.json
+
+RUN cd /app/packages/account && echo "=== SRC GRAPHQL ===" && find src -type f -name "*.graphql" -maxdepth 12 -print
+
+
 # @core 패키지들 먼저 빌드
 RUN yarn workspace @core/auth build
 RUN yarn workspace @core/database build
@@ -26,6 +31,7 @@ RUN yarn workspace @core/redis build
 # account 모듈 빌드
 RUN cd /app/packages/account && yarn build
 # sanity check: schema-first GraphQL은 dist에 *.graphql이 없으면 런타임에 즉시 크래시합니다.
+RUN cd /app/packages/account && echo "=== DIST GRAPHQL ===" && find dist -type f -name "*.graphql" -maxdepth 12 -print
 RUN cd /app/packages/account && test -n "$(find dist -type f -name '*.graphql' -print -quit)"
 
 # 실행 스테이지
