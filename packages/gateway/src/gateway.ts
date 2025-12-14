@@ -117,6 +117,9 @@ export class Gateway {
       headers: {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
+        // Apollo Server CSRF prevention 우회 (gateway 내부 호출은 브라우저 preflight가 없음)
+        'apollo-require-preflight': 'true',
+        'x-apollo-operation-name': 'gateway-probe',
       },
       body: JSON.stringify({ query }),
       signal: controller.signal,
@@ -162,6 +165,10 @@ export class Gateway {
 
             // CSRF 우회용
             request.http.headers.set('X-Requested-With', 'XMLHttpRequest');
+            request.http.headers.set('apollo-require-preflight', 'true');
+            if (!request.http.headers.has('x-apollo-operation-name')) {
+              request.http.headers.set('x-apollo-operation-name', 'gateway');
+            }
 
             // context.headers 를 최대한 그대로 전달
             // - express req.headers는 (string | string[] | undefined) 형태일 수 있음
@@ -191,6 +198,9 @@ export class Gateway {
                 request.http!.headers.set(key, v);
               });
             }
+
+            // ensure required headers still present even if context overwrote them
+            request.http.headers.set('apollo-require-preflight', 'true');
           },
         }),
     });
