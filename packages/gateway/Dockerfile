@@ -43,5 +43,4 @@ ENV NODE_ENV=production
 EXPOSE 4000
 
 # Gateway 실행
-WORKDIR /app/packages/gateway
-CMD ["node", "dist/src/main.js"]
+CMD ["yarn", "workspace", "gateway", "start:prod"]
