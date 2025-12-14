@@ -9,7 +9,7 @@ spec:
     # - returns 200 for valid tokens (and ideally 200 even when Authorization is missing)
     # - returns 401/403 for invalid tokens
     # - sets `x-jwt-payload` response header when Authorization is present+valid
-    address: http://auth:2799/auth/internal/verify
+    address: http://auth.app.svc.cluster.local:2799/auth/internal/verify
     trustForwardHeader: true
     authRequestHeaders:
       - Authorization
