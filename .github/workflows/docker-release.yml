@@ -63,7 +63,7 @@ jobs:
   build-and-push:
     needs: check-branch
     if: needs.check-branch.outputs.should_build == 'true'
-    runs-on: ubuntu-24.04-arm64
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -99,7 +99,7 @@ jobs:
           cache: 'yarn'
       - run: yarn install --immutable
 
-      - name: Build & Push ${{ steps.branch-info.outputs.service_name }}
+      - name: Build & Push ${{ steps.branch-info.outputs.image_name }}
         uses: docker/build-push-action@v6
         with:
           context: .
