@@ -24,6 +24,11 @@ RUN yarn workspace @core/storage build
 RUN yarn workspace @core/util build
 
 RUN yarn workspace auth build
+# 방어 코드: nest build(asset copy)가 어떤 이유로든 누락될 수 있으므로
+# src/**/*.graphql 을 dist/src/** 로 구조 유지하며 강제 복사
+RUN cd /app/packages/auth \
+  && find src -type f -name "*.graphql" -print0 \
+  | xargs -0 -I{} sh -c 'srcFile="{}"; dstFile="dist/src/${srcFile#src/}"; mkdir -p "$(dirname "$dstFile")"; cp "$srcFile" "$dstFile"'
 
 # 실행 스테이지
 FROM node:20-alpine AS runner
