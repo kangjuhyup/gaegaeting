@@ -14,6 +14,21 @@ export class TestController {
     private readonly configService: ConfigService,
   ) {}
 
+  private getExternalBaseUrl(req: Request): string {
+    const host =
+      req.get('x-forwarded-host') ?? req.get('host') ?? req.headers.host;
+
+    // 운영 환경에서는 TLS termination(ingress) 뒤에 있어도 https로 고정
+    if (process.env.NODE_ENV === 'production') {
+      return `https://${host}`;
+    }
+
+    // 로컬/개발 환경은 실제 프로토콜을 최대한 사용
+    const forwardedProto = req.get('x-forwarded-proto')?.split(',')[0]?.trim();
+    const proto = forwardedProto || req.protocol;
+    return `${proto}://${host}`;
+  }
+
   @Get(':provider')
   @ApiOperation({ summary: '소셜 로그인 페이지 요청(테스트용)' })
   @ApiResponse({ status: 302, description: '소셜로그인 페이지 리다이렉트' })
@@ -23,7 +38,7 @@ export class TestController {
     @Res() res: Response,
   ): Promise<void> {
     // 카카오 로그인 URL 생성
-    const redirectUri = `${req.protocol}://${req.get('host')}/auth/test/${provider}/callback`;
+    const redirectUri = `${this.getExternalBaseUrl(req)}/auth/test/${provider}/callback`;
     let authUrl = '';
 
     if (provider === 'kakao') {
@@ -53,7 +68,7 @@ export class TestController {
     let result;
 
     if (provider === 'kakao') {
-      const redirectUri = `${req.protocol}://${req.get('host')}/test/${provider}/callback`;
+      const redirectUri = `${this.getExternalBaseUrl(req)}/test/${provider}/callback`;
       result = await this.socialSignin.signinWithKakao({
         tenantId: '1',
         authCode: code,
@@ -94,7 +109,7 @@ export class TestController {
     let result;
 
     if (provider === 'kakao') {
-      const redirectUri = `${req.protocol}://${req.get('host')}/test/${provider}/callback`;
+      const redirectUri = `${this.getExternalBaseUrl(req)}/test/${provider}/callback`;
       result = await this.socialSignin.signinWithKakao({
         tenantId: '1',
         authCode: body.code,
