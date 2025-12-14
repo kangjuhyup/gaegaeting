@@ -212,10 +212,6 @@ export class Gateway {
   private async createApolloServer(
     gateway: ApolloGateway,
   ): Promise<ApolloServer<BaseContext>> {
-    // 기본: 개발환경에서만 Sandbox(Landing Page) 활성화
-    // 운영에서도 필요하면 APOLLO_ENABLE_SANDBOX=true 로 강제 활성화
-    this.logger.log(`APOLLO_ENABLE_SANDBOX: ${process.env.APOLLO_ENABLE_SANDBOX}`);
-    this.logger.log(`NODE_ENV: ${process.env.NODE_ENV}`);
     const enableSandbox =
       process.env.APOLLO_ENABLE_SANDBOX === 'true' ||
       process.env.NODE_ENV !== 'production';
@@ -232,6 +228,16 @@ export class Gateway {
           ]
         : [],
     });
+
+
+
+
+
+
+
+
+
+    
 
     this.logger.log(
       'Starting ApolloServer (gateway will be loaded automatically)...',
