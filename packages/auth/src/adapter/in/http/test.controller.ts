@@ -15,7 +15,7 @@ export class TestController {
   ) {}
 
   @Get(':provider')
-  @ApiOperation({ summary: '소셜 로그인 페이지 요청' })
+  @ApiOperation({ summary: '소셜 로그인 페이지 요청(테스트용)' })
   @ApiResponse({ status: 302, description: '소셜로그인 페이지 리다이렉트' })
   async getSocialLoginPage(
     @Param('provider') provider: string,
