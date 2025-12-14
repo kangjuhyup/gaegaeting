@@ -33,7 +33,7 @@ jobs:
           CONTEXT=$(echo "$SOURCE_BRANCH" | cut -d'/' -f1)
 
           # 허용된 브랜치 패턴 체크
-          ALLOWED_CONTEXTS=("account" "match" "chat" "payments" "auth", "gateway")
+          ALLOWED_CONTEXTS=("account" "match" "chat" "payments" "auth" "gateway")
           if [[ " ${ALLOWED_CONTEXTS[@]} " =~ " ${CONTEXT} " ]]; then
             echo "should_build=true" >> $GITHUB_OUTPUT
 
