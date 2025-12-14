@@ -163,12 +163,32 @@ export class Gateway {
             // CSRF 우회용
             request.http.headers.set('X-Requested-With', 'XMLHttpRequest');
 
-            // context.headers 를 그대로 전달
+            // context.headers 를 최대한 그대로 전달
+            // - express req.headers는 (string | string[] | undefined) 형태일 수 있음
+            // - hop-by-hop 헤더는 제거 (upstream에서 문제를 일으킬 수 있음)
+            const hopByHop = new Set([
+              'connection',
+              'keep-alive',
+              'proxy-authenticate',
+              'proxy-authorization',
+              'te',
+              'trailer',
+              'transfer-encoding',
+              'upgrade',
+              'content-length',
+              'host',
+            ]);
+
             if (context?.headers && typeof context.headers === 'object') {
               Object.entries(context.headers).forEach(([key, value]) => {
-                if (typeof value === 'string' && value) {
-                  request.http!.headers.set(key, value);
-                }
+                const k = String(key).toLowerCase();
+                if (hopByHop.has(k)) return;
+                if (value === undefined || value === null) return;
+
+                // express header value can be string | string[]
+                const v = Array.isArray(value) ? value.join(',') : String(value);
+                if (!v) return;
+                request.http!.headers.set(key, v);
               });
             }
           },

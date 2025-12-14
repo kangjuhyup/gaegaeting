@@ -28,6 +28,11 @@ async function bootstrap() {
     next();
   });
 
+  // Health check (k8s liveness/readiness)
+  app.get('/gateway/health', (_req, res) => {
+    res.status(200).json({ ok: true });
+  });
+
   // Gateway 초기화
   const gateway = new Gateway();
   await gateway.initialize();
@@ -37,19 +42,19 @@ async function bootstrap() {
     throw new Error('Gateway server is not initialized');
   }
 
-  // /graphql 엔드포인트에 Apollo Server 연결
+  // /gateway/graphql 엔드포인트에 Apollo Server 연결
   // 모든 HTTP 메서드에 대해 GraphQL 엔드포인트 등록
   // json() 미들웨어를 먼저 적용하여 req.body를 파싱
-  app.all(
-    '/graphql',
-    json(),
-    expressMiddleware(server, {
-      context: async ({ req }) => ({
-        headers: req.headers,
-        tenant: req.headers['x-tenant-id'] as string | undefined,
-      }),
+  const gqlMiddleware = expressMiddleware(server, {
+    context: async ({ req }) => ({
+      headers: req.headers,
     }),
-  );
+  });
+
+  // prefixed (prod ingress)
+  app.all('/gateway/graphql', json(), gqlMiddleware);
+  // backward-compatible (local/dev)
+  app.all('/graphql', json(), gqlMiddleware);
 
   // Graceful shutdown
   const shutdown = async () => {
@@ -64,9 +69,10 @@ async function bootstrap() {
   // 서버 시작
   app.listen(PORT, () => {
     console.log(
-      `🚀 Apollo Federation Gateway: http://localhost:${PORT}/graphql`,
+      `🚀 Apollo Federation Gateway: http://localhost:${PORT}/gateway/graphql`,
     );
-    console.log(`🧪 Apollo Sandbox: http://localhost:${PORT}/graphql`);
+    console.log(`🧪 Apollo Sandbox: http://localhost:${PORT}/gateway/graphql`);
+    console.log(`❤️  Health: http://localhost:${PORT}/gateway/health`);
   });
 }
 

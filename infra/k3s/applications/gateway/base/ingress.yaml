@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gateway
+  namespace: app
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    # Attach Traefik ForwardAuth middleware (namespace-name@kubernetescrd)
+    # This will call auth service and, if present, propagate `x-jwt-payload` to the gateway upstream request.
+    traefik.ingress.kubernetes.io/router.middlewares: app-gateway-forwardauth@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - api.gaegaeting.app
+      secretName: gateway-tls
+  rules:
+    - host: api.gaegaeting.app
+      http:
+        paths:
+          - path: /gateway
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway
+                port:
+                  number: 4000
