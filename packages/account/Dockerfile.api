@@ -25,6 +25,8 @@ RUN yarn workspace @core/redis build
 
 # account 모듈 빌드
 RUN yarn workspace account build
+# sanity check: schema-first GraphQL은 dist에 *.graphql이 없으면 런타임에 즉시 크래시합니다.
+RUN cd /app/packages/account && test -n "$(find dist -type f -name '*.graphql' -print -quit)"
 
 # 실행 스테이지
 FROM node:20-alpine AS runner
@@ -36,6 +38,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare yarn@4.9.2 --activate
 
 # 필요한 파일만 복사
+
 COPY --from=builder /app/packages/account/package.json ./packages/account/package.json
 COPY --from=builder /app/packages/account/dist ./packages/account/dist
 COPY --from=builder /app/packages/core ./packages/core
@@ -49,8 +52,9 @@ COPY --from=builder /app/.pnp.cjs ./.pnp.cjs
 COPY --from=builder /app/.pnp.loader.mjs ./.pnp.loader.mjs
 
 # 프로덕션 모드로 의존성 설치
-ENV NODE_ENV=production
 RUN yarn workspaces focus account --production
+
+ENV NODE_ENV=production
 
 # 애플리케이션 실행
 CMD ["yarn", "workspace", "account", "start:prod"]
