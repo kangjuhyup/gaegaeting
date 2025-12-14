@@ -212,6 +212,8 @@ export class Gateway {
   private async createApolloServer(
     gateway: ApolloGateway,
   ): Promise<ApolloServer<BaseContext>> {
+    this.logger.log(`APOLLO_ENABLE_SANDBOX: ${process.env.APOLLO_ENABLE_SANDBOX}`);
+    this.logger.log(`NODE_ENV: ${process.env.NODE_ENV}`);
     const enableSandbox =
       process.env.APOLLO_ENABLE_SANDBOX === 'true' ||
       process.env.NODE_ENV !== 'production';
@@ -219,31 +221,25 @@ export class Gateway {
     const server = new ApolloServer<BaseContext>({
       gateway,
       introspection: true,
-      plugins: [
-        // Apollo Sandbox 활성화 (개발 환경)
-        // 프로덕션에서는 ApolloServerPluginLandingPageProductionDefault 사용 가능
-        ApolloServerPluginLandingPageLocalDefault({
-          embed: true,
-          includeCookies: false,
-        }),
-      ],
+      plugins: enableSandbox
+        ? [
+            ApolloServerPluginLandingPageLocalDefault({
+              embed: true,
+              includeCookies: false,
+            }),
+          ]
+        : [],
     });
-
-
-
-
-
-
-
-
-
-    
 
     this.logger.log(
       'Starting ApolloServer (gateway will be loaded automatically)...',
     );
-    if (isDevelopment) {
-      this.logger.log('Apollo Sandbox is enabled for development');
+    if (enableSandbox) {
+      this.logger.log(
+        process.env.NODE_ENV !== 'production'
+          ? 'Apollo Sandbox is enabled for development'
+          : 'Apollo Sandbox is enabled for production (APOLLO_ENABLE_SANDBOX=true)',
+      );
     }
     await server.start();
     this.logger.log('ApolloServer started successfully');
