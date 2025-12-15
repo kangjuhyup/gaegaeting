@@ -22,8 +22,8 @@ export interface JwtPayload {
   [key: string]: any;
 }
 
-export const UserPayload = createParamDecorator(
-  (opts: UserDecoratorOptions | undefined, ctx: ExecutionContext): User | null => {
+export const JwtPayload = createParamDecorator(
+  (opts: UserDecoratorOptions | undefined, ctx: ExecutionContext): JwtPayload | null => {
     const options: Required<UserDecoratorOptions> = {
       required: true,
       ...(opts ?? {}),
@@ -51,7 +51,7 @@ export const UserPayload = createParamDecorator(
       return null;
     }
 
-    return user;
+    return user as JwtPayload;
   },
 );
 

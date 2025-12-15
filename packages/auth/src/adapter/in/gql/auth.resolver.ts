@@ -1,5 +1,5 @@
 import { Tenant } from '@app/common/decorator/tenant.decorator';
-import { UserPayload } from '@app/common/decorator/user.decorator';
+import { JwtPayload } from '@app/common/decorator/user.decorator';
 import { Resolver, Query, Mutation, Args, Context, Subscription } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { SocialSigninUseCase } from '../../../application/usecase/social-signin.usecase';
@@ -44,7 +44,7 @@ export class AuthResolver{
   @UseGuards(GraphqlAccessGuard)
   async signout(
     @Args('allDevices') allDevices: boolean | null,
-    @UserPayload() user: User,
+    @JwtPayload() payload: JwtPayload,
     @Tenant() tenant: string,
     @Context() ctx: any,
   ): Promise<boolean> {
@@ -52,7 +52,7 @@ export class AuthResolver{
     const token = authHeader ? authHeader.replace('Bearer ', '') : undefined;
 
     await this.auth.signout({
-      userId: user.id,
+      userId: payload.id,
       tenantId: tenant,
       token,
       allDevices,
@@ -122,17 +122,14 @@ export class AuthResolver{
 
   @Query('me')
   @UseGuards(GraphqlAccessGuard)
-  async me(@UserPayload() user: User): Promise<GraphQLUser> {
+  async me(@JwtPayload() payload: JwtPayload): Promise<GraphQLUser> {
+    const user = await this.user.getUser(payload.userId);
     return {
       id: user.id,
       username: user.username,
       email: user.email,
       status: user.status,
-      identities: user.identities.map((identity) => ({
-        provider: identity.provider,
-        providerSub: identity.providerSub,
-        linkedAt: identity.linkedAt,
-      })),
+      identities: []
     };
   }
 
@@ -140,9 +137,9 @@ export class AuthResolver{
   @UseGuards(GraphqlAccessGuard)
   async requestOtp(
     @Args('phoneNumber') phoneNumber: string,
-    @UserPayload() user: User,
+    @JwtPayload() payload: JwtPayload,
   ): Promise<boolean> {
-    await this.otp.requestOtp({ user, phoneNumber });
+    await this.otp.requestOtp({ payload, phoneNumber });
     return true;
   }
 
@@ -151,15 +148,19 @@ export class AuthResolver{
   async verifyOtp(
     @Args('phoneNumber') phoneNumber: string,
     @Args('code') code: string,
-    @UserPayload() user: User,
+    @JwtPayload() payload: JwtPayload,
   ): Promise<AuthPayload> {
-    const { verified, payload } = await this.otp.verifyOtp({ user, phoneNumber, code });
+    const verifyResult = await this.otp.verifyOtp({ payload, phoneNumber, code });
     
-    if (!verified || !payload) {
+    if (!verifyResult.verified || !verifyResult.payload) {
       throw new Error('OTP verification failed');
     }
     
-    return payload;
+    return {
+      accessToken: verifyResult.payload.accessToken,
+      refreshToken: verifyResult.payload.refreshToken,
+      expiresIn: verifyResult.payload.expiresIn,
+    };
   }
 
   @Query('myPermissions')
