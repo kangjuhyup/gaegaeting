@@ -1,6 +1,6 @@
 export interface JwtSignOptions {
   secret: string;
-  expiresIn: number;
+  expiresIn?: string | number;
 }
 
 export interface JwtVerifyOptions {
