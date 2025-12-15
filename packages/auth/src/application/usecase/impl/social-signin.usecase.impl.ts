@@ -34,6 +34,8 @@ export class SocialSigninUseCaseImpl implements SocialSigninUseCase {
     const payload = await this.tokens.issueForUser({ 
       tenantId: cmd.tenantId, 
       userId: user.id,
+      phoneVerified: user.phoneVerified,
+      emailVerified: user.emailVerified,
       roles,
       permissions,
     });
