@@ -5,6 +5,7 @@ import { JwtPort } from '../port/jwt.port';
 import { CacheService } from '@core/redis';
 import { ENV_KEY } from '@app/common/config/env.config';
 import { createHash } from 'crypto';
+import { UserPrincipal } from '@core/auth';
 
 @Injectable()
 export class TokenService extends TokenServicePort {
@@ -29,24 +30,24 @@ export class TokenService extends TokenServicePort {
 
     // JWT 페이로드 생성
     const iat = Math.floor(Date.now() / 1000);
-    const payload = {
-      sub: cmd.userId,
+    const expiresInSeconds = this.parseExpirationToSeconds(accessExpiration);
+
+    const payload : UserPrincipal = {
+      userId: cmd.userId,
       tenantId: cmd.tenantId,
       iat,
       ...(cmd.phoneVerified !== undefined && { phoneVerified: cmd.phoneVerified }),
       ...(cmd.emailVerified !== undefined && { emailVerified: cmd.emailVerified }),
       ...(cmd.roles && cmd.roles.length > 0 && { roles: cmd.roles }),
       ...(cmd.permissions && cmd.permissions.length > 0 && { permissions: cmd.permissions }),
+      exp: iat + expiresInSeconds,
     };
-
     // expiresIn을 초 단위로 변환
-    const expiresInSeconds = this.parseExpirationToSeconds(accessExpiration);
     const refreshTokenExpiresInSeconds = this.parseExpirationToSeconds(refreshExpiration);
 
     // Access Token 발급
     const accessToken = await this.jwtPort.sign(payload, {
       secret,
-      expiresIn: expiresInSeconds,
     });
 
     // Refresh Token 발급
@@ -54,7 +55,6 @@ export class TokenService extends TokenServicePort {
       { ...payload, type: 'refresh' },
       {
         secret,
-        expiresIn: refreshTokenExpiresInSeconds,
       },
     );
 

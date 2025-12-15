@@ -5,6 +5,7 @@ import { UserGroupOrmEntity } from './user-group';
 import { UserRoleOrmEntity } from './user-role';
 import { UserIdentityOrmEntity } from './user-identity';
 import { ulid } from 'ulid';
+import { Boolean01Transformer } from '../../transformer/boolean.transformer';
 
 export type UserStatus = 'ACTIVE' | 'LOCKED' | 'DISABLED';
 
@@ -25,13 +26,25 @@ export class UserOrmEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 191, nullable: true })
   email?: string | null;
 
-  @Column({ name: 'email_verified', type: 'tinyint', width: 1, default: 0 })
+  @Column({
+    name: 'email_verified',
+    type: 'tinyint',
+    width: 1,
+    default: 0,
+    transformer: Boolean01Transformer,
+  })
   emailVerified!: boolean;
 
   @Column({ type: 'varchar', length: 32, nullable: true })
   phone?: string | null;
 
-  @Column({ name: 'phone_verified', type: 'tinyint', width: 1, default: 0 })
+  @Column({
+    name: 'phone_verified',
+    type: 'tinyint',
+    width: 1,
+    default: 0,
+    transformer: Boolean01Transformer,
+  })
   phoneVerified!: boolean;
 
   @Column({ name: 'password_hash', type: 'varchar', length: 255, nullable: true })

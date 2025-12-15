@@ -35,8 +35,8 @@ export class AccessGuard implements CanActivate {
             // 1) Traefik ForwardAuth 등이 주입한 헤더 우선 사용
             const forwarded = request.headers?.['x-jwt-payload'];
             if (forwarded) {
-                request.auth = this.parseJwtPayloadHeader(forwarded);
-                this.assertAuthorization(context, request.auth);
+                request.user = this.parseJwtPayloadHeader(forwarded);
+                this.assertAuthorization(context, request.user);
                 return true;
             }
 
@@ -50,9 +50,9 @@ export class AccessGuard implements CanActivate {
             const payload = await this.jwtTokenService.verify(token);
             
             // 검증된 페이로드를 요청 객체에 추가
-            request.auth = payload;
+            request.user = payload;
 
-            this.assertAuthorization(context, request.auth);
+            this.assertAuthorization(context, request.user);
             return true;
         } catch (error) {
             // 인가 에러는 그대로 전달

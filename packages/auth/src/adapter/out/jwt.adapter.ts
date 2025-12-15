@@ -13,7 +13,7 @@ export class JwtAdapter extends JwtPort {
   async sign(payload: any, options: JwtSignOptions): Promise<string> {
     return await this.jwtService.signAsync(payload, {
       secret: options.secret,
-      expiresIn: options.expiresIn,
+      ...(options.expiresIn !== undefined ? { expiresIn: options.expiresIn } : {}),
     });
   }
 

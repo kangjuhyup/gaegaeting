@@ -2,6 +2,7 @@ export * from "./database.module";
 export * from "./datasource";
 export * from "./entity";
 export * from './transformer/bigint.transformer';
+export * from './transformer/boolean.transformer';
 export * from './transformer/enum.transformer';
 export * from './decorator/transaction';
 export * from './transaction/transaction-context';

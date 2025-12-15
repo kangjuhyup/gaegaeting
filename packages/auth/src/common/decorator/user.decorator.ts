@@ -15,7 +15,7 @@ export interface UserDecoratorOptions {
 }
 
 export interface JwtPayload {
-  sub: string;
+  userId: string;
   tenantId: string;
   iat?: number;
   exp?: number;
@@ -42,8 +42,7 @@ export const UserPayload = createParamDecorator(
       req = undefined;
     }
 
-    // 2) GraphqlAuthGuard가 설정한 User 도메인 모델 가져오기
-    const user = req?._userDomainModel as User | undefined;
+    const user = req?.user
 
     if (!user) {
       if (options.required) {

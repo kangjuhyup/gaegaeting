@@ -39,7 +39,6 @@ export class KakaoIdpAdapter extends KakaoIdpPort {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
       body,
     });
-
     const data = JSON.parse(res.text);
     const accessToken = data.access_token as string;
     const refreshToken = data.refresh_token as string | undefined;
@@ -76,11 +75,13 @@ export class KakaoIdpAdapter extends KakaoIdpPort {
           ...(opts.body && opts.method !== 'GET' ? { 'Content-Length': Buffer.byteLength(opts.body).toString() } : {}),
         },
       }, (res) => {
-        const chunks: Buffer[] = [];
-        res.on('data', (d) => chunks.push(Buffer.isBuffer(d) ? d : Buffer.from(d)));
+        res.setEncoding('utf8');
+        let text = '';
+        res.on('data', (d) => {
+          text += d;
+        });
         res.on('end', () => {
           const status = res.statusCode ?? 0;
-          const text = Buffer.concat(chunks).toString('utf8');
           if (status >= 200 && status < 300) return resolve({ status, text });
           return reject(new Error(`Kakao API error: ${status} ${text}`));
         });
