@@ -1,13 +1,13 @@
-import { User } from '../../domain/model/user';
+import { JwtPayload } from '@app/common/decorator/user.decorator';
 import { AuthPayloadDto } from '../port/token-service.port';
 
 export interface RequestOtpInput {
-  user: User;
+  payload: JwtPayload;
   phoneNumber: string;
 }
 
 export interface VerifyOtpInput {
-  user: User;
+  payload: JwtPayload;
   phoneNumber: string;
   code: string;
 }

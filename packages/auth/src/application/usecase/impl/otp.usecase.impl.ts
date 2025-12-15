@@ -13,29 +13,31 @@ export class OtpUsecaseImpl implements OtpUsecase {
   ) {}
 
   async requestOtp(input: RequestOtpInput): Promise<{ sent: boolean }> {
+    const user = await this.userService.findById(input.payload.userId);
     return await this.otpService.requestOtp({
-      user: input.user,
+      user: user,
       phoneNumber: input.phoneNumber,
     });
   }
 
   async verifyOtp(input: VerifyOtpInput): Promise<{ verified: boolean; payload?: AuthPayloadDto }> {
+    const user = await this.userService.findById(input.payload.userId);
     const result = await this.otpService.verifyOtp({
-      user: input.user,
+      user: user,
       phoneNumber: input.phoneNumber,
       code: input.code,
     });
 
     if (result.verified && result.phoneVerified) {
       // 사용자의 역할과 권한 조회
-      const { roles, permissions } = await this.userService.getUserRolesAndPermissions(input.user.id);
+      const { roles, permissions } = await this.userService.getUserRolesAndPermissions(user.id);
 
       // 새로운 토큰 발급 (phoneVerified 정보 및 역할/권한 포함)
       const payload = await this.tokenService.issueForUser({
-        userId: input.user.id,
-        tenantId: input.user.tenantId,
+        userId: user.id,
+        tenantId: user.tenantId,
         phoneVerified: true,
-        emailVerified: input.user.emailVerified,
+        emailVerified: user.emailVerified,
         roles,
         permissions,
       });
