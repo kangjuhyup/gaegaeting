@@ -12,7 +12,6 @@ import { PERMISSIONS_KEY } from '../decorator/permissions.decorator';
  */
 @Injectable()
 export class GraphqlAccessGuard {
-  private userRepository?: any;
 
   constructor(
     private readonly jwtService: JwtService,
@@ -43,7 +42,6 @@ export class GraphqlAccessGuard {
     if (!token) {
       throw new UnauthorizedException('인증 토큰 형식이 올바르지 않습니다.');
     }
-
     try {
       const secret = this.configService.get<string>('JWT_SECRET');
       if (!secret) {
@@ -52,25 +50,9 @@ export class GraphqlAccessGuard {
 
       // 토큰 검증
       const payload = await this.jwtService.verifyAsync(token, { secret });
-      
       // 검증된 페이로드를 요청 객체에 추가
       req.user = payload;
 
-      // User 도메인 모델 조회 및 설정 (userRepository가 제공된 경우에만)
-      if (this.userRepository && payload.sub) {
-        try {
-          const user = await this.userRepository.findById({
-            userId: payload.sub,
-          });
-          if (user) {
-            req._userDomainModel = user;
-          }
-        } catch (error) {
-          // User 조회 실패는 인증 실패로 처리하지 않음 (JWT는 유효하지만 DB에 사용자가 없을 수 있음)
-          // 데코레이터에서 required 옵션에 따라 처리
-        }
-      }
-      
       this.assertAuthorization(context, req.user);
       return true;
     } catch (error) {
