@@ -77,11 +77,13 @@ export class NaverCloudApiAdapter extends SmsApiPort {
           'Content-Length': Buffer.byteLength(opts.body).toString(),
         },
       }, (res) => {
-        const chunks: Buffer[] = [];
-        res.on('data', (d) => chunks.push(Buffer.isBuffer(d) ? d : Buffer.from(d)));
+        res.setEncoding('utf8');
+        let text = '';
+        res.on('data', (d) => {
+          text += d;
+        });
         res.on('end', () => {
           const status = res.statusCode ?? 0;
-          const text = Buffer.concat(chunks).toString('utf8');
           if (status >= 200 && status < 300) {
             return resolve();
           }
