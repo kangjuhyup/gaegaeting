@@ -3,17 +3,17 @@ package handler
 import (
 	"net/http"
 
-	"gaegaeting/chat/internal/application/service"
+	"gaegaeting/chat/internal/application/port"
 	"gaegaeting/chat/internal/domain/room"
 
 	"github.com/gin-gonic/gin"
 )
 
 type RoomHandler struct {
-	service *service.RoomService
+	service port.RoomService
 }
 
-func NewRoomHandler(service *service.RoomService) *RoomHandler {
+func NewRoomHandler(service port.RoomService) *RoomHandler {
 	return &RoomHandler{service: service}
 }
 

@@ -19,7 +19,7 @@ func RequestLogger() gin.HandlerFunc {
 		statusCode := c.Writer.Status()
 		method := c.Request.Method
 
-		log.Printf("[%s] %s %s?%s - %d (%v)",
+		log.Printf("[%s] %s?%s - %d (%v)",
 			method,
 			path,
 			query,

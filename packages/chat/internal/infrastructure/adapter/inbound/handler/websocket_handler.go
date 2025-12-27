@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
 
-	"gaegaeting/chat/internal/application/service"
+	"gaegaeting/chat/internal/application/port"
 	"gaegaeting/chat/internal/domain/message"
 
 	"github.com/gin-gonic/gin"
@@ -20,13 +21,13 @@ var upgrader = websocket.Upgrader{
 }
 
 type WebSocketHandler struct {
-	messageService *service.MessageService
-	roomService    *service.RoomService
+	messageService port.MessageService
+	roomService    port.RoomService
 	clients        map[string]map[*websocket.Conn]bool
 	mu             sync.RWMutex
 }
 
-func NewWebSocketHandler(messageService *service.MessageService, roomService *service.RoomService) *WebSocketHandler {
+func NewWebSocketHandler(messageService port.MessageService, roomService port.RoomService) *WebSocketHandler {
 	return &WebSocketHandler{
 		messageService: messageService,
 		roomService:    roomService,

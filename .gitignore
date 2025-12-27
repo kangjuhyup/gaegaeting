@@ -32,4 +32,5 @@ redis
 docker-compose.release.yml
 
 # Claude Code documentation (auto-generated)
-CLAUDE.md
+CLAUDE.md.DS_Store
+.idea/

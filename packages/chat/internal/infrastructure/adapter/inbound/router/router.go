@@ -1,7 +1,7 @@
 package router
 
 import (
-	"gaegaeting/chat/internal/application/service"
+	"gaegaeting/chat/internal/application/port"
 	"gaegaeting/chat/internal/infrastructure/adapter/inbound/handler"
 	"gaegaeting/chat/internal/infrastructure/adapter/inbound/middleware"
 	"gaegaeting/chat/internal/infrastructure/config"
@@ -11,8 +11,8 @@ import (
 
 func SetupRouter(
 	cfg *config.Config,
-	messageService *service.MessageService,
-	roomService *service.RoomService,
+	messageService port.MessageService,
+	roomService port.RoomService,
 ) *gin.Engine {
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)

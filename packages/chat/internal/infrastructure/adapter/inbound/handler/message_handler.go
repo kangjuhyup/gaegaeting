@@ -4,17 +4,17 @@ import (
 	"net/http"
 	"strconv"
 
-	"gaegaeting/chat/internal/application/service"
+	"gaegaeting/chat/internal/application/port"
 	"gaegaeting/chat/internal/domain/message"
 
 	"github.com/gin-gonic/gin"
 )
 
 type MessageHandler struct {
-	service *service.MessageService
+	service port.MessageService
 }
 
-func NewMessageHandler(service *service.MessageService) *MessageHandler {
+func NewMessageHandler(service port.MessageService) *MessageHandler {
 	return &MessageHandler{service: service}
 }
 
