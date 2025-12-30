@@ -8,6 +8,7 @@ import { YYYYMMDD } from "@core/util";
 import { Transactional } from "@core/database";
 import { FeedItemEntity } from "@app/feed/domain/model/feed-item";
 import { ClockPort } from "@app/feed/application/port/clock.port";
+import { DataSource } from "typeorm";
 
 @CommandHandler(CreateFeedCommand)
 export class CreateFeedCommandHandler implements ICommandHandler<CreateFeedCommand,FeedEntity> {
@@ -17,6 +18,7 @@ export class CreateFeedCommandHandler implements ICommandHandler<CreateFeedComma
         private readonly feedItemRepository: FeedItemRepositoryPort,
         private readonly locationRepository: LocationRepositoryPort,
         private readonly clock: ClockPort,
+        private readonly dataSource : DataSource,
     ) {}
     
     @Transactional()
@@ -33,6 +35,7 @@ export class CreateFeedCommandHandler implements ICommandHandler<CreateFeedComma
             slot: currentSlot,
             expiresAt: expiresAt
         });
+
         
         const savedFeed = await this.feedRepository.saveFeed(feed);
         

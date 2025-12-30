@@ -18,6 +18,8 @@ import { KafkaProducerAdapter } from "./adapter/outbound/event/kafka-producer.ad
 import { ClockPort } from "../application/port/clock.port";
 import { SystemClockAdapter } from "./adapter/outbound/clock/system-clock.adapter";
 import { FeedResolver } from "./adapter/inbound/gql/feed.resolver";
+import { LocationRepositoryPort } from "@app/location/domain/port/location.repostiory.port";
+import { LocationOrmRepository } from "@app/location/infrastructure/adapter/outbound/presistence/location.orm.repository";
 
 const providers : Provider[] = [
     FeedOrmMapper,
@@ -29,6 +31,10 @@ const providers : Provider[] = [
     {
         provide : FeedItemRepositoryPort,
         useClass : FeedItemOrmRepository
+    },
+    {
+        provide : LocationRepositoryPort,
+        useClass : LocationOrmRepository
     },
     {
         provide : PetApiPort,

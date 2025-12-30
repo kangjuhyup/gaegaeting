@@ -5,11 +5,32 @@ import { MessageRouter } from "./service/message-router";
 import { EventPublisherPort } from "@app/feed/domain/port/event-publisher.port";
 import { KafkaProducerPort } from "@app/feed/domain/port/kafka-producer.port";
 import { UpdateFeedItemStatusHandler } from "./service/command/update-feed-status.command";
+import { CreateFeedCommand } from "./port/command/create-feed.port";
+import { UpdateFeedItemStatusCommand } from "./port/command/update-feed-status.port";
+import { CreateFeedCommandHandler } from "./service/command/create-feed.command";
+import { GetMyFeedQuery } from "./port/query/get-my-feed.port";
+
+const commands : Provider[] = [
+    {
+        provide : CreateFeedCommand,
+        useClass : CreateFeedCommandHandler
+    },
+    {
+        provide : UpdateFeedItemStatusCommand,
+        useClass : UpdateFeedItemStatusHandler
+    }
+]
+
+const queries : Provider[] = [
+    {
+        provide : GetMyFeedQuery,
+        useClass : GetMyFeedHandler
+    }
+]
 
 const providers : Provider[] = [
-    //Query
-    GetMyFeedHandler,
-    UpdateFeedItemStatusHandler,
+    ...commands,
+    ...queries,
     {
         provide : MessageRouter,
         useFactory : (eventPublisher : EventPublisherPort,kafkaProducer : KafkaProducerPort) => 
