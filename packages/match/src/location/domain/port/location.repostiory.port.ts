@@ -7,5 +7,11 @@ export abstract class LocationRepositoryPort {
 
     abstract selectLocationFromUserId(userId:string): Promise<LocationEntity>
 
-    abstract findNearbyTargets(userId:string,latitude:number,longitude:number,date:YYYYMMDD) : Promise<string[]>
+    abstract findNearbyTargets(
+        userId: string,
+        latitude: number,
+        longitude: number,
+        date: YYYYMMDD,
+        maxTargets?: number,
+    ): Promise<string[]>
 }

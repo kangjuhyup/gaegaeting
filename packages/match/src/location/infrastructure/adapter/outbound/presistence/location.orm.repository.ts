@@ -26,7 +26,13 @@ export class LocationOrmRepository implements LocationRepositoryPort {
         return LocationOrmMapper.toDomain(orm);
     }
 
-    async findNearbyTargets(userId: string, latitude: number, longitude: number, date: YYYYMMDD): Promise<string[]> {
+    async findNearbyTargets(
+        userId: string,
+        latitude: number,
+        longitude: number,
+        date: YYYYMMDD,
+        maxTargets: number = 2,
+    ): Promise<string[]> {
         const radius = 10_000; // meters
 
         // 반경을 degree로 변환(박스 프리필터)
@@ -87,6 +93,7 @@ export class LocationOrmRepository implements LocationRepositoryPort {
             'ST_Distance_Sphere(location.location_point, ST_SRID(POINT(:lng, :lat), 4326))',
             'ASC',
           )
+          .limit(Math.max(0, Math.floor(maxTargets)))
           .getRawMany<{ targetId: string; dist_m: number }>();
 
         return rows.map((r) => r.targetId);
