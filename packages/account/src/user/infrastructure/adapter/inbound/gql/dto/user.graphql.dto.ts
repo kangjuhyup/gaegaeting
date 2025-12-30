@@ -17,6 +17,7 @@ export class UserGraphQLDto {
    * @param profileImages 프로필 이미지 엔티티 배열 (선택적)
    */
   static fromDomain(user: UserProfileEntity, profileImages?: UserAttachmentEntity[]): any {
+    console.log(user)
     return {
       id: user.id,
       name: user.name,
@@ -113,6 +114,7 @@ export class UserGraphQLDto {
   }
 
   private static toGraphQLStatus(status: UserProfileStatus): any['status'] {
+    console.log(status)
     return status.label as any['status'];
   }
 }

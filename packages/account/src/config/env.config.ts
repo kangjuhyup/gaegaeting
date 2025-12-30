@@ -13,8 +13,18 @@ export const envSpec = {
   DATABASE_PASSWORD: { joi: Joi.string().required() },
   DATABASE_NAME: { joi: Joi.string().default('ggt_account') },
   PUBLIC_DATA_API_KEY: { joi: Joi.string().required() },
-  REDIS_HOST : { joi: Joi.string().required() },
-  REDIS_PORT : { joi: Joi.string().required() }
+  REDIS_HOST: { joi: Joi.string().required() },
+  REDIS_PORT: { joi: Joi.string().required() },
+
+  // user storage (S3 compatible)
+  STORAGE_HOST: { joi: Joi.string().required() },
+  STORAGE_PET_BUCKET: { joi: Joi.string().required() },
+  STORAGE_USER_BUCKET: { joi: Joi.string().required() },
+  // separated prefixes
+  STORAGE_PROFILE_PREFIX: { joi: Joi.string().required() },
+  STORAGE_REGION: { joi: Joi.string().required() },
+  STORAGE_ACCESS_KEY_ID: { joi: Joi.string().required() },
+  STORAGE_SECRET_ACCESS_KEY: { joi: Joi.string().required() },
 } as const;
 
 // 2) 타입과 상수 자동 추출

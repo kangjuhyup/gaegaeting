@@ -5,13 +5,15 @@ import { UserAttachmentRepositoryPort } from '@app/user/infrastructure/port/user
 import { Transactional } from "@core/database";
 import { UserAttachmentEntity } from "@app/user/domain/model/user-attachment";
 import { UserStoragePort } from "@app/user/infrastructure/port/user-storage.port";
+import { DataSource } from "typeorm";
 
 @CommandHandler(GenerateUserPresignedCommand)
 export class GenerateUserPresignedUrlHandler implements ICommandHandler<GenerateUserPresignedCommand,PresignedUrl> {
 
     constructor(
         private readonly userStoragePort : UserStoragePort,
-        private readonly userAttachmentRepository : UserAttachmentRepositoryPort
+        private readonly userAttachmentRepository : UserAttachmentRepositoryPort,
+        private readonly dataSource: DataSource,
     ) {}
     
     @Transactional()

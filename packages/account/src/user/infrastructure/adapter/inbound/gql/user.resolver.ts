@@ -38,9 +38,8 @@ export class UserResolver {
     @Args('input') input: CreateUserProfileInput,
   ): Promise<any> {
     const userData = UserGraphQLDto.toDomainEntity(input);
-    const userProfileEntity = UserProfileEntity.of(userData, user.userId);
     const profile = await this.commandBus.execute(
-      new CreateUserProfileCommand(user, userProfileEntity),
+      new CreateUserProfileCommand(user, userData),
     );
     return UserGraphQLDto.fromDomain(profile);
   }

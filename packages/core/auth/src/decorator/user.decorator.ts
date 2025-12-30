@@ -1,12 +1,13 @@
 import { createParamDecorator, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { UserPrincipal } from '../type';
 
 /**
  * 요청에서 사용자 정보를 추출하는 데코레이터
- * 
- * AccessGuard에 의해 설정된 request.auth 객체를 UserPrincipal 타입으로 반환합니다.
- * 이 데코레이터는 AccessGuard와 함께 사용해야 합니다.
- * 
+ *
+ * - HTTP: `AccessGuard`가 설정한 `req.user`(또는 legacy `req.auth`)를 반환
+ * - GraphQL: `GraphqlAccessGuard`가 설정한 `ctx.req.user`(또는 legacy `ctx.req.auth`)를 반환
+ *
  * @example
  * ```typescript
  * @Get('/me')
@@ -18,14 +19,20 @@ import { UserPrincipal } from '../type';
  * ```
  */
 export const UserParam = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): UserPrincipal => {
-    const request = ctx.switchToHttp().getRequest();
-    
-    // AccessGuard가 설정한 request.auth를 사용
-    if (!request.auth) {
-      throw new ForbiddenException('인증 정보가 없습니다.')
+  (_data: unknown, ctx: ExecutionContext): UserPrincipal => {
+    const type = ctx.getType<'http' | 'graphql' | 'rpc'>();
+
+    const request =
+      type === 'graphql'
+        ? GqlExecutionContext.create(ctx).getContext()?.req
+        : ctx.switchToHttp().getRequest();
+
+    const principal = request?.user ?? request?.auth;
+
+    if (!principal) {
+      throw new ForbiddenException('인증 정보가 없습니다.');
     }
-    
-    return request.auth as UserPrincipal;
+
+    return principal as UserPrincipal;
   },
 );

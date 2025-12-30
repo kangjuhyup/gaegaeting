@@ -3,6 +3,7 @@ import { RegisterPetCommand } from '../../port/command/register-pet.port';
 import { PetEntity } from '@app/pet/domain/model/pet';
 import { PetProfileRepositoryPort } from '@app/pet/infrastructure/port/pet-profile-repository.port';
 import { Transactional } from '@core/database';
+import { DataSource } from 'typeorm';
 
 @CommandHandler(RegisterPetCommand)
 export class RegisterPetHandler
@@ -11,6 +12,7 @@ export class RegisterPetHandler
 
   constructor(
     private readonly petProfileRepository: PetProfileRepositoryPort,
+    private readonly dataSource: DataSource,
   ) {}
 
   @Transactional()
