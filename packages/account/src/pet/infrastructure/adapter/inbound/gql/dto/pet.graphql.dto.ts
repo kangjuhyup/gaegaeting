@@ -1,6 +1,5 @@
-import { PetEntity } from "@app/pet/domain/model/pet";
-import { PetGender, PetBreed, PetSize, PetPersonality } from "@app/pet/domain/enum/pet.enum";
 import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
+import { PetGender, PetBreed, PetSize, PetPersonality } from "@app/pet/domain/enum/pet.enum";
 import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { Pet as GraphQLPet, CreatePetInput, UpdatePetInput, PresignedUrl as GraphQLPresignedUrl } from '../graphql';
 
@@ -15,7 +14,7 @@ export class PetGraphQLDto {
    * @param pet 반려동물 엔티티
    * @param profileImages 프로필 이미지 경로 배열 (선택적)
    */
-  static fromDomain(pet: PetEntity, profileImages?: string[]): GraphQLPet {
+  static fromDomain(pet: PetProfileEntity, profileImages?: string[]): GraphQLPet {
     return {
       id: pet.id,
       name: pet.name,

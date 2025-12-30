@@ -8,7 +8,7 @@ import { CertifyPetCommand } from '@app/pet/application/port/command/certify-pet
 import { GetPetsQuery } from '@app/pet/application/port/query/get-pets.port';
 import { GetPetQuery } from '@app/pet/application/port/query/get-pet.port';
 import { GeneratePetPresignedCommand } from '@app/pet/application/port/command/generate-pet-presigned.port';
-import { PetEntity } from '@app/pet/domain/model/pet';
+import { PetProfileEntity } from '@app/pet/domain/model/pet-profile';
 import { Pet as GraphQLPet, CreatePetInput, UpdatePetInput, CertifyPetInput, PresignedUrl } from './graphql';
 import { PetGraphQLDto } from './dto/pet.graphql.dto';
 
@@ -23,7 +23,7 @@ export class PetResolver {
   @UseGuards(GraphqlAccessGuard)
   async pets(@UserParam() user: UserPrincipal): Promise<GraphQLPet[]> {
     const pets = await this.queryBus.execute(new GetPetsQuery(user.userId));
-    return pets.map(pet => PetGraphQLDto.fromDomain(pet));
+    return pets.map(pet => PetGraphQLDto.fromDomain(pet.pet, pet.profile.map(profile => profile.path)));
   }
 
   @Query()
@@ -36,7 +36,7 @@ export class PetResolver {
   @UseGuards(GraphqlAccessGuard)
   async petsByUserId(@Args('userId') userId: string): Promise<GraphQLPet[]> {
     const pets = await this.queryBus.execute(new GetPetsQuery(userId));
-    return pets.map(pet => PetGraphQLDto.fromDomain(pet));
+    return pets.map(pet => PetGraphQLDto.fromDomain(pet.pet, pet.profile.map(profile => profile.path)));
   }
 
   @Mutation()
@@ -46,7 +46,7 @@ export class PetResolver {
     @Args('input') input: CreatePetInput,
   ): Promise<GraphQLPet> {
     const petData = PetGraphQLDto.toDomainEntity(input, user.userId);
-    const pet = PetEntity.of(petData);
+    const pet = PetProfileEntity.of(petData);
     const createdPet = await this.commandBus.execute(new RegisterPetCommand(user, pet));
     return PetGraphQLDto.fromDomain(createdPet);
   }

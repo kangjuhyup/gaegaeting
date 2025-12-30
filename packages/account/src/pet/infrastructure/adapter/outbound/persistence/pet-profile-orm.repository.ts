@@ -2,7 +2,7 @@ import { PetProfileOrmEntity, BaseRepository } from "@core/database";
 import { Injectable } from "@nestjs/common";
 import { DataSource } from "typeorm";
 import { PetOrmMapper } from "./mapper/pet-orm";
-import { PetEntity } from "@app/pet/domain/model/pet";
+import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
 import { PetProfileRepositoryPort } from "@app/pet/infrastructure/port/pet-profile-repository.port";
 
 /**
@@ -17,18 +17,18 @@ export class PetProfileOrmRepository extends BaseRepository<PetProfileOrmEntity>
         super(PetProfileOrmEntity, dataSource);
     }
 
-    async insertPet(pet: PetEntity): Promise<PetEntity> {
+    async insertPet(pet: PetProfileEntity): Promise<PetProfileEntity> {
         const orm = PetOrmMapper.toOrm(pet);
         const inserted = await this.getRepository().save(orm);
         return PetOrmMapper.toDomain(inserted);
     }
 
-    async selectPetFromId(id: number): Promise<PetEntity> {
+    async selectPetFromId(id: number): Promise<PetProfileEntity> {
         const orm = await this.getRepository().findOneBy({ id });
         return PetOrmMapper.toDomain(orm);
     }
 
-    async selectPetFromUserId(userId: string): Promise<PetEntity[]> {
+    async selectPetFromUserId(userId: string): Promise<PetProfileEntity[]> {
         const orm = await this.getRepository().find({ 
             where: { userId }, 
             relations: { attachments: true } 
@@ -36,7 +36,7 @@ export class PetProfileOrmRepository extends BaseRepository<PetProfileOrmEntity>
         return orm.map(PetOrmMapper.toDomain);
     }
 
-    async updatePet(pet: PetEntity): Promise<PetEntity> {
+    async updatePet(pet: PetProfileEntity): Promise<PetProfileEntity> {
         const orm = PetOrmMapper.toOrm(pet);
         const updated = await this.getRepository().save(orm);
         return PetOrmMapper.toDomain(updated);

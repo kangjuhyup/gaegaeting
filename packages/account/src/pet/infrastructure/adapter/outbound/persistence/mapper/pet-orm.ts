@@ -1,13 +1,13 @@
 import { PetBreed, PetGender, PetPersonality, PetSize } from "@app/pet/domain/enum/pet.enum";
-import { PetEntity } from "@app/pet/domain/model/pet";
+import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
 import { PetProfileOrmEntity } from "@core/database";
 
 export class PetOrmMapper {
 
-    static toDomain(orm: PetProfileOrmEntity) : PetEntity {
+    static toDomain(orm: PetProfileOrmEntity) : PetProfileEntity {
         if(!orm) return null;
 
-        return PetEntity.of({
+        return PetProfileEntity.of({
             name: orm.name,
             age: orm.age,
             gender: PetGender.from(orm.gender),
@@ -21,7 +21,7 @@ export class PetOrmMapper {
         }).setPersistence(orm.id,orm.createdAt,orm.updatedAt);
     }
 
-    static toOrm(pet:PetEntity) : PetProfileOrmEntity {
+    static toOrm(pet:PetProfileEntity) : PetProfileOrmEntity {
         if(!pet) return null;
 
         const petOrm = new PetProfileOrmEntity();
