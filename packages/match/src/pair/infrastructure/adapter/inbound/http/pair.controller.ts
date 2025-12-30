@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
-import { AccessGuard, UserGuard, UserParam, UserPrincipal } from "@core/auth";
+import { AccessGuard, UserParam, UserPrincipal } from "@core/auth";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { GetPairResponse } from "./dto/get-pair.response";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
@@ -10,7 +10,7 @@ import { ReportPairBody } from "./dto/request/report-pair.request";
 
 @ApiTags('Match', 'Pair')
 @Controller('pair')
-@UseGuards(AccessGuard,UserGuard) // 컨트롤러 전체에 가드 설정 
+@UseGuards(AccessGuard) // 컨트롤러 전체에 가드 설정 
 export class PairController {
 
     constructor(

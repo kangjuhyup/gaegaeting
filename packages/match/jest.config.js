@@ -3,12 +3,12 @@ module.exports = {
   rootDir: '.',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
+    '^.+\\.(t|j)s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   collectCoverageFrom: ['**/*.(t|j)s'],
   coverageDirectory: './coverage',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src/'],
+  roots: ['<rootDir>/src/', '<rootDir>/test/'],
   moduleNameMapper: {
     '^@app/(.*)$': '<rootDir>/src/$1',
     '^@core/(.*)$': '<rootDir>/../core/$1',
