@@ -1,9 +1,9 @@
 import { PetPersonality } from "@app/pet/domain/enum/pet.enum";
-import { PetEntity } from "@app/pet/domain/model/pet";
+import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
 import { UserPrincipal } from "@core/auth";
 import { Command } from "@nestjs/cqrs";
 
-export class UpdatePetCommand extends Command<PetEntity> {
+export class UpdatePetCommand extends Command<PetProfileEntity> {
 
     constructor(
         public readonly id : number,
