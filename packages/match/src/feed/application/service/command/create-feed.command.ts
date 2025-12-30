@@ -48,6 +48,7 @@ export class CreateFeedCommandHandler implements ICommandHandler<CreateFeedComma
             userLocation.latitude,
             userLocation.longitude,
             today,
+            2,
         );
         // DailyFeed 기준: 최대 2명, 중복 제거, 자기 자신 제외
         const targets = Array.from(
