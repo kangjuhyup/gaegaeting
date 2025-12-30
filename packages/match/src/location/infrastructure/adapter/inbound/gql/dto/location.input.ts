@@ -1,6 +1,6 @@
 import { MainAreaCode } from '@core/database';
 import { Field, Float, InputType } from '@nestjs/graphql';
-import { IsString, Matches } from 'class-validator';
+import { IsLatitude, IsLongitude, IsString, Matches } from 'class-validator';
 
 @InputType()
 export class SetMainAreaInput {
@@ -13,9 +13,11 @@ export class SetMainAreaInput {
 @InputType()
 export class SetLocationInput {
   @Field(() => Float)
+  @IsLatitude({ message: 'latitude must be a valid latitude (-90 ~ 90).' })
   latitude: number;
 
   @Field(() => Float)
+  @IsLongitude({ message: 'longitude must be a valid longitude (-180 ~ 180).' })
   longitude: number;
 }
 

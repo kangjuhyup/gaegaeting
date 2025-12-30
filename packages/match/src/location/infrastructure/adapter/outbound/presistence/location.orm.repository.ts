@@ -23,6 +23,7 @@ export class LocationOrmRepository implements LocationRepositoryPort {
     
     async selectLocationFromUserId(userId: string): Promise<LocationEntity> {
         const orm = await this.locationRepository.findOneBy({ userId });
+        if(!orm) return null;
         return LocationOrmMapper.toDomain(orm);
     }
 
