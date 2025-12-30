@@ -121,6 +121,8 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
         userId: existingUser.id,
         roles: ['user'],
         permissions: ['read'],
+        emailVerified : false,
+        phoneVerified : false,
       });
     });
 
@@ -162,6 +164,8 @@ describe('SocialSigninUseCaseImpl (UNIT)', () => {
         userId: newUser.id,
         roles: [],
         permissions: [],
+        emailVerified : false,
+        phoneVerified : false,
       });
     });
 

@@ -56,11 +56,12 @@ describe('OtpUsecaseImpl (UNIT)', () => {
         email: 'test@example.com',
       });
 
+      userService.findById.mockResolvedValue(user);
       otpService.requestOtp.mockResolvedValue({ sent: true });
 
       // Act
       const result = await usecase.requestOtp({
-        user,
+        payload: { userId: user.id, tenantId: user.tenantId },
         phoneNumber,
       });
 
@@ -83,6 +84,7 @@ describe('OtpUsecaseImpl (UNIT)', () => {
       user.updatePhone(phoneNumber);
       user.verifyPhone(); // 이미 인증된 상태
 
+      userService.findById.mockResolvedValue(user);
       otpService.requestOtp.mockRejectedValue(
         new BadRequestException('Phone number 01012345678 is already verified')
       );
@@ -90,13 +92,13 @@ describe('OtpUsecaseImpl (UNIT)', () => {
       // Act & Assert
       await expect(
         usecase.requestOtp({
-          user,
+          payload: { userId: user.id, tenantId: user.tenantId },
           phoneNumber,
         }),
       ).rejects.toThrow(BadRequestException);
       await expect(
         usecase.requestOtp({
-          user,
+          payload: { userId: user.id, tenantId: user.tenantId },
           phoneNumber,
         }),
       ).rejects.toThrow('Phone number 01012345678 is already verified');
@@ -111,6 +113,7 @@ describe('OtpUsecaseImpl (UNIT)', () => {
         email: 'test@example.com',
       });
 
+      userService.findById.mockResolvedValue(user);
       otpService.requestOtp.mockRejectedValue(
         new BadRequestException('OTP request is not allowed. Please wait 3 minutes before requesting again.')
       );
@@ -118,13 +121,13 @@ describe('OtpUsecaseImpl (UNIT)', () => {
       // Act & Assert
       await expect(
         usecase.requestOtp({
-          user,
+          payload: { userId: user.id, tenantId: user.tenantId },
           phoneNumber,
         }),
       ).rejects.toThrow(BadRequestException);
       await expect(
         usecase.requestOtp({
-          user,
+          payload: { userId: user.id, tenantId: user.tenantId },
           phoneNumber,
         }),
       ).rejects.toThrow('OTP request is not allowed. Please wait 3 minutes before requesting again.');
@@ -139,6 +142,7 @@ describe('OtpUsecaseImpl (UNIT)', () => {
         email: 'test@example.com',
       });
 
+      userService.findById.mockResolvedValue(user);
       otpService.requestOtp.mockRejectedValue(
         new InternalServerErrorException('SMS API error')
       );
@@ -146,7 +150,7 @@ describe('OtpUsecaseImpl (UNIT)', () => {
       // Act & Assert
       await expect(
         usecase.requestOtp({
-          user,
+          payload: { userId: user.id, tenantId: user.tenantId },
           phoneNumber,
         }),
       ).rejects.toThrow(InternalServerErrorException);
@@ -162,11 +166,12 @@ describe('OtpUsecaseImpl (UNIT)', () => {
       });
       const newPhoneNumber = '01098765432';
 
+      userService.findById.mockResolvedValue(user);
       otpService.requestOtp.mockResolvedValue({ sent: true });
 
       // Act
       await usecase.requestOtp({
-        user,
+        payload: { userId: user.id, tenantId: user.tenantId },
         phoneNumber: newPhoneNumber,
       });
 
@@ -195,6 +200,7 @@ describe('OtpUsecaseImpl (UNIT)', () => {
         expiresIn: 3600,
       };
 
+      userService.findById.mockResolvedValue(user);
       otpService.verifyOtp.mockResolvedValue({
         verified: true,
         phoneVerified: true,
@@ -207,7 +213,7 @@ describe('OtpUsecaseImpl (UNIT)', () => {
 
       // Act
       const result = await usecase.verifyOtp({
-        user,
+        payload: { userId: user.id, tenantId: user.tenantId },
         phoneNumber,
         code,
       });
@@ -244,13 +250,14 @@ describe('OtpUsecaseImpl (UNIT)', () => {
       });
       const code = 'wrong-code';
 
+      userService.findById.mockResolvedValue(user);
       otpService.verifyOtp.mockResolvedValue({
         verified: false,
       });
 
       // Act
       const result = await usecase.verifyOtp({
-        user,
+        payload: { userId: user.id, tenantId: user.tenantId },
         phoneNumber,
         code,
       });
@@ -275,13 +282,14 @@ describe('OtpUsecaseImpl (UNIT)', () => {
       });
       const code = '123456';
 
+      userService.findById.mockResolvedValue(user);
       otpService.verifyOtp.mockResolvedValue({
         verified: false,
       });
 
       // Act
       const result = await usecase.verifyOtp({
-        user,
+        payload: { userId: user.id, tenantId: user.tenantId },
         phoneNumber,
         code,
       });
@@ -312,6 +320,7 @@ describe('OtpUsecaseImpl (UNIT)', () => {
         expiresIn: 3600,
       };
 
+      userService.findById.mockResolvedValue(user);
       otpService.verifyOtp.mockResolvedValueOnce({
         verified: true,
         phoneVerified: true,
@@ -327,7 +336,7 @@ describe('OtpUsecaseImpl (UNIT)', () => {
 
       // Act - Valid code
       const result1 = await usecase.verifyOtp({
-        user,
+        payload: { userId: user.id, tenantId: user.tenantId },
         phoneNumber,
         code: validCode,
       });
@@ -354,7 +363,7 @@ describe('OtpUsecaseImpl (UNIT)', () => {
 
       // Act - Invalid code
       const result2 = await usecase.verifyOtp({
-        user,
+        payload: { userId: user.id, tenantId: user.tenantId },
         phoneNumber,
         code: invalidCode,
       });
