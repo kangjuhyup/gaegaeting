@@ -4,6 +4,7 @@ import { CertifyPetCommand } from '../../port/command/certify-pet.port';
 import { PetProfileRepositoryPort } from '@app/pet/infrastructure/port/pet-profile-repository.port';
 import { PetCertificationPort } from '@app/pet/infrastructure/port/pet-certification.port';
 import { PetEntity } from '@app/pet/domain/model/pet';
+import { DataSource } from 'typeorm';
 
 @CommandHandler(CertifyPetCommand)
 export class CertifyPetHandler
@@ -12,6 +13,7 @@ export class CertifyPetHandler
   constructor(
     private readonly petProfileRepository: PetProfileRepositoryPort,
     private readonly petCertificationPort: PetCertificationPort,
+    private readonly dataSource: DataSource,
   ) {}
 
   @Transactional()

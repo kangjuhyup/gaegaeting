@@ -3,12 +3,14 @@ import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { UpdateUserProfileCommand } from "../../port/command/update-user-profile.port";
 import { Transactional } from "@core/database";
+import { DataSource } from "typeorm";
 
 @CommandHandler(UpdateUserProfileCommand)
 export class UpdateUserProfileHandler implements ICommandHandler<UpdateUserProfileCommand> {
 
     constructor(
-        private readonly userProfileRepository: UserProfileRepositoryPort
+        private readonly userProfileRepository: UserProfileRepositoryPort,
+        private readonly dataSource: DataSource,
     ) {}
 
     @Transactional()
