@@ -1,5 +1,5 @@
 import { Module, Provider } from "@nestjs/common";
-import { LocationController } from "./adapter/inbound/http/location.controller";
+import { LocationResolver } from "./adapter/inbound/gql/location.resolver";
 import { LocationOrmRepository } from "./adapter/outbound/presistence/location";
 import { MainAreaOrmRepository } from "./adapter/outbound/presistence/main-area";
 import { MainAreaRepositoryPort } from "@location/domain/port/main-area.repository.port";
@@ -21,10 +21,10 @@ const providers : Provider[] = [
 ]
 
 @Module({
-    controllers: [
-        LocationController
+    providers: [
+        ...providers,
+        LocationResolver,
     ],
-    providers,
     exports : providers
 })
 export class LocationInfrastructureModule {}

@@ -4,3 +4,4 @@ export * from './like';
 export * from './pair';
 export * from './location';
 export * from './main-area';
+export * from './enum';

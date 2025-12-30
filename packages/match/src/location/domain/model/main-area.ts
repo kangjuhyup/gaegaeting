@@ -1,9 +1,10 @@
+import { MainAreaCode, MainAreaName, MainAreaParentCode } from "@core/database";
 import { PersistenceEntity } from "@core/model";
 
 interface IMainArea {
-    code : string;
-    name : string;
-    parentCode? : string
+    code : MainAreaCode;
+    name : MainAreaName;
+    parentCode? : MainAreaParentCode
 }
 
 export class MainAreaEntity extends PersistenceEntity<string,IMainArea> {
