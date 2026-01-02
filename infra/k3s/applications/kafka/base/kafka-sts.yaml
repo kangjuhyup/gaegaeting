@@ -15,6 +15,9 @@ spec:
     metadata:
       labels:
         app: kafka
+        app.kubernetes.io/instance: kafka
+        app.kubernetes.io/name: kafka
+        app.kubernetes.io/part-of: kafka
     spec:
       containers:
         - name: kafka
