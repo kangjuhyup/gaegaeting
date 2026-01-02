@@ -31,16 +31,6 @@ RUN yarn workspace @core/kafka build
 # match 모듈 빌드
 RUN cd /app/packages/match && yarn build
 
-# 방어 코드: nest build(asset copy)가 어떤 이유로든 누락될 수 있으므로
-# src/**/*.graphql 을 dist/src/** 로 구조 유지하며 강제 복사
-RUN cd /app/packages/match \
-  && find src -type f -name "*.graphql" -print0 \
-  | xargs -0 -I{} sh -c 'srcFile="{}"; dstFile="dist/src/${srcFile#src/}"; mkdir -p "$(dirname "$dstFile")"; cp "$srcFile" "$dstFile"'
-
-# sanity check: schema-first GraphQL은 dist에 *.graphql이 없으면 런타임에 즉시 크래시합니다.
-RUN cd /app/packages/match && echo "=== DIST GRAPHQL ===" && find dist -type f -name "*.graphql" -maxdepth 12 -print
-RUN cd /app/packages/match && test -n "$(find dist -type f -name '*.graphql' -print -quit)"
-
 # 실행 스테이지
 FROM node:20-alpine AS runner
 
