@@ -36,7 +36,6 @@ const providers : Provider[] = [
             },
         }),
     ],
-    ],
     controllers: [
         PairController
     ],

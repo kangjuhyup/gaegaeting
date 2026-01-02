@@ -84,7 +84,6 @@ const providers : Provider[] = [
             },
         }),
     ],
-    ],
     providers : [
         ...providers,
         FeedResolver,
