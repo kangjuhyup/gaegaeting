@@ -10,6 +10,9 @@ import { KafkaProducerAdapter } from "./adapter/outbound/event/kafka-producer.ad
 import { EventPublisherPort } from "../domain/port/event-publisher.port";
 import { EventPublisherAdapter } from "./adapter/outbound/event/event-publisher.adapter";
 import { LikeEventHandler } from "./adapter/inbound/event/like.handler";
+import { ENV_KEY } from "@app/config/env.config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+
 
 const providers : Provider[] = [
     LikeOrmMapper,
@@ -30,16 +33,22 @@ const providers : Provider[] = [
 
 @Module({
     imports : [
-        KafkaProducerModule.forRoot({
-            clientId: "like-service",
-            brokers: ['localhost:9092'],
-            ssl: false,
-            sasl: null,
-            allowAutoTopicCreation: true,
-            defaultHeaders: {
-                'Content-Type': 'application/json',
+        KafkaProducerModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => {
+                return {
+                    clientId: "like-service",
+                    brokers: configService.get<string[]>(ENV_KEY.KAFKA_BROKERS),
+                    ssl: false,
+                    sasl: undefined,
+                    allowAutoTopicCreation: true,
+                    defaultHeaders: {
+                        'Content-Type': 'application/json',
+                    },
+                };
             },
-        })
+        }),
     ],
     controllers: [
         LikeController,

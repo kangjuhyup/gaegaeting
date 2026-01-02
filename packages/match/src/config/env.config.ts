@@ -13,7 +13,7 @@ export const envSpec = {
   DATABASE_PASSWORD: { joi: Joi.string().required() },
   DATABASE_NAME: { joi: Joi.string().default('ggt_match') },
   ACCOUNT_SERVICE_HOST : { joi : Joi.string().required().default('http://localhost:3000') },
-  KAFKA_BROKERS : { joi : Joi.string().default('localhost:9092') },
+  KAFKA_BROKERS : { joi : Joi.array().items(Joi.string().required()).required() },
 } as const;
 
 // 2) 타입과 상수 자동 추출
