@@ -20,6 +20,8 @@ import { SystemClockAdapter } from "./adapter/outbound/clock/system-clock.adapte
 import { FeedResolver } from "./adapter/inbound/gql/feed.resolver";
 import { LocationRepositoryPort } from "@app/location/domain/port/location.repostiory.port";
 import { LocationOrmRepository } from "@app/location/infrastructure/adapter/outbound/presistence/location.orm.repository";
+import { ENV_KEY } from "@app/config/env.config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 const providers : Provider[] = [
     FeedOrmMapper,
@@ -65,16 +67,22 @@ const providers : Provider[] = [
             timeout : 5000,
             retryCount : 3,
         }),
-        KafkaProducerModule.forRoot({
-            clientId: 'feed-service',
-            brokers: ['localhost:9092'],
-            ssl: false,
-            sasl: null,
-            allowAutoTopicCreation: true,
-            defaultHeaders: {
-                'Content-Type': 'application/json',
+        KafkaProducerModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => {
+                return {
+                    clientId: "feed-service",
+                    brokers: configService.get<string[]>(ENV_KEY.KAFKA_BROKERS),
+                    ssl: false,
+                    sasl: undefined,
+                    allowAutoTopicCreation: true,
+                    defaultHeaders: {
+                        'Content-Type': 'application/json',
+                    },
+                };
             },
-        })
+        }),
     ],
     providers : [
         ...providers,
