@@ -1,9 +1,12 @@
 import { UserProfileEntity, IUserProfile } from '@app/user/domain/model/user-profile';
 import { UserGender, UserRegion } from '@app/user/domain/enum/user.enum';
 import { UserProfileStatus } from '@core/database';
-import {  CreateUserProfileInput, UpdateUserProfileInput, PresignedUrl as GraphQLPresignedUrl } from '../graphql';
 import { PresignedUrl } from '@app/common/vo/presigned-url';
 import { UserAttachmentEntity } from '@app/user/domain/model/user-attachment';
+import { PresignedUrl as PresignedUrlGql } from '@app/common/graphql/dto/presigned-url.type';
+import { CreateUserProfileInput, UpdateUserProfileInput } from './user.input';
+import { UserProfile } from './user.type';
+import { UserGenderGql, UserRegionGql, UserStatusGql } from './user.enum';
 
 /**
  * GraphQL User DTO
@@ -16,8 +19,7 @@ export class UserGraphQLDto {
    * @param user 사용자 프로필 엔티티
    * @param profileImages 프로필 이미지 엔티티 배열 (선택적)
    */
-  static fromDomain(user: UserProfileEntity, profileImages?: UserAttachmentEntity[]): any {
-    console.log(user)
+  static fromDomain(user: UserProfileEntity, profileImages?: UserAttachmentEntity[]): UserProfile {
     return {
       id: user.id,
       name: user.name,
@@ -79,7 +81,7 @@ export class UserGraphQLDto {
   /**
    * PresignedUrl VO를 GraphQL PresignedUrl 타입으로 변환
    */
-  static fromPresignedUrl(presignedUrl: PresignedUrl): GraphQLPresignedUrl {
+  static fromPresignedUrl(presignedUrl: PresignedUrl): PresignedUrlGql {
     return {
       url: presignedUrl.url,
       expiresIn: presignedUrl.expiresIn,
@@ -87,20 +89,20 @@ export class UserGraphQLDto {
   }
 
   // Enum 변환 메서드들
-  private static toGraphQLGender(gender: UserGender): any['gender'] {
-    return gender.label as any['gender'];
+  private static toGraphQLGender(gender: UserGender): UserGenderGql {
+    return gender.label as UserGenderGql;
   }
 
-  private static toDomainGender(gender: 'MALE' | 'FEMALE'): UserGender {
-    return gender === 'MALE' ? UserGender.MALE : UserGender.FEMALE;
+  private static toDomainGender(gender: UserGenderGql): UserGender {
+    return gender === UserGenderGql.MALE ? UserGender.MALE : UserGender.FEMALE;
   }
 
-  private static toGraphQLRegion(region: UserRegion): any['region'] {
-    return region.label as any['region'];
+  private static toGraphQLRegion(region: UserRegion): UserRegionGql {
+    return region.label as UserRegionGql;
   }
 
-  private static toDomainRegion(region: any['region']): UserRegion {
-    const regionMap: Record<any['region'], UserRegion> = {
+  private static toDomainRegion(region: UserRegionGql): UserRegion {
+    const regionMap: Record<UserRegionGql, UserRegion> = {
       SEOUL: UserRegion.SEOUL,
       GYEONGGI: UserRegion.GYEONGGI,
       INCHEON: UserRegion.INCHEON,
@@ -113,9 +115,8 @@ export class UserGraphQLDto {
     return regionMap[region];
   }
 
-  private static toGraphQLStatus(status: UserProfileStatus): any['status'] {
-    console.log(status)
-    return status.label as any['status'];
+  private static toGraphQLStatus(status: UserProfileStatus): UserStatusGql {
+    return status.label as UserStatusGql;
   }
 }
 

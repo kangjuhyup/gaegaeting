@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Int, Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UserParam, UserPrincipal, GraphqlAccessGuard } from '@core/auth';
@@ -7,36 +7,37 @@ import { UpdateUserProfileCommand } from '@app/user/application/port/command/upd
 import { GetUserProfileQuery } from '@app/user/application/port/query/get-user-profile.port';
 import { GenerateUserPresignedCommand } from '@app/user/application/port/command/generate-presigned.port';
 import { DeleteProfileImageCommand } from '@app/user/application/port/command/delete-profile-image.port';
-import { UserProfileEntity } from '@app/user/domain/model/user-profile';
-import { PresignedUrl, CreateUserProfileInput, UpdateUserProfileInput } from './graphql';
+import { PresignedUrl } from '@app/common/graphql/dto/presigned-url.type';
 import { UserGraphQLDto } from './dto/user.graphql.dto';
+import { CreateUserProfileInput, UpdateUserProfileInput } from './dto/user.input';
+import { UserProfile } from './dto/user.type';
 
-@Resolver('User')
+@Resolver(() => UserProfile)
 export class UserResolver {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
   ) {}
 
-  @Query()
+  @Query(() => UserProfile)
   @UseGuards(GraphqlAccessGuard)
-  async myProfile(@UserParam() user: UserPrincipal): Promise<any> {
+  async myProfile(@UserParam() user: UserPrincipal): Promise<UserProfile> {
     const userProfile = await this.queryBus.execute(new GetUserProfileQuery(user.userId));
     return UserGraphQLDto.fromDomain(userProfile.profile, userProfile.profileImages);
   }
 
-  @Query()
-  async profile(@Args('id') id: string): Promise<any | null> {
+  @Query(() => UserProfile, { nullable: true })
+  async profile(@Args('id', { type: () => String }) id: string): Promise<UserProfile | null> {
     const user = await this.queryBus.execute(new GetUserProfileQuery(id));
     return user ? UserGraphQLDto.fromDomain(user.profile, user.profileImages) : null;
   }
 
-  @Mutation()
+  @Mutation(() => UserProfile)
   @UseGuards(GraphqlAccessGuard)
   async createProfile(
     @UserParam() user: UserPrincipal,
     @Args('input') input: CreateUserProfileInput,
-  ): Promise<any> {
+  ): Promise<UserProfile> {
     const userData = UserGraphQLDto.toDomainEntity(input);
     const profile = await this.commandBus.execute(
       new CreateUserProfileCommand(user, userData),
@@ -44,22 +45,22 @@ export class UserResolver {
     return UserGraphQLDto.fromDomain(profile);
   }
 
-  @Mutation()
+  @Mutation(() => UserProfile)
   @UseGuards(GraphqlAccessGuard)
   async updateProfile(
-    @Args('id') id: string,
+    @Args('id', { type: () => String }) id: string,
     @Args('input') input: UpdateUserProfileInput,
-  ): Promise<any> {
+  ): Promise<UserProfile> {
     const updateData = UserGraphQLDto.toUpdateData(input);
     const user = await this.commandBus.execute(new UpdateUserProfileCommand(id, updateData));
     return UserGraphQLDto.fromDomain(user);
   }
 
-  @Mutation()
+  @Mutation(() => PresignedUrl)
   @UseGuards(GraphqlAccessGuard)
   async generatePresignedUrl(
     @UserParam() user: UserPrincipal,
-    @Args('imageNo') imageNo: number,
+    @Args('imageNo', { type: () => Int }) imageNo: number,
   ): Promise<PresignedUrl> {
     const presignedUrl = await this.commandBus.execute(
       new GenerateUserPresignedCommand(user.userId, imageNo),
@@ -67,11 +68,11 @@ export class UserResolver {
     return UserGraphQLDto.fromPresignedUrl(presignedUrl);
   }
 
-  @Mutation()
+  @Mutation(() => Boolean)
   @UseGuards(GraphqlAccessGuard)
   async deleteProfileImage(
     @UserParam() user: UserPrincipal,
-    @Args('imageNo') imageNo: number,
+    @Args('imageNo', { type: () => Int }) imageNo: number,
   ): Promise<boolean> {
     await this.commandBus.execute(new DeleteProfileImageCommand(user.userId, imageNo));
     return true;
