@@ -55,13 +55,13 @@
     "joi": "^17.13.3",
     "mysql2": "^3.14.3",
     "passport": "^0.7.0",
-    "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1",
-    "typeorm": "^0.3.25",
-    "ulid": "^3.0.1",
     "pino": "^10.1.0",
     "pino-http": "^11.0.0",
-    "ts-morph": "^27.0.2"
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.1",
+    "ts-morph": "^27.0.2",
+    "typeorm": "^0.3.25",
+    "ulid": "^3.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
