@@ -24,9 +24,9 @@ RUN yarn workspace @core/database build
 RUN yarn workspace @core/http build
 RUN yarn workspace @core/logger build
 RUN yarn workspace @core/model build
-RUN yarn workspace @core/storage build
 RUN yarn workspace @core/util build
 RUN yarn workspace @core/redis build
+RUN yarn workspace @core/kafka build
 
 # match 모듈 빌드
 RUN cd /app/packages/match && yarn build
