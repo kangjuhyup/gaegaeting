@@ -23,8 +23,9 @@
     "composite": true,
     "paths": {
       "@app/*": ["./src/*"],
-      "@auth/*": ["./src/auth/*"],
-      "@user/*": ["./src/user/*"]
+      "@user/*": ["./src/user/*"],
+      "@item/*": ["./src/item/*"],
+      "@pet/*": ["./src/pet/*"]
     }
   }
 }

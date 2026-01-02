@@ -4,10 +4,12 @@ import { UserProfileRepositoryPort } from '@app/user/infrastructure/port/user-pr
 import { UserProfileEntity } from '@app/user/domain/model/user-profile';
 import { UserGender, UserRegion } from '@app/user/domain/enum/user.enum';
 import { UserProfileStatus } from '@core/database';
+import { DataSource } from 'typeorm';
 
 describe('CreateUserProfileHandler (UNIT)', () => {
   let handler: CreateUserProfileHandler;
   let userProfileRepository: jest.Mocked<UserProfileRepositoryPort>;
+  let dataSource: jest.Mocked<DataSource>;
 
   const user = { userId: 'user-1', name: 'tester' } as any;
 
@@ -19,7 +21,11 @@ describe('CreateUserProfileHandler (UNIT)', () => {
       hardDeleteUser: jest.fn(),
     } as unknown as jest.Mocked<UserProfileRepositoryPort>;
 
-    handler = new CreateUserProfileHandler(userProfileRepository);
+    dataSource = {
+      transaction: jest.fn(async (cb: any) => cb({} as any)),
+    } as any;
+
+    handler = new CreateUserProfileHandler(userProfileRepository, dataSource);
   });
 
   it('이미 존재하는 사용자면 에러를 던진다', async () => {

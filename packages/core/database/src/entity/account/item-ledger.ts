@@ -4,7 +4,7 @@ import {
     Column,
     Index,
   } from "typeorm";
-  import { ItemLedgerStatus, ItemLedgerType, ItemReferenceType } from "../enums";
+import { ItemLedgerStatus, ItemLedgerType, ItemReferenceType } from "./enum/item";
 import { BaseEntity } from "../base";
 import { ulid } from "ulid";
   
@@ -12,7 +12,7 @@ import { ulid } from "ulid";
   @Index(["userId", "occurredAt"])
   @Index(["idempotencyKey"], { unique: true })
   @Index(["referenceType", "referenceId"])
-  export class ItemLedger extends BaseEntity {
+  export class ItemLedgerOrmEntity extends BaseEntity {
     @PrimaryColumn({ type: "char", length: 26 })
     userId!: string;
   
