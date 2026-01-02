@@ -1,5 +1,23 @@
 import * as Joi from 'joi';
 
+function parseKafkaBrokers(input: string): string[] {
+  const raw = String(input ?? '').trim();
+  if (!raw) return [];
+
+  // Accept: "['kafka:9092']" or '["kafka:9092"]'
+  if (raw.startsWith('[') && raw.endsWith(']')) {
+    const inner = raw.slice(1, -1).trim();
+    if (!inner) return [];
+    return inner
+      .split(',')
+      .map((s) => s.trim().replace(/^['"]|['"]$/g, ''))
+      .filter(Boolean);
+  }
+
+  // Accept: "kafka:9092, kafka2:9092"
+  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+}
+
 // 1) envSpec만 한 군데서 관리
 export const envSpec = {
   NODE_ENV: { joi: Joi.string().valid('development', 'production', 'test').default('development') },
@@ -13,7 +31,18 @@ export const envSpec = {
   DATABASE_PASSWORD: { joi: Joi.string().required() },
   DATABASE_NAME: { joi: Joi.string().default('ggt_match') },
   ACCOUNT_SERVICE_HOST : { joi : Joi.string().required().default('http://localhost:3000') },
-  KAFKA_BROKERS : { joi : Joi.array().items(Joi.string().required()).required() },
+  KAFKA_BROKERS : {
+    joi : Joi.alternatives()
+      .try(
+        Joi.array().items(Joi.string().required()).min(1),
+        Joi.string().required().custom((value) => {
+          const parsed = parseKafkaBrokers(value);
+          if (parsed.length === 0) throw new Error('KAFKA_BROKERS must not be empty');
+          return parsed;
+        }),
+      )
+      .required(),
+  },
 } as const;
 
 // 2) 타입과 상수 자동 추출
