@@ -16,8 +16,8 @@ interface ILocation {
  */
 export class LocationEntity extends PersistenceEntity<string, ILocation> {
    
-    constructor(param: ILocation) {
-        super(param);
+    constructor(id : string, param: ILocation) {
+        super(param,id);
     }
 
     /**
@@ -48,8 +48,8 @@ export class LocationEntity extends PersistenceEntity<string, ILocation> {
         return this.etc.district;
     }
 
-    static of(param:ILocation) : LocationEntity {
-        return new LocationEntity(param);
+    static of(param:ILocation,userId?:string) : LocationEntity {
+        return new LocationEntity(userId,param);
     }
 
     /**

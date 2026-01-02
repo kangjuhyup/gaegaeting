@@ -4,6 +4,8 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { CqrsModule } from '@nestjs/cqrs';
 import { DatabaseModule, DatabaseSchema } from '@core/database';
 import { validationSchema } from './config/env.config';
+import { GraphQLModule } from "@nestjs/graphql";
+import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo";
 import { LikeApplicationModule } from "./like/application/like.application.module";
 import { PairApplicationModule } from "./pair/applicatoin/pair.application.module";
 import { FeedApplicationModule } from "./feed/application/feed.application.module";
@@ -11,6 +13,7 @@ import { LocationApplicationModule } from "./location/application/location.appli
 import { HttpModule } from "@core/http";
 import { HttpLoggerModule } from "@core/logger";
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { AppController } from "./app.controller";
 
 @Module({
     imports : [
@@ -59,12 +62,25 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
                 };
             },
         }),
+        // GraphQL (code-first)
+        GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+            driver: ApolloFederationDriver,
+            // keep in-memory to avoid filesystem path issues
+            autoSchemaFile: { federation : 2 },
+            sortSchema: true,
+            path: '/match/graphql',
+            playground: true,
+            introspection: true,
+        }),
         EventEmitterModule.forRoot(),
         
         LocationApplicationModule,
         FeedApplicationModule,
         LikeApplicationModule,
         PairApplicationModule,
+    ],
+    controllers : [
+        AppController
     ]
 })
 export class AppModule {}
