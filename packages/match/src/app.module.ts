@@ -13,6 +13,7 @@ import { LocationApplicationModule } from "./location/application/location.appli
 import { HttpModule } from "@core/http";
 import { HttpLoggerModule } from "@core/logger";
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { AppController } from "./app.controller";
 
 @Module({
     imports : [
@@ -77,6 +78,9 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
         FeedApplicationModule,
         LikeApplicationModule,
         PairApplicationModule,
+    ],
+    controllers : [
+        AppController
     ]
 })
 export class AppModule {}
