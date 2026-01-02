@@ -1,4 +1,4 @@
-import { ClientOrmEntity, ConversationOrmEntity, EventOrmEntity, FeedItemOrmEntity, FeedOrmEntity, GroupOrmEntity, GroupRoleOrmEntity, IdentityProviderOrmEntity, LikeOrmEntity, LocationOrmEntity, MainAreaOrmEntity, MessageAttachmentOrmEntity, MessageOrmEntity, MessageReactionOrmEntity, MessageReceiptOrmEntity, PairOrmEntity, ParticipantOrmEntity, PermissionOrmEntity, PetAttachmentOrmEntity, PetProfileOrmEntity, RoleInheritOrmEntity, RoleOrmEntity, RolePermissionOrmEntity, TenantClientOrmEntity, TenantConfigOrmEntity, TenantOrmEntity, UserAttachmentOrmEntity, UserGroupOrmEntity, UserIdentityOrmEntity, UserOrmEntity, UserProfileOrmEntity, UserRoleOrmEntity } from "@app/entity";
+import { ClientOrmEntity, ConversationOrmEntity, EventOrmEntity, FeedItemOrmEntity, FeedOrmEntity, GroupOrmEntity, GroupRoleOrmEntity, IdentityProviderOrmEntity, ItemLotOrmEntity, ItemWalletOrmEntity, LikeOrmEntity, LocationOrmEntity, MainAreaOrmEntity, MessageAttachmentOrmEntity, MessageOrmEntity, MessageReactionOrmEntity, MessageReceiptOrmEntity, PairOrmEntity, ParticipantOrmEntity, PermissionOrmEntity, PetAttachmentOrmEntity, PetProfileOrmEntity, RoleInheritOrmEntity, RoleOrmEntity, RolePermissionOrmEntity, TenantClientOrmEntity, TenantConfigOrmEntity, TenantOrmEntity, UserAttachmentOrmEntity, UserGroupOrmEntity, UserIdentityOrmEntity, UserOrmEntity, UserProfileOrmEntity, UserRoleOrmEntity } from "@app/entity";
 
 export const DatabaseSchema = {
   AUTH: "AUTH",
@@ -18,7 +18,7 @@ export type DatabaseSchema =
 export function getEntitiesBySchema(schema: DatabaseSchema[]): any[] {
   const entityMap = {
     [DatabaseSchema.AUTH]: [TenantOrmEntity, TenantConfigOrmEntity, TenantClientOrmEntity, ClientOrmEntity, IdentityProviderOrmEntity, UserOrmEntity, UserIdentityOrmEntity, UserGroupOrmEntity, UserRoleOrmEntity, GroupOrmEntity, GroupRoleOrmEntity, RoleOrmEntity, RoleInheritOrmEntity, RolePermissionOrmEntity, PermissionOrmEntity, EventOrmEntity],
-    [DatabaseSchema.USER]: [UserProfileOrmEntity, PetProfileOrmEntity, UserAttachmentOrmEntity, PetAttachmentOrmEntity],
+    [DatabaseSchema.USER]: [UserProfileOrmEntity, PetProfileOrmEntity, UserAttachmentOrmEntity, PetAttachmentOrmEntity, ItemLotOrmEntity, ItemLotOrmEntity, ItemWalletOrmEntity],
     [DatabaseSchema.MATCH]: [PairOrmEntity, LikeOrmEntity, FeedOrmEntity, FeedItemOrmEntity, LocationOrmEntity, MainAreaOrmEntity],
     [DatabaseSchema.CHAT]: [ConversationOrmEntity, ParticipantOrmEntity, MessageOrmEntity, MessageAttachmentOrmEntity, MessageReceiptOrmEntity, MessageReactionOrmEntity],
   };
