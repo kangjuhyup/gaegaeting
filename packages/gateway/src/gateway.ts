@@ -48,7 +48,7 @@ export class Gateway {
 
     const matchServiceUrl =
       process.env.MATCH_SERVICE_URL ??
-      'http://127.0.0.1:3001/match/graphql';
+      'http://127.0.0.1:2801/match/graphql';
 
     const services: Subgraph[] = [
       { name: 'auth', url: authServiceUrl },
