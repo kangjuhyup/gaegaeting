@@ -40,6 +40,8 @@ async function bootstrap() {
     whitelist: true,
     forbidNonWhitelisted: true,
   }));
+
+  app.setGlobalPrefix('match');
   
   // CORS 설정
   app.enableCors({
