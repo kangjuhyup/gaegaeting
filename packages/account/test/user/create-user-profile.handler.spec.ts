@@ -15,6 +15,7 @@ describe('CreateUserProfileHandler (UNIT)', () => {
     userProfileRepository = {
       insertUserProfile: jest.fn(),
       selectUserProfileFromId: jest.fn(),
+      selectUserProfilesFromIds: jest.fn(),
       updateUserProfile: jest.fn(),
       hardDeleteUser: jest.fn(),
     } as unknown as jest.Mocked<UserProfileRepositoryPort>;

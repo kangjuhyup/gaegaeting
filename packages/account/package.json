@@ -50,6 +50,7 @@
     "axios": "^1.7.9",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "dataloader": "^2.2.3",
     "dotenv": "^16.4.5",
     "express": "^5.2.1",
     "graphql": "^16.12.0",

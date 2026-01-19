@@ -6,7 +6,6 @@ import { PresignedUrl } from "@app/common/vo/presigned-url";
 import { ICommandHandler } from "@nestjs/cqrs";
 import { PetAttachemntEntity } from "@app/pet/domain/model/pet-attachment";
 import { Transactional } from "@core/database";
-import { DataSource } from "typeorm";
 
 @CommandHandler(GeneratePetPresignedCommand)
 export class GeneratePetPresignedUrlHandler implements ICommandHandler<GeneratePetPresignedCommand,PresignedUrl> {
@@ -14,7 +13,6 @@ export class GeneratePetPresignedUrlHandler implements ICommandHandler<GenerateP
     constructor(
         private readonly petStoragePort : PetStoragePort,
         private readonly petAttachmentRepositoryPort : PetAttachmentRepositoryPort,
-        private readonly dataSource: DataSource,
     ) {}
     
     @Transactional()

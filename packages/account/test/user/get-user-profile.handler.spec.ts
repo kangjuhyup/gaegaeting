@@ -16,6 +16,7 @@ describe('GetUserProfileHandler (UNIT)', () => {
     userProfileRepository = {
       insertUserProfile: jest.fn(),
       selectUserProfileFromId: jest.fn(),
+      selectUserProfilesFromIds: jest.fn(),
       updateUserProfile: jest.fn(),
       hardDeleteUser: jest.fn(),
     } as unknown as jest.Mocked<UserProfileRepositoryPort>;
@@ -23,6 +24,7 @@ describe('GetUserProfileHandler (UNIT)', () => {
     userAttachmentRepository = {
       selectUserAttachment: jest.fn(),
       selectUserAttachments: jest.fn(),
+      selectUserAttachmentsFromUserIds: jest.fn(),
       insertUserAttachment: jest.fn(),
       updateUserAttachment: jest.fn(),
       updateUserAttachmentActive: jest.fn(),

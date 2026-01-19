@@ -5481,6 +5481,7 @@ __metadata:
     axios: "npm:^1.7.9"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.14.1"
+    dataloader: "npm:^2.2.3"
     dotenv: "npm:^16.4.5"
     eslint: "npm:^8.42.0"
     eslint-config-prettier: "npm:^9.1.0"
@@ -7048,6 +7049,13 @@ __metadata:
   version: 3.2.3
   resolution: "csstype@npm:3.2.3"
   checksum: 10c0/cd29c51e70fa822f1cecd8641a1445bed7063697469d35633b516e60fe8c1bde04b08f6c5b6022136bb669b64c63d4173af54864510fbb4ee23281801841a3ce
+  languageName: node
+  linkType: hard
+
+"dataloader@npm:^2.2.3":
+  version: 2.2.3
+  resolution: "dataloader@npm:2.2.3"
+  checksum: 10c0/9b9a056fbc863ca86da87d59e053e871e263b4966aa4d55e40d61a65e96815fae5530ca220629064ca5f8e3000c0c4ec93292e170c38ff393fb34256b4d7c1aa
   languageName: node
   linkType: hard
 

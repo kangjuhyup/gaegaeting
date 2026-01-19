@@ -3,13 +3,11 @@ import { UserProfileRepositoryPort } from "@app/user/infrastructure/port/user-pr
 import { Transactional, UserProfileStatus } from "@core/database";
 import { UserProfileEntity } from "@app/user/domain/model/user-profile";
 import { CreateUserProfileCommand } from "../../port/command/create-user-profile.port";
-import { DataSource } from "typeorm";
 
 @CommandHandler(CreateUserProfileCommand)
 export class CreateUserProfileHandler implements ICommandHandler<CreateUserProfileCommand, UserProfileEntity> {
   constructor(
     private readonly userProfileRepository: UserProfileRepositoryPort,
-    private readonly dataSource: DataSource,
   ) {}
 
   @Transactional()

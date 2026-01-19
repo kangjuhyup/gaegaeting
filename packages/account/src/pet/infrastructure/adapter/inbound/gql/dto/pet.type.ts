@@ -1,5 +1,7 @@
 import { Directive, Field, GraphQLISODateTime, ID, Int, ObjectType } from '@nestjs/graphql';
 import { PetBreedGql, PetGenderGql, PetPersonalityGql, PetSizeGql } from './pet.enum';
+import { UserProfile } from '@app/user/infrastructure/adapter/inbound/gql/dto/user.type';
+import { PetAttachment } from './pet-attachment.type';
 
 @ObjectType()
 @Directive('@key(fields: "id")')
@@ -31,11 +33,17 @@ export class Pet {
   @Field(() => ID)
   userId: string;
 
+  @Field(() => UserProfile, { nullable: true })
+  user?: UserProfile;
+
   @Field(() => Boolean)
   isCertificated: boolean;
 
   @Field(() => [String])
   profileImages: string[];
+
+  @Field(() => [PetAttachment], { nullable: 'itemsAndList' })
+  attachments?: PetAttachment[];
 
   @Field(() => GraphQLISODateTime)
   createdAt: Date;

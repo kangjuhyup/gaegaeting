@@ -1,6 +1,7 @@
 import { PetProfileOrmEntity, BaseRepository } from "@core/database";
 import { Injectable } from "@nestjs/common";
 import { DataSource } from "typeorm";
+import { In } from "typeorm";
 import { PetOrmMapper } from "./mapper/pet-orm";
 import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
 import { PetProfileRepositoryPort } from "@app/pet/infrastructure/port/pet-profile-repository.port";
@@ -32,6 +33,15 @@ export class PetProfileOrmRepository extends BaseRepository<PetProfileOrmEntity>
         const orm = await this.getRepository().find({ 
             where: { userId }, 
             relations: { attachments: true } 
+        });
+        return orm.map(PetOrmMapper.toDomain);
+    }
+
+    async selectPetsFromUserIds(userIds: string[]): Promise<PetProfileEntity[]> {
+        if (!userIds || userIds.length === 0) return [];
+        const orm = await this.getRepository().find({
+            where: { userId: In(userIds) },
+            relations: { attachments: true }
         });
         return orm.map(PetOrmMapper.toDomain);
     }

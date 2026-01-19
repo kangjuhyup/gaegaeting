@@ -1,6 +1,7 @@
 import { UserAttachmentOrmEntity, BaseRepository } from "@core/database";
 import { Injectable } from "@nestjs/common";
 import { DataSource } from "typeorm";
+import { In } from "typeorm";
 import { UserAttachmentRepositoryPort } from "@app/user/infrastructure/port/user-attachment-repository.port";
 import { UserAttachmentEntity } from "@app/user/domain/model/user-attachment";
 import { UserAttachmentOrmMapper } from "./mapper/user-attachment-orm";
@@ -24,6 +25,16 @@ export class UserAttachmentOrmRepository extends BaseRepository<UserAttachmentOr
 
     async selectUserAttachments(userId: string): Promise<UserAttachmentEntity[]> {
         const userAttachmentOrms = await this.getRepository().find({ where: { userId } });
+        return userAttachmentOrms.map(orm => UserAttachmentOrmMapper.toDomain(orm));
+    }
+
+    async selectUserAttachmentsFromUserIds(userIds: string[]): Promise<UserAttachmentEntity[]> {
+        if (!userIds || userIds.length === 0) return [];
+        const uniqueIds = Array.from(new Set(userIds.map(String).filter(Boolean)));
+        if (uniqueIds.length === 0) return [];
+        const userAttachmentOrms = await this.getRepository().find({
+            where: { userId: In(uniqueIds) }
+        });
         return userAttachmentOrms.map(orm => UserAttachmentOrmMapper.toDomain(orm));
     }
 

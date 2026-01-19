@@ -1,4 +1,4 @@
-import { Int, Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Int, Resolver, Query, Mutation, Args, Parent, ResolveField } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UserParam, UserPrincipal, GraphqlAccessGuard } from '@core/auth';
@@ -11,12 +11,19 @@ import { PresignedUrl } from '@app/common/graphql/dto/presigned-url.type';
 import { UserGraphQLDto } from './dto/user.graphql.dto';
 import { CreateUserProfileInput, UpdateUserProfileInput } from './dto/user.input';
 import { UserProfile } from './dto/user.type';
+import { PetsByUserIdLoader } from './dataloader/pets-by-user-id.loader';
+import { Pet } from '@app/pet/infrastructure/adapter/inbound/gql/dto/pet.type';
+import { PetGraphQLDto } from '@app/pet/infrastructure/adapter/inbound/gql/dto/pet.graphql.dto';
+import { UserAttachment } from './dto/user-attachment.type';
+import { UserAttachmentsByUserIdLoader } from './dataloader/user-attachments-by-user-id.loader';
 
 @Resolver(() => UserProfile)
 export class UserResolver {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
+    private readonly petsByUserIdLoader: PetsByUserIdLoader,
+    private readonly userAttachmentsByUserIdLoader: UserAttachmentsByUserIdLoader,
   ) {}
 
   @Query(() => UserProfile)
@@ -30,6 +37,27 @@ export class UserResolver {
   async profile(@Args('id', { type: () => String }) id: string): Promise<UserProfile | null> {
     const user = await this.queryBus.execute(new GetUserProfileQuery(id));
     return user ? UserGraphQLDto.fromDomain(user.profile, user.profileImages) : null;
+  }
+
+  @ResolveField(() => [Pet], { nullable: 'itemsAndList' })
+  async pets(@Parent() user: UserProfile): Promise<Pet[]> {
+    const pets = await this.petsByUserIdLoader.load(user.id);
+    return pets.map(({ pet, profile }) =>
+      PetGraphQLDto.fromDomain(pet, profile.map((p) => p.path)),
+    );
+  }
+
+  @ResolveField(() => [UserAttachment], { nullable: 'itemsAndList' })
+  async attachments(@Parent() user: UserProfile): Promise<UserAttachment[]> {
+    const attachments = await this.userAttachmentsByUserIdLoader.load(user.id);
+    return attachments.map((a) => ({
+      userId: a.id.userId,
+      no: a.id.no,
+      path: a.path,
+      active: a.active,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+    }));
   }
 
   @Mutation(() => UserProfile)

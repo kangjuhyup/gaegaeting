@@ -1,5 +1,7 @@
 import { Directive, Field, ID, ObjectType, GraphQLISODateTime } from '@nestjs/graphql';
+import { Pet } from '@app/pet/infrastructure/adapter/inbound/gql/dto/pet.type';
 import { UserGenderGql, UserRegionGql, UserStatusGql } from './user.enum';
+import { UserAttachment } from './user-attachment.type';
 
 @ObjectType()
 @Directive('@key(fields: "id")')
@@ -36,6 +38,12 @@ export class UserProfile {
 
   @Field(() => [String])
   profileImages: string[];
+
+  @Field(() => [UserAttachment], { nullable: 'itemsAndList' })
+  attachments?: UserAttachment[];
+
+  @Field(() => [Pet], { nullable: 'itemsAndList' })
+  pets?: Pet[];
 
   @Field(() => GraphQLISODateTime)
   createdAt: Date;

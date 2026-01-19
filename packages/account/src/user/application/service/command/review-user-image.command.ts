@@ -5,7 +5,6 @@ import { UserAttachmentRepositoryPort } from "@app/user/infrastructure/port/user
 import { UserStoragePort } from "@app/user/infrastructure/port/user-storage.port";
 import { ConflictException, NotFoundException } from "@nestjs/common";
 import { Transactional } from "@core/database";
-import { DataSource } from "typeorm";
 
 @CommandHandler(ReviewUserImageCommand)
 export class ReviewUserImageHandler implements ICommandHandler<ReviewUserImageCommand,void> {
@@ -14,7 +13,6 @@ export class ReviewUserImageHandler implements ICommandHandler<ReviewUserImageCo
         private readonly userProfileRepository: UserProfileRepositoryPort,
         private readonly userAttachmentRepository: UserAttachmentRepositoryPort,
         private readonly userStorage : UserStoragePort,
-        private readonly dataSource: DataSource,
     ) {}
     
     @Transactional()

@@ -15,6 +15,11 @@ export abstract class UserProfileRepositoryPort {
    * ID로 사용자 프로필 조회
    */
   abstract selectUserProfileFromId(id: string): Promise<UserProfileEntity>;
+
+  /**
+   * 사용자 ID 목록으로 사용자 프로필 배치 조회 (N+1 방지용)
+   */
+  abstract selectUserProfilesFromIds(ids: string[]): Promise<UserProfileEntity[]>;
    
   /**
    * 사용자 프로필 업데이트

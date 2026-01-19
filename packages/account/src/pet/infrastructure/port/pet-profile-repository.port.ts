@@ -20,6 +20,11 @@ export abstract class PetProfileRepositoryPort {
    * 사용자 ID로 반려동물 프로필 목록 조회
    */
   abstract selectPetFromUserId(userId: string): Promise<PetProfileEntity[]>;
+
+  /**
+   * 사용자 ID 목록으로 반려동물 프로필 목록 배치 조회 (N+1 방지용)
+   */
+  abstract selectPetsFromUserIds(userIds: string[]): Promise<PetProfileEntity[]>;
   
   /**
    * 반려동물 프로필 업데이트

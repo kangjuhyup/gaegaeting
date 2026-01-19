@@ -2,6 +2,8 @@ import { DynamicModule, Global, Module, Provider, Type } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { DatabaseSchema, getEntitiesBySchema } from "./datasource";
+import { TransactionContext } from "./transaction/transaction-context";
+import { TransactionService } from "./transaction/transaction.service";
 
 /**
  * 데이터베이스 모듈 비동기 구성 옵션 인터페이스
@@ -72,9 +74,11 @@ export class DatabaseModule {
       ],
       providers: [
         ...this.createAsyncProviders(options),
+        TransactionContext,
+        TransactionService,
         // 여기에 데이터베이스 관련 서비스 제공자를 추가합니다
       ],
-      exports: [TypeOrmModule],
+      exports: [TypeOrmModule, TransactionContext, TransactionService],
     };
   }
 

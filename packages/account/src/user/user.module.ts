@@ -3,6 +3,8 @@ import { join } from "path";
 import { UserApplicationModule } from "./application/application.module";
 import { UserInfraStructureModule } from "./infrastructure/infrastructure.module";
 import { UserResolver } from "./infrastructure/adapter/inbound/gql/user.resolver";
+import { PetsByUserIdLoader } from "./infrastructure/adapter/inbound/gql/dataloader/pets-by-user-id.loader";
+import { UserAttachmentsByUserIdLoader } from "./infrastructure/adapter/inbound/gql/dataloader/user-attachments-by-user-id.loader";
 
 // GraphQL 스키마 파일 경로
 // 개발 환경: __dirname은 src/user를 가리킴
@@ -18,6 +20,8 @@ export const USER_GRAPHQL_DEFINITIONS_PATH = join(process.cwd(), './src/user/inf
     ],
     providers: [
         UserResolver,
+        PetsByUserIdLoader,
+        UserAttachmentsByUserIdLoader,
     ],
 })
 export class UserModule {}

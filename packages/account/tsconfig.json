@@ -1,5 +1,5 @@
 {
-  "include": ["./src"],
+  "include": ["./src","./test"],
   "extends" : "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
@@ -9,6 +9,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "target": "ES2021",
     "sourceMap": true,
     "incremental": true,

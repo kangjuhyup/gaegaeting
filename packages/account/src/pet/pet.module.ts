@@ -3,6 +3,8 @@ import { join } from "path";
 import { PetApplicationModule } from "./application/application.module";
 import { PetInfraStructureModule } from "./infrastructure/infrastructure.module";
 import { PetResolver } from "./infrastructure/adapter/inbound/gql/pet.resolver";
+import { UserProfileByIdLoader } from "./infrastructure/adapter/inbound/gql/dataloader/user-profile-by-id.loader";
+import { PetAttachmentsByPetIdLoader } from "./infrastructure/adapter/inbound/gql/dataloader/pet-attachments-by-pet-id.loader";
 
 // GraphQL 스키마 파일 경로
 // 개발 환경: __dirname은 src/pet를 가리킴
@@ -18,6 +20,8 @@ export const PET_GRAPHQL_DEFINITIONS_PATH = join(process.cwd(), './src/pet/infra
     ],
     providers: [
         PetResolver,
+        UserProfileByIdLoader,
+        PetAttachmentsByPetIdLoader,
     ],
 })
 export class PetModule {}

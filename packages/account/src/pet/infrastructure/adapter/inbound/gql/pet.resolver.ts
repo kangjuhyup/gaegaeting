@@ -1,4 +1,4 @@
-import { Int, Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Int, Resolver, Query, Mutation, Args, Parent, ResolveField } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UserParam, UserPrincipal, GraphqlAccessGuard } from '@core/auth';
@@ -13,13 +13,40 @@ import { PresignedUrl } from '@app/common/graphql/dto/presigned-url.type';
 import { PetGraphQLDto } from './dto/pet.graphql.dto';
 import { Pet } from './dto/pet.type';
 import { CertifyPetInput, CreatePetInput, UpdatePetInput } from './dto/pet.input';
+import { UserProfile } from '@app/user/infrastructure/adapter/inbound/gql/dto/user.type';
+import { UserGraphQLDto } from '@app/user/infrastructure/adapter/inbound/gql/dto/user.graphql.dto';
+import { UserProfileByIdLoader } from './dataloader/user-profile-by-id.loader';
+import { PetAttachment } from './dto/pet-attachment.type';
+import { PetAttachmentsByPetIdLoader } from './dataloader/pet-attachments-by-pet-id.loader';
 
 @Resolver(() => Pet)
 export class PetResolver {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
+    private readonly userProfileByIdLoader: UserProfileByIdLoader,
+    private readonly petAttachmentsByPetIdLoader: PetAttachmentsByPetIdLoader,
   ) {}
+
+  @ResolveField(() => UserProfile, { nullable: true })
+  async user(@Parent() pet: Pet): Promise<UserProfile | null> {
+    const loaded = await this.userProfileByIdLoader.load(pet.userId);
+    if (!loaded) return null;
+    return UserGraphQLDto.fromDomain(loaded.profile, loaded.profileImages);
+  }
+
+  @ResolveField(() => [PetAttachment], { nullable: 'itemsAndList' })
+  async attachments(@Parent() pet: Pet): Promise<PetAttachment[]> {
+    const attachments = await this.petAttachmentsByPetIdLoader.load(pet.id);
+    return attachments.map((a) => ({
+      petId: a.petId,
+      no: a.no,
+      path: a.path,
+      isActive: a.isActive,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+    }));
+  }
 
   @Query(() => [Pet])
   @UseGuards(GraphqlAccessGuard)

@@ -20,6 +20,11 @@ export abstract class UserAttachmentRepositoryPort {
    * @param userId 사용자 ID
    */
   abstract selectUserAttachments(userId: string): Promise<UserAttachmentEntity[]>;
+
+  /**
+   * 사용자 ID 목록으로 첨부파일 배치 조회 (N+1 방지용)
+   */
+  abstract selectUserAttachmentsFromUserIds(userIds: string[]): Promise<UserAttachmentEntity[]>;
   
   /**
    * 사용자 첨부파일 생성

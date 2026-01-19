@@ -12,9 +12,11 @@ export function Transactional(dataSource?: DataSource) {
         return originalMethod.apply(this, args);
       }
 
-      const ds = dataSource || this.dataSource;
+      const ds = dataSource || this.dataSource || TransactionContext.getDataSource();
       if (!ds) {
-        throw new Error('DataSource not found. Provide DataSource via decorator parameter or ensure it exists on the class instance.');
+        throw new Error(
+          'DataSource not found. Provide DataSource via decorator parameter, ensure it exists on the class instance, or register DatabaseModule so TransactionContext can receive it via DI.',
+        );
       }
 
       return ds.transaction(async (manager: EntityManager) => {

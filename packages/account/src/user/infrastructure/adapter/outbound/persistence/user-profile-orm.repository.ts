@@ -1,6 +1,7 @@
 import { UserProfileOrmEntity, BaseRepository } from "@core/database";
 import { Injectable } from "@nestjs/common";
 import { DataSource } from "typeorm";
+import { In } from "typeorm";
 import { UserProfileOrmMapper } from "./mapper/user-profile-orm";
 import { UserProfileRepositoryPort } from "@app/user/infrastructure/port/user-profile-repository.port";
 import { UserProfileEntity } from "@app/user/domain/model/user-profile";
@@ -26,6 +27,14 @@ export class UserProfileOrmRepository extends BaseRepository<UserProfileOrmEntit
     async selectUserProfileFromId(id: string): Promise<UserProfileEntity> {
         const userOrm = await this.getRepository().findOneBy({ id });
         return UserProfileOrmMapper.toDomain(userOrm);
+    }
+
+    async selectUserProfilesFromIds(ids: string[]): Promise<UserProfileEntity[]> {
+        if (!ids || ids.length === 0) return [];
+        const uniqueIds = Array.from(new Set(ids.map(String).filter(Boolean)));
+        if (uniqueIds.length === 0) return [];
+        const userOrms = await this.getRepository().find({ where: { id: In(uniqueIds) } });
+        return userOrms.map(UserProfileOrmMapper.toDomain);
     }
 
     async updateUserProfile(user: UserProfileEntity): Promise<UserProfileEntity> {

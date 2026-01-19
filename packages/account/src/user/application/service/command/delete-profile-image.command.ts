@@ -5,7 +5,6 @@ import { UserAttachmentRepositoryPort } from "@app/user/infrastructure/port/user
 import { UserStoragePort } from "@app/user/infrastructure/port/user-storage.port";
 import { NotFoundException } from "@nestjs/common";
 import { Transactional } from "@core/database";
-import { DataSource } from "typeorm";
 
 @CommandHandler(DeleteProfileImageCommand)
 export class DeleteProfileImageHandler implements ICommandHandler<DeleteProfileImageCommand, void> {
@@ -13,7 +12,6 @@ export class DeleteProfileImageHandler implements ICommandHandler<DeleteProfileI
     constructor(
         private readonly userAttachmentRepository : UserAttachmentRepositoryPort,
         private readonly userStoragePort : UserStoragePort,
-        private readonly dataSource: DataSource,
     ) {}
     
     @Transactional()
