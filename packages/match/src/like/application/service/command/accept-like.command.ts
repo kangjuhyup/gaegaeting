@@ -6,13 +6,15 @@ import { Topics } from "@app/common/topic";
 import { EventPublisherPort } from "@app/feed/domain/port/event-publisher.port";
 import { MatchPairCreatedV1Payload } from "@app/common/payload";
 import { Transactional } from "@core/database";
+import { DataSource } from "typeorm";
 
 @CommandHandler(AcceptLikeCommand)
 export class AcceptLikeHandler implements ICommandHandler<AcceptLikeCommand, void> {
     
     constructor(
         private readonly likeRepository : LikeRepositoryPort,
-        private readonly eventPublisher : EventPublisherPort
+        private readonly eventPublisher : EventPublisherPort,
+        private readonly dataSource : DataSource
     ) {}
 
     @Transactional()

@@ -16,6 +16,23 @@ export const FeedItemStatus = {
             }
         }
         throw new Error(`${value}에 해당하는 FeedItemStatus를 찾을 수 없습니다.`);
-    }
+    },
+
+    labels : () : string[] => {
+        return Object.values(FeedItemStatus)
+            .filter((v: any) => v && typeof v === 'object' && typeof v.label === 'string' && typeof v.value === 'number')
+            .map((v: any) => v.label);
+    },
+
+    fromLabel : (label: string) : FeedItemStatusValue => {
+        const normalized = String(label).trim().toUpperCase();
+        const entries = Object.entries(FeedItemStatus) as [string, any][];
+        for (const [key, val] of entries) {
+            if (typeof val === 'function') continue;
+            if (key === normalized) return val as FeedItemStatusValue;
+            if (val?.label === normalized) return val as FeedItemStatusValue;
+        }
+        throw new Error(`${label}에 해당하는 FeedItemStatus를 찾을 수 없습니다.`);
+    },
 } as const;
 export type FeedItemStatus = FeedItemStatusValue;

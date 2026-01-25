@@ -3,19 +3,21 @@ import { Transactional } from '@core/database';
 import { CertifyPetCommand } from '../../port/command/certify-pet.port';
 import { PetProfileRepositoryPort } from '@app/pet/infrastructure/port/pet-profile-repository.port';
 import { PetCertificationPort } from '@app/pet/infrastructure/port/pet-certification.port';
-import { PetEntity } from '@app/pet/domain/model/pet';
+import { PetProfileEntity } from '@app/pet/domain/model/pet-profile';
+import { DataSource } from 'typeorm';
 
 @CommandHandler(CertifyPetCommand)
 export class CertifyPetHandler
-  implements ICommandHandler<CertifyPetCommand, PetEntity>
+  implements ICommandHandler<CertifyPetCommand, PetProfileEntity>
 {
   constructor(
     private readonly petProfileRepository: PetProfileRepositoryPort,
     private readonly petCertificationPort: PetCertificationPort,
+    private readonly dataSource: DataSource,
   ) {}
 
   @Transactional()
-  async execute(command: CertifyPetCommand): Promise<PetEntity> {
+  async execute(command: CertifyPetCommand): Promise<PetProfileEntity> {
     const pet = await this.petProfileRepository.selectPetFromId(command.petId);
     if (!pet) {
       throw new Error('반려동물을 찾을 수 없습니다.');

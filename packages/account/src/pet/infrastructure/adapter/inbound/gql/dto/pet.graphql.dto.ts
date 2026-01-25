@@ -1,8 +1,10 @@
-import { PetEntity } from "@app/pet/domain/model/pet";
-import { PetGender, PetBreed, PetSize, PetPersonality } from "@app/pet/domain/enum/pet.enum";
 import { PetProfileEntity } from "@app/pet/domain/model/pet-profile";
+import { PetBreed, PetGender, PetPersonality, PetSize } from "@app/pet/domain/enum/pet.enum";
 import { PresignedUrl } from "@app/common/vo/presigned-url";
-import { Pet as GraphQLPet, CreatePetInput, UpdatePetInput, PresignedUrl as GraphQLPresignedUrl } from '../graphql';
+import { PresignedUrl as PresignedUrlGql } from '@app/common/graphql/dto/presigned-url.type';
+import { CreatePetInput, UpdatePetInput } from './pet.input';
+import { Pet } from './pet.type';
+import { PetBreedGql, PetGenderGql, PetPersonalityGql, PetSizeGql } from './pet.enum';
 
 /**
  * GraphQL Pet DTO
@@ -15,7 +17,7 @@ export class PetGraphQLDto {
    * @param pet 반려동물 엔티티
    * @param profileImages 프로필 이미지 경로 배열 (선택적)
    */
-  static fromDomain(pet: PetEntity, profileImages?: string[]): GraphQLPet {
+  static fromDomain(pet: PetProfileEntity, profileImages?: string[]): Pet {
     return {
       id: pet.id,
       name: pet.name,
@@ -95,7 +97,7 @@ export class PetGraphQLDto {
   /**
    * PresignedUrl VO를 GraphQL PresignedUrl 타입으로 변환
    */
-  static fromPresignedUrl(presignedUrl: PresignedUrl): GraphQLPresignedUrl {
+  static fromPresignedUrl(presignedUrl: PresignedUrl): PresignedUrlGql {
     return {
       url: presignedUrl.url,
       expiresIn: presignedUrl.expiresIn,
@@ -103,20 +105,20 @@ export class PetGraphQLDto {
   }
 
   // Enum 변환 메서드들
-  private static toGraphQLGender(gender: PetGender): GraphQLPet['gender'] {
-    return gender.label as GraphQLPet['gender'];
+  private static toGraphQLGender(gender: PetGender): PetGenderGql {
+    return gender.label as PetGenderGql;
   }
 
-  private static toDomainGender(gender: GraphQLPet['gender']): PetGender {
-    return gender === 'MALE' ? PetGender.MALE : PetGender.FEMALE;
+  private static toDomainGender(gender: PetGenderGql): PetGender {
+    return gender === PetGenderGql.MALE ? PetGender.MALE : PetGender.FEMALE;
   }
 
-  private static toGraphQLSize(size: PetSize): GraphQLPet['size'] {
-    return size.label as GraphQLPet['size'];
+  private static toGraphQLSize(size: PetSize): PetSizeGql {
+    return size.label as PetSizeGql;
   }
 
-  private static toDomainSize(size: GraphQLPet['size']): PetSize {
-    const sizeMap: Record<GraphQLPet['size'], PetSize> = {
+  private static toDomainSize(size: PetSizeGql): PetSize {
+    const sizeMap: Record<PetSizeGql, PetSize> = {
       SMALL: PetSize.SMALL,
       MEDIUM: PetSize.MEDIUM,
       LARGE: PetSize.LARGE,
@@ -124,12 +126,12 @@ export class PetGraphQLDto {
     return sizeMap[size];
   }
 
-  private static toGraphQLBreed(breed: PetBreed): GraphQLPet['breed'] {
-    return breed.label as GraphQLPet['breed'];
+  private static toGraphQLBreed(breed: PetBreed): PetBreedGql {
+    return breed.label as PetBreedGql;
   }
 
-  private static toDomainBreed(breed: GraphQLPet['breed']): PetBreed {
-    const breedMap: Record<GraphQLPet['breed'], PetBreed> = {
+  private static toDomainBreed(breed: PetBreedGql): PetBreed {
+    const breedMap: Record<PetBreedGql, PetBreed> = {
       MALTESE: PetBreed.MALTESE,
       POODLE: PetBreed.POODLE,
       CHIHUAHUA: PetBreed.CHIHUAHUA,
@@ -149,12 +151,12 @@ export class PetGraphQLDto {
     return breedMap[breed];
   }
 
-  private static toGraphQLPersonality(personality: PetPersonality): GraphQLPet['personalities'][number] {
-    return personality.label as GraphQLPet['personalities'][number];
+  private static toGraphQLPersonality(personality: PetPersonality): PetPersonalityGql {
+    return personality.label as PetPersonalityGql;
   }
 
-  private static toDomainPersonality(personality: GraphQLPet['personalities'][number]): PetPersonality {
-    const personalityMap: Record<GraphQLPet['personalities'][number], PetPersonality> = {
+  private static toDomainPersonality(personality: PetPersonalityGql): PetPersonality {
+    const personalityMap: Record<PetPersonalityGql, PetPersonality> = {
       FRIENDLY: PetPersonality.FRIENDLY,
       SHY: PetPersonality.SHY,
       ACTIVE: PetPersonality.ACTIVE,

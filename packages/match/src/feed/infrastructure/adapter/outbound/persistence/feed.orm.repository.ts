@@ -18,4 +18,10 @@ export class FeedOrmRepository extends BaseRepository<FeedOrmEntity> implements 
         return orm.map(FeedOrmMapper.toDomain);
     }
 
+    async saveFeed(feed: FeedEntity): Promise<FeedEntity> {
+        const orm = FeedOrmMapper.toOrm(feed);
+        const savedFeed = await this.getRepository().save(orm);
+        return FeedOrmMapper.toDomain(savedFeed);
+    }
+
 }

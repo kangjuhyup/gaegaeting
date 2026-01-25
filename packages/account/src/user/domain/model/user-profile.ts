@@ -30,6 +30,10 @@ export class UserProfileEntity extends PersistenceEntity<string, IUserProfile> {
     }
 
     static of(param: IUserProfile, id?: string) {
+        // 생성 경로에 따라 status가 null로 들어오는 케이스가 있어 기본값만 보정
+        if (param.status == null) {
+            param.status = UserProfileStatus.ACTIVE;
+        }
         return new UserProfileEntity(param, id);
     }
 

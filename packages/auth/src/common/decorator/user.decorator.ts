@@ -1,6 +1,5 @@
 // src/common/decorator/user.decorator.ts
 import { createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { User } from '@app/domain/model/user';
 
 let GqlExecutionContext: any;
 try {

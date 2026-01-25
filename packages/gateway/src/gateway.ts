@@ -46,10 +46,14 @@ export class Gateway {
       process.env.ACCOUNT_SERVICE_URL ??
       'http://127.0.0.1:2800/account/graphql';
 
+    const matchServiceUrl =
+      process.env.MATCH_SERVICE_URL ??
+      'http://127.0.0.1:2801/match/graphql';
+
     const services: Subgraph[] = [
       { name: 'auth', url: authServiceUrl },
       { name: 'account', url: accountServiceUrl },
-      // { name: 'match', url: process.env.MATCH_SERVICE_URL },
+      { name: 'match', url: matchServiceUrl },
       // { name: 'chat', url: process.env.CHAT_SERVICE_URL },
     ];
 

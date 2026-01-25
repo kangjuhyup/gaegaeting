@@ -1,0 +1,19 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: gateway
+  namespace: app
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`api.gaegaeting.app`) && PathPrefix(`/gateway`)
+      priority: 1000
+      services:
+        - name: gateway
+          port: 4000
+  tls:
+    secretName: gateway-tls
+
+

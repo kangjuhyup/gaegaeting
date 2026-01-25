@@ -7,6 +7,8 @@ import { KafkaProducerPort } from "../domain/port/kafka-producer.port";
 import { KafkaProducerAdapter } from "./adapter/outbound/event/kafka-producer.adapter";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 import { KafkaProducerModule } from "@core/kafka";
+import { ENV_KEY } from "@app/config/env.config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 const providers : Provider[] = [
     PairOrmMapper,
@@ -17,16 +19,22 @@ const providers : Provider[] = [
 @Module({
     imports : [
         EventEmitterModule.forRoot(),
-        KafkaProducerModule.forRoot({
-            clientId: "pair-service",
-            brokers: ['localhost:9092'],
-            ssl: false,
-            sasl: null,
-            allowAutoTopicCreation: true,
-            defaultHeaders: {
-                'Content-Type': 'application/json',
+        KafkaProducerModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => {
+                return {
+                    clientId: "pair-service",
+                    brokers: configService.get<string[]>(ENV_KEY.KAFKA_BROKERS),
+                    ssl: false,
+                    sasl: undefined,
+                    allowAutoTopicCreation: true,
+                    defaultHeaders: {
+                        'Content-Type': 'application/json',
+                    },
+                };
             },
-        })
+        }),
     ],
     controllers: [
         PairController

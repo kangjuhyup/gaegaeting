@@ -22,4 +22,10 @@ export class FeedItemOrmRepository extends BaseRepository<FeedItemOrmEntity> imp
         const updatedFeedItem = await this.getRepository().save(orm);
         return FeedItemOrmMapper.toDomain(updatedFeedItem);
     }
+
+    async saveFeedItem(feedItem: FeedItemEntity): Promise<FeedItemEntity> {
+        const orm = FeedItemOrmMapper.toOrm(feedItem);
+        const savedFeedItem = await this.getRepository().save(orm);
+        return FeedItemOrmMapper.toDomain(savedFeedItem);
+    }
 }

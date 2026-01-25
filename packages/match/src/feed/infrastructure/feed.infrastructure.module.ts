@@ -1,5 +1,4 @@
 import { Module, Provider } from "@nestjs/common";
-import { FeedController } from "./adapter/inbound/http/feed.controller";
 import { FeedRepositoryPort } from "../domain/port/feed.repository.port";
 import { PetApiPort } from "../domain/port/pet-api.port";
 import { PetApiAdpater } from "./adapter/outbound/api/pet-api.adapter";
@@ -11,12 +10,18 @@ import { FeedOrmRepository } from "./adapter/outbound/persistence/feed.orm.repos
 import { FeedItemRepositoryPort } from "../domain/port/feed-item.repository.port";
 import { FeedItemOrmRepository } from "./adapter/outbound/persistence/feed-item.orm.repository";
 import { FeedItemOrmMapper } from "./adapter/outbound/persistence/mapper/feed-item-orm.mapper";
-import { EventEmitterModule } from "@nestjs/event-emitter";
 import { KafkaProducerModule } from "@core/kafka";
 import { EventPublisherPort } from "../domain/port/event-publisher.port";
 import { EventPublisherAdapter } from "./adapter/outbound/event/event-publisher.adapter";
 import { KafkaProducerPort } from "../domain/port/kafka-producer.port";
 import { KafkaProducerAdapter } from "./adapter/outbound/event/kafka-producer.adapter";
+import { ClockPort } from "../application/port/clock.port";
+import { SystemClockAdapter } from "./adapter/outbound/clock/system-clock.adapter";
+import { FeedResolver } from "./adapter/inbound/gql/feed.resolver";
+import { LocationRepositoryPort } from "@app/location/domain/port/location.repostiory.port";
+import { LocationOrmRepository } from "@app/location/infrastructure/adapter/outbound/presistence/location.orm.repository";
+import { ENV_KEY } from "@app/config/env.config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 const providers : Provider[] = [
     FeedOrmMapper,
@@ -28,6 +33,10 @@ const providers : Provider[] = [
     {
         provide : FeedItemRepositoryPort,
         useClass : FeedItemOrmRepository
+    },
+    {
+        provide : LocationRepositoryPort,
+        useClass : LocationOrmRepository
     },
     {
         provide : PetApiPort,
@@ -44,7 +53,12 @@ const providers : Provider[] = [
     {
         provide : KafkaProducerPort,
         useClass : KafkaProducerAdapter
-    }
+    },
+    // time (for deterministic tests)
+    {
+        provide: ClockPort,
+        useClass: SystemClockAdapter,
+    },
 ]
 
 @Module({
@@ -53,21 +67,27 @@ const providers : Provider[] = [
             timeout : 5000,
             retryCount : 3,
         }),
-        KafkaProducerModule.forRoot({
-            clientId: 'feed-service',
-            brokers: ['localhost:9092'],
-            ssl: false,
-            sasl: null,
-            allowAutoTopicCreation: true,
-            defaultHeaders: {
-                'Content-Type': 'application/json',
+        KafkaProducerModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => {
+                return {
+                    clientId: "feed-service",
+                    brokers: configService.get<string[]>(ENV_KEY.KAFKA_BROKERS),
+                    ssl: false,
+                    sasl: undefined,
+                    allowAutoTopicCreation: true,
+                    defaultHeaders: {
+                        'Content-Type': 'application/json',
+                    },
+                };
             },
-        })
+        }),
     ],
-    controllers: [
-        FeedController
+    providers : [
+        ...providers,
+        FeedResolver,
     ],
-    providers,
     exports : providers
 })
 export class FeedInfrastructureModule {}

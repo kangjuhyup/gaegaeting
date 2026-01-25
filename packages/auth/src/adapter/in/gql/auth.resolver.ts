@@ -101,7 +101,6 @@ export class AuthResolver{
   }
 
   @Mutation('nativeSignin')
-  @UseGuards(GraphqlAccessGuard)
   async nativeSignin(
     @Args('provider') provider: string,
     @Args('accessToken') accessToken: string,

@@ -12,6 +12,7 @@ import { PetProfileRepositoryPort } from "./port/pet-profile-repository.port";
 import { PetProfileOrmRepository } from "./adapter/outbound/persistence/pet-profile-orm.repository";
 import { PetAttachmentOrmRepository } from "./adapter/outbound/persistence/pet-attachment-orm.repository";
 import { PetAttachmentRepositoryPort } from "./port/pet-attachment-repository.port";
+import { ENV_KEY } from "@app/config/env.config";
 
 const providers : Provider[] = [
     PetOrmMapper,
@@ -48,12 +49,12 @@ const providers : Provider[] = [
             inject : [ConfigService],
             useFactory : (configService : ConfigService) => {
                 return {
-                    storageHost : configService.get<string>('STORAGE_HOST'),
-                    bucket : 'ggt-pet',
-                    prefix : configService.get<string>('STORAGE_PREFIX'),
-                    region : configService.get<string>('STORAGE_REGION'),
-                    accessKeyId : configService.get<string>('STORAGE_ACCESS_KEY_ID'),
-                    secretAccessKey : configService.get<string>('STORAGE_SECRET_ACCESS_KEY'),
+                    storageHost : configService.get(ENV_KEY.STORAGE_HOST),
+                    bucket : configService.get<string>(ENV_KEY.STORAGE_PET_BUCKET),
+                    prefix : configService.get<string>(ENV_KEY.STORAGE_PROFILE_PREFIX),
+                    region : configService.get<string>(ENV_KEY.STORAGE_REGION),
+                    accessKeyId : configService.get<string>(ENV_KEY.STORAGE_ACCESS_KEY_ID),
+                    secretAccessKey : configService.get<string>(ENV_KEY.STORAGE_SECRET_ACCESS_KEY),
                 }
             }
         })

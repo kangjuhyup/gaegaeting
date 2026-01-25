@@ -1,7 +1,7 @@
 import { Command } from '@nestjs/cqrs';
-import { PetEntity } from '@app/pet/domain/model/pet';
+import { PetProfileEntity } from '@app/pet/domain/model/pet-profile';
 
-export class CertifyPetCommand extends Command<PetEntity> {
+export class CertifyPetCommand extends Command<PetProfileEntity> {
   constructor(
     public readonly petId: number,
     public readonly userName: string,

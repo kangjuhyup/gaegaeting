@@ -8,9 +8,9 @@ jest.mock('@nestjs/graphql', () => ({
   },
 }));
 
-describe('UserPayload decorator', () => {
+describe('JwtPayload decorator', () => {
   const { GqlExecutionContext } = require('@nestjs/graphql');
-  const { UserPayload } = require('../../../src/common/decorator/user.decorator');
+  const { JwtPayload } = require('../../../src/common/decorator/user.decorator');
 
   const getFactory = () => {
     class TestController {
@@ -19,7 +19,7 @@ describe('UserPayload decorator', () => {
     }
 
     // 파라미터 데코레이터 적용
-    UserPayload()(TestController.prototype, 'handler', 0);
+    JwtPayload()(TestController.prototype, 'handler', 0);
 
     const meta =
       Reflect.getMetadata(ROUTE_ARGS_METADATA, TestController, 'handler') ??
@@ -41,9 +41,9 @@ describe('UserPayload decorator', () => {
     jest.clearAllMocks();
   });
 
-  test('HTTP: req._userDomainModel이 있으면 그대로 반환', () => {
-    const user = { id: 'u1' };
-    const req: any = { headers: {}, _userDomainModel: user };
+  test('HTTP: req.user가 있으면 그대로 반환', () => {
+    const user = { userId: 'u1', tenantId: 't1' };
+    const req: any = { headers: {}, user };
     const ctx: any = {
       getType: () => 'http',
       switchToHttp: () => ({ getRequest: () => req }),
@@ -69,9 +69,9 @@ describe('UserPayload decorator', () => {
     expect(callFactory(ctx, { required: false })).toBeNull();
   });
 
-  test('GraphQL: gql context req._userDomainModel이 있으면 반환', () => {
-    const user = { id: 'u1' };
-    const req: any = { headers: {}, _userDomainModel: user };
+  test('GraphQL: gql context req.user가 있으면 반환', () => {
+    const user = { userId: 'u1', tenantId: 't1' };
+    const req: any = { headers: {}, user };
     (GqlExecutionContext.create as any).mockReturnValue({
       getContext: () => ({ req }),
     });

@@ -9,6 +9,7 @@ import { UserStoragePort } from "./port/user-storage.port";
 import { UserStorageAdapter } from "./adapter/outbound/api/user-storage.adapter";
 import { AdminUserContorller } from "./adapter/inbound/http/user/user.admin.controller";
 import { HttpModule } from "@core/http";
+import { ENV_KEY } from "@app/config/env.config";
 
 const providers : Provider[] = [
     {
@@ -35,12 +36,12 @@ const providers : Provider[] = [
             inject : [ConfigService],
             useFactory : (configService : ConfigService) => {
                 return {
-                    storageHost : configService.get<string>('STORAGE_HOST'),
-                    bucket : 'ggt-user',
-                    prefix : configService.get<string>('STORAGE_PREFIX'),
-                    region : configService.get<string>('STORAGE_REGION'),
-                    accessKeyId : configService.get<string>('STORAGE_ACCESS_KEY_ID'),
-                    secretAccessKey : configService.get<string>('STORAGE_SECRET_ACCESS_KEY'),
+                    storageHost : configService.get<string>(ENV_KEY.STORAGE_HOST),
+                    bucket : configService.get<string>(ENV_KEY.STORAGE_USER_BUCKET),
+                    prefix : configService.get<string>(ENV_KEY.STORAGE_PROFILE_PREFIX),
+                    region : configService.get<string>(ENV_KEY.STORAGE_REGION),
+                    accessKeyId : configService.get<string>(ENV_KEY.STORAGE_ACCESS_KEY_ID),
+                    secretAccessKey : configService.get<string>(ENV_KEY.STORAGE_SECRET_ACCESS_KEY),
                 }
             }
         })

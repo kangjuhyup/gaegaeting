@@ -11,7 +11,7 @@ export class FeedOrmMapper {
             date: new YYYYMMDD(orm.date),
             slot: orm.slot,
             expiresAt : orm.expiresAt,
-            items : orm.items.map((item) => FeedItemOrmMapper.toDomain(item))
+            items : orm.items?.map((item) => FeedItemOrmMapper.toDomain(item)) ?? []
         }).setPersistence(orm.id,orm.createdAt,orm.updatedAt)
     }
 
@@ -21,6 +21,7 @@ export class FeedOrmMapper {
         orm.userId = domain.userId;
         orm.date = domain.date.toString();
         orm.slot = domain.slot;
+        orm.expiresAt = domain.expiresAt;
         orm.createdAt = domain.createdAt;
         orm.updatedAt = domain.updatedAt;
         return orm;

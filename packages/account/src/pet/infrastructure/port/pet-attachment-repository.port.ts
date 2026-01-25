@@ -1,4 +1,4 @@
-import { PetProfileEntity } from "../../domain/model/pet-profile";
+import { PetAttachemntEntity } from "../../domain/model/pet-attachment";
 
 /**
  * 반려동물 첨부파일 리포지토리 포트
@@ -9,6 +9,8 @@ export abstract class PetAttachmentRepositoryPort {
   /**
    * 반려동물 첨부파일 생성
    */
-  abstract insertPetAttachment(pet: PetProfileEntity): Promise<PetProfileEntity>;
+  abstract insertPetAttachment(pet: PetAttachemntEntity): Promise<PetAttachemntEntity>;
+
+  abstract selectPetAttachmentsFromPetIds(petIds: number[]): Promise<PetAttachemntEntity[]>;
 }
 

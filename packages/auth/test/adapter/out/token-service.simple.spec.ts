@@ -120,26 +120,26 @@ describe('TokenService (UNIT)', () => {
       expect(jwtPort.sign).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({
-          sub: userId,
+          userId,
           tenantId,
           iat: expect.any(Number),
+          exp: expect.any(Number),
         }),
         {
           secret: jwtSecret,
-          expiresIn: accessExpiresIn,
         },
       );
       expect(jwtPort.sign).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
-          sub: userId,
+          userId,
           tenantId,
           iat: expect.any(Number),
+          exp: expect.any(Number),
           type: 'refresh',
         }),
         {
           secret: jwtSecret,
-          expiresIn: refreshExpiresIn,
         },
       );
 
