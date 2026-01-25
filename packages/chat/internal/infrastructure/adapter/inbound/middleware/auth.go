@@ -10,21 +10,30 @@ import (
 
 func JWTAuth(secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// 1. Authorization 헤더에서 토큰 가져오기
+		tokenString := ""
 		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
+
+		if authHeader != "" {
+			parts := strings.SplitN(authHeader, " ", 2)
+			if len(parts) == 2 && parts[0] == "Bearer" {
+				tokenString = parts[1]
+			}
+		}
+
+		// 2. 헤더에 없으면 Query Parameter에서 가져오기 (WebSocket용)
+		if tokenString == "" {
+			tokenString = c.Query("token")
+		}
+
+		// 3. 토큰이 없으면 에러
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization required"})
 			c.Abort()
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header format"})
-			c.Abort()
-			return
-		}
-
-		tokenString := parts[1]
+		// 토큰 검증
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
@@ -39,7 +48,13 @@ func JWTAuth(secret string) gin.HandlerFunc {
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			c.Set("userId", claims["sub"])
+			// userId 저장 (테스트 토큰은 "userId" 사용)
+			if userId, exists := claims["userId"]; exists {
+				c.Set("userId", userId)
+			} else if sub, exists := claims["sub"]; exists {
+				// 기존 토큰 호환성 (sub 필드)
+				c.Set("userId", sub)
+			}
 			c.Set("claims", claims)
 		}
 

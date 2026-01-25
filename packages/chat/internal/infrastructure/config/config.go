@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -46,18 +47,40 @@ type JWTConfig struct {
 }
 
 func Load() (*Config, error) {
-	// Load .env file if exists
+	// Load .env file if exists (Doppler 없을 때 백업용)
+	// Doppler 사용 시 이 파일은 무시됨
 	_ = godotenv.Load()
+
+	// 환경 변수 로드 (기본값: production으로 변경)
+	env := getEnv("NODE_ENV", "production")
+
+	// 개발/프로덕션 모드 로깅
+	if env == "development" {
+		log.Println("⚠️  Running in DEVELOPMENT mode")
+		log.Println("💡 Use 'doppler run -- go run cmd/server/main.go' for Doppler integration")
+	} else {
+		log.Println("✅ Running in PRODUCTION mode")
+	}
 
 	serverPort, _ := strconv.Atoi(getEnv("CHAT_PORT", "3003"))
 	dbPort, _ := strconv.Atoi(getEnv("DB_PORT", "3306"))
 	redisPort, _ := strconv.Atoi(getEnv("REDIS_PORT", "6379"))
 	redisDB, _ := strconv.Atoi(getEnv("REDIS_DB", "0"))
 
+	// JWT Secret 검증 (프로덕션)
+	jwtSecret := getEnv("JWT_SECRET", "")
+	if env == "production" && (jwtSecret == "" || jwtSecret == "your-secret-key" || jwtSecret == "your-secret-key-change-this-in-production") {
+		log.Fatal("❌ FATAL: JWT_SECRET must be set to a strong value in production environment!")
+	}
+	if jwtSecret == "" {
+		jwtSecret = "dev-only-secret"
+		log.Println("⚠️  WARNING: Using default JWT secret (development only)")
+	}
+
 	return &Config{
 		Server: ServerConfig{
 			Port: serverPort,
-			Env:  getEnv("NODE_ENV", "development"),
+			Env:  env,
 		},
 		Database: DatabaseConfig{
 			Host:     getEnv("DB_HOST", "localhost"),
@@ -77,7 +100,7 @@ func Load() (*Config, error) {
 			GroupID: getEnv("KAFKA_GROUP_ID", "chat-service"),
 		},
 		JWT: JWTConfig{
-			Secret: getEnv("JWT_SECRET", "your-secret-key"),
+			Secret: jwtSecret,
 		},
 	}, nil
 }

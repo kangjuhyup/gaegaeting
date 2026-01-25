@@ -1,4 +1,12 @@
-.PHONY: test test-unit test-integration test-coverage build run clean
+.PHONY: test test-unit test-integration test-coverage build run clean dev dev-doppler
+
+# Doppler로 개발 서버 실행 (추천)
+dev-doppler:
+	doppler run -- go run ./cmd/server/main.go
+
+# .env 파일로 개발 서버 실행 (백업용)
+dev:
+	go run ./cmd/server/main.go
 
 # 모든 테스트 실행
 test:

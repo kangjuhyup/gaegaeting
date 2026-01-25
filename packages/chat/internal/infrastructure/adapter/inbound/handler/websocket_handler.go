@@ -42,7 +42,19 @@ type WSMessage struct {
 
 func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
 	roomID := c.Param("roomId")
-	userID, _ := c.Get("userId")
+
+	// JWT에서 userId 가져오기
+	userID, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	
+	userIDStr, ok := userID.(string)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user id"})
+		return
+	}
 
 	// Verify room exists and user is a participant
 	room, err := h.roomService.GetRoom(c.Request.Context(), roomID)
@@ -51,7 +63,7 @@ func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
 		return
 	}
 
-	if !room.IsParticipant(userID.(string)) {
+	if !room.IsParticipant(userIDStr) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "not a room participant"})
 		return
 	}
@@ -83,7 +95,7 @@ func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
 			continue
 		}
 
-		h.handleMessage(c.Request.Context(), roomID, userID.(string), &wsMsg)
+		h.handleMessage(c.Request.Context(), roomID, userIDStr, &wsMsg)
 	}
 }
 
