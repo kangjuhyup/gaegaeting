@@ -5,6 +5,7 @@ import {
 } from '@apollo/gateway';
 import { ApolloServer, BaseContext } from '@apollo/server';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { randomUUID } from 'crypto';
 
 type Subgraph = { name: string; url: string };
 
@@ -166,6 +167,10 @@ export class Gateway {
             this.logger.debug(`Sending request to ${name} at ${url}`);
 
             if (!request.http?.headers) return;
+
+            // trace-id 생성 및 전달
+            const traceId = (context?.headers?.['x-trace-id'] as string) || randomUUID();
+            request.http.headers.set('x-trace-id', traceId);
 
             // CSRF 우회용
             request.http.headers.set('X-Requested-With', 'XMLHttpRequest');
