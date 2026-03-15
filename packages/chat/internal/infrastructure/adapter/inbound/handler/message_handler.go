@@ -19,10 +19,9 @@ func NewMessageHandler(service port.MessageService) *MessageHandler {
 }
 
 type SendMessageRequest struct {
-	RoomID   string `json:"roomId" binding:"required"`
-	SenderID string `json:"senderId" binding:"required"`
-	Content  string `json:"content" binding:"required"`
-	Type     string `json:"type" binding:"required"`
+	RoomID  string `json:"roomId" binding:"required"`
+	Content string `json:"content" binding:"required"`
+	Type    string `json:"type"`
 }
 
 func (h *MessageHandler) SendMessage(c *gin.Context) {
@@ -32,12 +31,31 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
+	// x-user-info 헤더에서 파싱된 userId 가져오기
+	userID, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	senderID, ok := userID.(string)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user id"})
+		return
+	}
+
+	// Type 기본값 처리
+	msgType := message.MessageType(req.Type)
+	if req.Type == "" {
+		msgType = message.MessageTypeText
+	}
+
 	msg, err := h.service.SendMessage(
 		c.Request.Context(),
 		req.RoomID,
-		req.SenderID,
+		senderID,
 		req.Content,
-		message.MessageType(req.Type),
+		msgType,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

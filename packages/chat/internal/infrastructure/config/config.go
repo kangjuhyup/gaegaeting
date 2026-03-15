@@ -14,7 +14,6 @@ type Config struct {
 	Database DatabaseConfig
 	Redis    RedisConfig
 	Kafka    KafkaConfig
-	JWT      JWTConfig
 }
 
 type ServerConfig struct {
@@ -42,10 +41,6 @@ type KafkaConfig struct {
 	GroupID string
 }
 
-type JWTConfig struct {
-	Secret string
-}
-
 func Load() (*Config, error) {
 	// Load .env file if exists (Doppler 없을 때 백업용)
 	// Doppler 사용 시 이 파일은 무시됨
@@ -66,16 +61,6 @@ func Load() (*Config, error) {
 	dbPort, _ := strconv.Atoi(getEnv("DB_PORT", "3306"))
 	redisPort, _ := strconv.Atoi(getEnv("REDIS_PORT", "6379"))
 	redisDB, _ := strconv.Atoi(getEnv("REDIS_DB", "0"))
-
-	// JWT Secret 검증 (프로덕션)
-	jwtSecret := getEnv("JWT_SECRET", "")
-	if env == "production" && (jwtSecret == "" || jwtSecret == "your-secret-key" || jwtSecret == "your-secret-key-change-this-in-production") {
-		log.Fatal("❌ FATAL: JWT_SECRET must be set to a strong value in production environment!")
-	}
-	if jwtSecret == "" {
-		jwtSecret = "dev-only-secret"
-		log.Println("⚠️  WARNING: Using default JWT secret (development only)")
-	}
 
 	return &Config{
 		Server: ServerConfig{
@@ -98,9 +83,6 @@ func Load() (*Config, error) {
 		Kafka: KafkaConfig{
 			Brokers: []string{getEnv("KAFKA_BROKER", "localhost:9092")},
 			GroupID: getEnv("KAFKA_GROUP_ID", "chat-service"),
-		},
-		JWT: JWTConfig{
-			Secret: jwtSecret,
 		},
 	}, nil
 }

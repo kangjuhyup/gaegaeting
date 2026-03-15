@@ -32,8 +32,8 @@ func SetupRouter(
 	// API routes
 	api := r.Group("/api/v1")
 	{
-		// Auth middleware
-		authMiddleware := middleware.JWTAuth(cfg.JWT.Secret)
+		// Auth middleware (x-user-info injected by Traefik)
+		authMiddleware := middleware.UserInfoAuth()
 
 		// Room endpoints
 		rooms := api.Group("/rooms")

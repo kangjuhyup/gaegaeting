@@ -43,7 +43,7 @@ type WSMessage struct {
 func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
 	roomID := c.Param("roomId")
 
-	// JWT에서 userId 가져오기
+	// x-user-info 헤더에서 파싱된 userId 가져오기
 	userID, exists := c.Get("userId")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -101,7 +101,7 @@ func (h *WebSocketHandler) HandleWebSocket(c *gin.Context) {
 
 func (h *WebSocketHandler) handleMessage(ctx context.Context, roomID, userID string, wsMsg *WSMessage) {
 	switch wsMsg.Type {
-	case "message":
+	case "message", "chat_message":  // 두 가지 타입 모두 지원
 		payload, ok := wsMsg.Payload.(map[string]interface{})
 		if !ok {
 			return
@@ -109,6 +109,11 @@ func (h *WebSocketHandler) handleMessage(ctx context.Context, roomID, userID str
 
 		content, _ := payload["content"].(string)
 		msgType, _ := payload["type"].(string)
+		
+		// 기본 메시지 타입
+		if msgType == "" {
+			msgType = "TEXT"
+		}
 
 		msg, err := h.messageService.SendMessage(ctx, roomID, userID, content, message.MessageType(msgType))
 		if err != nil {
@@ -118,7 +123,7 @@ func (h *WebSocketHandler) handleMessage(ctx context.Context, roomID, userID str
 
 		// Broadcast to all clients in the room
 		h.broadcast(roomID, WSMessage{
-			Type:    "message",
+			Type:    "chat_message",
 			Payload: msg,
 		})
 
@@ -150,6 +155,8 @@ func (h *WebSocketHandler) handleMessage(ctx context.Context, roomID, userID str
 				"userId":    userID,
 			},
 		})
+	default:
+		log.Printf("Unknown message type: %s", wsMsg.Type)
 	}
 }
 
