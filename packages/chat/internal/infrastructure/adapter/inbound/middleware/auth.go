@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -23,12 +24,21 @@ type UserInfo struct {
 // UserInfoAuth reads x-user-info header injected by Traefik after token validation.
 // If the header is absent, the request passes through (Traefik allows unauthenticated requests).
 // Handlers that require auth should check for "userId" in context.
+// For local testing (WebSocket), x-user-info can also be passed as a query parameter.
 func UserInfoAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userInfoHeader := c.GetHeader("x-user-info")
 		if userInfoHeader == "" {
+			userInfoHeader = c.Query("x-user-info")
+		}
+		if userInfoHeader == "" {
 			c.Next()
 			return
+		}
+
+		// URL 디코딩 (클라이언트에서 encodeURIComponent로 인코딩한 경우)
+		if decoded, err := url.QueryUnescape(userInfoHeader); err == nil {
+			userInfoHeader = decoded
 		}
 
 		var userInfo UserInfo
