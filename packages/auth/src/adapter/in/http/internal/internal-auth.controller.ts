@@ -3,7 +3,7 @@ import { Controller, Get, Req, Res, UnauthorizedException } from '@nestjs/common
 import type { Request, Response } from 'express';
 
 /**
- * Internal auth endpoint for edge middleware (e.g. Traefik ForwardAuth)
+ * Internal auth endpoint for edge middleware (e.g. Istio ext_authz)
  *
  * - If Authorization header is present, validates the JWT and returns `x-jwt-payload` header (base64 JSON).
  * - If Authorization header is missing, returns 200 without `x-jwt-payload`.
@@ -12,7 +12,7 @@ import type { Request, Response } from 'express';
 export class InternalAuthController {
   constructor(private readonly tokenService: TokenServicePort) {}
 
-  @Get('verify')
+  @Get(['verify', 'verify/*'])
   async verify(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const authHeader = req.headers?.authorization;
     if (!authHeader) {
@@ -41,5 +41,3 @@ export class InternalAuthController {
     return parts[1];
   }
 }
-
-

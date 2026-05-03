@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/kangjuhyup/gaegaeting
-    targetRevision: develop
+    targetRevision: infra/feat/istio
     path: infra/k3s/applications/account/overlays/prod
   destination:
     server: https://kubernetes.default.svc

@@ -32,7 +32,7 @@ export class AccessGuard implements CanActivate {
         }
         
         try {
-            // 1) Traefik ForwardAuth 등이 주입한 헤더 우선 사용
+            // 1) Edge auth middleware 등이 주입한 헤더 우선 사용
             const forwarded = request.headers?.['x-jwt-payload'];
             if (forwarded) {
                 request.user = this.parseJwtPayloadHeader(forwarded);

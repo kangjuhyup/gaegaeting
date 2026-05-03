@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: external-secrets-stores
+  name: istio-ingress
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,18 +10,13 @@ spec:
   source:
     repoURL: https://github.com/kangjuhyup/gaegaeting
     targetRevision: infra/feat/istio
-    path: infra/k3s/external-secrets/stores
+    path: infra/k3s/applications/istio-ingress/overlays/prod
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: istio-system
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
-      allowEmpty: false
-    retry:
-      limit: 5
-      backoff:
-        duration: 5s
-        factor: 2
-        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true

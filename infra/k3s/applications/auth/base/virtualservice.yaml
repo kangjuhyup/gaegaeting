@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: auth
+  namespace: app
+spec:
+  hosts:
+    - api.gaegaeting.app
+  gateways:
+    - istio-system/api-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /auth
+      route:
+        - destination:
+            host: auth.app.svc.cluster.local
+            port:
+              number: 2799

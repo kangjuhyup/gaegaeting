@@ -174,7 +174,7 @@
   when: (cert_manager.enabled | default(true)) | bool
   changed_when: false
 
-- name: Create/Update ClusterIssuer letsencrypt-prod (HTTP-01 via Traefik)
+- name: Create/Update ClusterIssuer letsencrypt-prod (HTTP-01 via Istio)
   kubernetes.core.k8s:
     state: present
     kubeconfig: /etc/rancher/k3s/k3s.yaml
@@ -192,7 +192,7 @@
           solvers:
             - http01:
                 ingress:
-                  class: traefik
+                  class: istio
   when: (cert_manager.enabled | default(true)) | bool
 
 - name: Display Helm deployment status

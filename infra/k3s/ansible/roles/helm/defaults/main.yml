@@ -7,6 +7,30 @@ helm_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
 
 ## Helm charts to deploy
 helm_charts:
+  - name: istio-base
+    enabled: true
+    namespace: istio-system
+    create_namespace: true
+    chart_ref: istio/base
+    chart_version: "1.22.6"
+    values_file: "{{ playbook_dir }}/../../helm/istio-base/values.yaml"
+
+  - name: istiod
+    enabled: true
+    namespace: istio-system
+    create_namespace: true
+    chart_ref: istio/istiod
+    chart_version: "1.22.6"
+    values_file: "{{ playbook_dir }}/../../helm/istiod/values.yaml"
+
+  - name: istio-ingressgateway
+    enabled: true
+    namespace: istio-system
+    create_namespace: true
+    chart_ref: istio/gateway
+    chart_version: "1.22.6"
+    values_file: "{{ playbook_dir }}/../../helm/istio-ingressgateway/values.yaml"
+
   - name: cert-manager
     enabled: true
     namespace: cert-manager
@@ -33,6 +57,8 @@ helm_charts:
 
 ## Helm repositories
 helm_repos:
+  - name: istio
+    url: https://istio-release.storage.googleapis.com/charts
   - name: argo
     url: https://argoproj.github.io/argo-helm
   - name: external-secrets

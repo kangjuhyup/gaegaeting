@@ -28,7 +28,7 @@ controller:
 server:
   replicas: 2
 
-  ## Run in insecure mode (Traefik handles TLS)
+  ## Run in insecure mode (Istio handles TLS)
   extraArgs:
     - --insecure
 
@@ -81,23 +81,9 @@ server:
     servicePortHttp: 80
     servicePortHttps: 443
 
-  ## Ingress
+  ## Ingress is managed by Istio Gateway/VirtualService in applications/istio-ingress.
   ingress:
-    enabled: true
-    ingressClassName: traefik
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      traefik.ingress.kubernetes.io/router.entrypoints: websecure
-      traefik.ingress.kubernetes.io/router.tls: "true"
-    hosts:
-      - argo.gaegaeting.app
-    paths:
-      - /
-    pathType: Prefix
-    tls:
-      - secretName: argocd-server-tls
-        hosts:
-          - argo.gaegaeting.app
+    enabled: false
 
   ## Metrics
   metrics:
@@ -245,13 +231,3 @@ createClusterRoles: true
 serviceAccount:
   create: true
   automountServiceAccountToken: true
-
-## Certificate manager integration
-## cert-manager를 사용한다면 ArgoCD Ingress TLS secret을 자동 발급/갱신하도록 설정
-certificates:
-  - secretName: argocd-server-tls
-    issuerRef:
-      name: letsencrypt-prod
-      kind: ClusterIssuer
-    dnsNames:
-      - argo.gaegaeting.app

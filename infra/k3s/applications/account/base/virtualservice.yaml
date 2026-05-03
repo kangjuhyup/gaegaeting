@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: account
+  namespace: app
+spec:
+  hosts:
+    - api.gaegaeting.app
+  gateways:
+    - istio-system/api-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /account
+      route:
+        - destination:
+            host: account.app.svc.cluster.local
+            port:
+              number: 2800

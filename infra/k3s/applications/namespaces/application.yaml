@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/kangjuhyup/gaegaeting
-    targetRevision: develop
+    targetRevision: infra/feat/istio
     path: infra/k3s/applications/namespaces/overlays/prod
   destination:
     server: https://kubernetes.default.svc
@@ -27,5 +27,4 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
-
 

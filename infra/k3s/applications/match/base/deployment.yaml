@@ -12,6 +12,8 @@ spec:
       app: match
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
       labels:
         app: match
     spec:
