@@ -109,7 +109,7 @@ helm install argocd argo/argo-cd \
 
 ## (필수) TLS 자동 발급을 위한 cert-manager
 
-Ingress TLS(`cert-manager.io/cluster-issuer: letsencrypt-prod`)를 사용하므로,
+Istio ingress gateway의 TLS Secret을 `Certificate` 리소스로 발급하므로,
 클러스터에 `cert-manager`와 `ClusterIssuer/letsencrypt-prod`가 먼저 있어야 합니다.
 
 - **Ansible 자동 배포**: `site.yml --tags helm` 실행 시 `cert-manager` + `letsencrypt-prod`도 함께 설치/생성됩니다.
@@ -137,7 +137,7 @@ spec:
     solvers:
       - http01:
           ingress:
-            class: traefik
+            class: istio
 YAML
 ```
 

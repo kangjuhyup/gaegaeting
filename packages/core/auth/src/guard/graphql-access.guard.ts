@@ -23,7 +23,7 @@ export class GraphqlAccessGuard {
     const ctx = GqlExecutionContext.create(context);
     const { req } = ctx.getContext();
 
-    // 1) Traefik ForwardAuth 등이 주입한 헤더 우선 사용
+    // 1) Edge auth middleware 등이 주입한 헤더 우선 사용
     const forwarded = req.headers?.['x-jwt-payload'];
     if (forwarded) {
       const payload = this.parseJwtPayloadHeader(forwarded);
@@ -131,4 +131,3 @@ export class GraphqlAccessGuard {
     }
   }
 }
-

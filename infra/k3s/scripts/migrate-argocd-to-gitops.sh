@@ -85,5 +85,3 @@ fi
 
 echo "[migrate-argocd] done. current applications:"
 kubectl -n argocd get applications.argoproj.io || true
-
-

@@ -1,0 +1,17 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: match-forward-auth
+  namespace: app
+spec:
+  selector:
+    matchLabels:
+      app: match
+  action: CUSTOM
+  provider:
+    name: auth-forward-auth
+  rules:
+    - when:
+        - key: request.headers[authorization]
+          values:
+            - "*"

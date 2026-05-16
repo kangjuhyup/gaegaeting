@@ -21,7 +21,7 @@ flowchart LR
 
   subgraph OCI["OCI A1 Instance (Single Node)"]
     subgraph K3S["k3s (single-node)"]
-      TR["Traefik Ingress (ACME, TLS, WAF/Limits)"]
+      TR["Istio Ingress Gateway (TLS, Routing, AuthZ)"]
       ARGO["Argo CD (GitOps)"]
 
       %% ── App 영역 ─────────────────────────────────────────

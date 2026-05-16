@@ -33,7 +33,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && contains(fromJSON('["infra"]'), github.head_ref)) }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && (github.head_ref == 'infra' || startsWith(github.head_ref, 'infra/'))) }}
     environment: ${{ inputs.environment }}
 
     steps:

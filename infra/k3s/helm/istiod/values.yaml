@@ -1,0 +1,26 @@
+pilot:
+  autoscaleEnabled: true
+  autoscaleMin: 1
+  autoscaleMax: 3
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+meshConfig:
+  extensionProviders:
+    - name: auth-forward-auth
+      envoyExtAuthzHttp:
+        service: auth.app.svc.cluster.local
+        port: 2799
+        pathPrefix: /auth/internal/verify
+        includeRequestHeadersInCheck:
+          - authorization
+        headersToUpstreamOnAllow:
+          - x-jwt-payload
+        headersToDownstreamOnDeny:
+          - content-type
+          - set-cookie

@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: namespaces
+  name: istio-ingress
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,20 +10,13 @@ spec:
   source:
     repoURL: https://github.com/kangjuhyup/gaegaeting
     targetRevision: develop
-    path: infra/k3s/applications/namespaces/overlays/prod
+    path: infra/k3s/applications/istio-ingress/overlays/prod
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: istio-system
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
-      allowEmpty: false
     syncOptions:
-      - ServerSideApply=true
-    retry:
-      limit: 5
-      backoff:
-        duration: 5s
-        factor: 2
-        maxDuration: 3m
+      - CreateNamespace=true
