@@ -33,7 +33,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/kangjuhyup/gaegaeting
-    targetRevision: infra/feat/istio
+    targetRevision: develop
     path: infra/k3s/argocd/applications
   destination:
     server: https://kubernetes.default.svc
@@ -60,7 +60,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/kangjuhyup/gaegaeting
-    targetRevision: infra/feat/istio
+    targetRevision: develop
     path: infra/k3s/helm/argocd-chart
     helm:
       releaseName: argocd
@@ -85,4 +85,3 @@ fi
 
 echo "[migrate-argocd] done. current applications:"
 kubectl -n argocd get applications.argoproj.io || true
-

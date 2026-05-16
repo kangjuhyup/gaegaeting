@@ -29,16 +29,29 @@ jobs:
         run: |
           SOURCE_BRANCH="${{ github.head_ref }}"
 
-          # 첫 번째 세그먼트 추출 (account, match, chat 등)
-          CONTEXT=$(echo "$SOURCE_BRANCH" | cut -d'/' -f1)
+          # Supported patterns:
+          # - feat/<service>/<subtype>/...
+          # - <service>/<subtype>/feat/...
+          # - <service>/feat/...
+          FIRST_SEGMENT=$(echo "$SOURCE_BRANCH" | cut -d'/' -f1)
+
+          if [ "$FIRST_SEGMENT" = "feat" ]; then
+            CONTEXT=$(echo "$SOURCE_BRANCH" | cut -d'/' -f2 -s)
+            SUBTYPE=$(echo "$SOURCE_BRANCH" | cut -d'/' -f3 -s)
+          else
+            CONTEXT="$FIRST_SEGMENT"
+            SUBTYPE=$(echo "$SOURCE_BRANCH" | cut -d'/' -f2 -s)
+          fi
 
           # 허용된 브랜치 패턴 체크
           ALLOWED_CONTEXTS=("account" "match" "chat" "payments" "auth" "gateway")
           if [[ " ${ALLOWED_CONTEXTS[@]} " =~ " ${CONTEXT} " ]]; then
             echo "should_build=true" >> $GITHUB_OUTPUT
 
-            # 두 번째 세그먼트 추출 (api, batch 등)
-            SUBTYPE=$(echo "$SOURCE_BRANCH" | cut -d'/' -f2 -s)
+            ALLOWED_SUBTYPES=("api" "batch")
+            if [[ ! " ${ALLOWED_SUBTYPES[@]} " =~ " ${SUBTYPE} " ]]; then
+              SUBTYPE=""
+            fi
 
             # Dockerfile 경로 구성
             if [ -n "$SUBTYPE" ] && [ "$SUBTYPE" != "${SOURCE_BRANCH#*/}" ]; then
