@@ -5,10 +5,21 @@
   notify: restart cron
 
 - name: Install required packages
-  package:
+  apt:
     name: "{{ packages.install }}"
     state: present
     update_cache: "{{ packages.update_cache | default(true) }}"
+    update_cache_retries: 10
+    update_cache_retry_max_delay: 30
+    lock_timeout: 120
+  when: ansible_os_family == "Debian"
+
+- name: Install required packages
+  yum:
+    name: "{{ packages.install }}"
+    state: present
+    update_cache: "{{ packages.update_cache | default(true) }}"
+  when: ansible_os_family == "RedHat"
   
 - name: Upgrade all packages
   package:
