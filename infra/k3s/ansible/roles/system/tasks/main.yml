@@ -8,9 +8,7 @@
   apt:
     name: "{{ packages.install }}"
     state: present
-    update_cache: "{{ packages.update_cache | default(true) }}"
-    update_cache_retries: 10
-    update_cache_retry_max_delay: 30
+    update_cache: false
     lock_timeout: 120
   when: ansible_os_family == "Debian"
 
