@@ -30,6 +30,9 @@ env:
   K3S_SSH_USER: ${{ secrets.DEPLOY_USER }}
   K3S_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -124,6 +127,33 @@ jobs:
         run: |
           rm -f /tmp/k3s-secrets.env
           rm -f ~/.ssh/id_rsa
+
+      - name: Push revert commit when deployment fails
+        if: ${{ failure() && github.event_name == 'pull_request' && github.event.pull_request.merged == true }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin "${BASE_BRANCH}" --depth=50
+          git checkout -B "${BASE_BRANCH}" "origin/${BASE_BRANCH}"
+
+          git revert --no-edit -m 1 "${MERGE_SHA}"
+          git commit --amend -m "revert: PR #${PR_NUMBER} after failed deployment
+
+          Reverts #${PR_NUMBER}: ${PR_TITLE}
+
+          K3s deployment failed after merge.
+          Failed run: ${RUN_URL}"
+          git push origin "HEAD:${BASE_BRANCH}"
 
       - name: Notify deployment result
         if: always()
