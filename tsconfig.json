@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
+      "declaration": true,
+      "removeComments": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "allowSyntheticDefaultImports": true,
+      "target": "ES2022",
+      "verbatimModuleSyntax": true,
+      "sourceMap": true,
+      "incremental": true,
+      "isolatedModules": true,
+      "skipLibCheck": true,
+      "strictNullChecks": false,
+      "noImplicitAny": false,
+      "strictBindCallApply": false,
+      "forceConsistentCasingInFileNames": false,
+      "noFallthroughCasesInSwitch": false,
+      "baseUrl": "./",
+      "composite": true
+    },
+    "exclude": ["**/*.spec.ts", "**/*.e2e-spec.ts"]
+  }

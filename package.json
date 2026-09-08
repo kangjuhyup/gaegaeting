@@ -1,0 +1,32 @@
+{
+  "name": "gaegaeting",
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=24.13.1 <25"
+  },
+  "private": true,
+  "scripts": {
+    "build:workspaces": "pnpm -r run build",
+    "test:jest-workspace-contract": "node --test scripts/jest-workspace-contract.test.mjs",
+    "test:esm-contract": "node --test scripts/esm-workspace-contract.test.mjs",
+    "test:esm-dist": "node --test scripts/esm-dist-smoke.test.mjs",
+    "test:workspaces": "pnpm -r --workspace-concurrency=1 run test --passWithNoTests --runInBand --no-cache",
+    "test:node-runtime-contract": "node --test scripts/node-runtime-contract.test.mjs",
+    "test:postgresql-contract": "node --test scripts/postgresql-migration-static.test.mjs",
+    "test:orm-removal-contract": "node --test scripts/orm-removal-contract.test.mjs",
+    "dev": "node scripts/dev.mjs",
+    "test:local-dev": "node --test scripts/dev.test.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "18.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
+    "@typescript-eslint/parser": "^8.13.0",
+    "eslint": "^9.14.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "pino-pretty": "^13.1.1",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  },
+  "type": "module"
+}

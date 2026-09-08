@@ -1,0 +1,100 @@
+{
+  "name": "@core/database",
+  "version": "0.0.1",
+  "description": "데이터베이스 모듈",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "nest build",
+    "migration:run:chat": "node dist/src/migration/migrate-baseline.js CHAT",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest",
+    "test:watch": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --watch",
+    "test:cov": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --coverage",
+    "test:debug": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --testRegex='\\.e2e-spec\\.ts$'"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.2.3",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.2.3",
+    "dotenv": "^16.4.5",
+    "pg": "^8.23.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.1",
+    "tslib": "^2.7.0",
+    "ulid": "^3.0.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.24",
+    "@nestjs/common": "^11.2.3",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.2.3",
+    "@nestjs/schematics": "^11.1.0",
+    "@nestjs/testing": "^11.2.3",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^20.3.1",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^8.42.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "jest": "^29.5.0",
+    "jest-util": "^30.0.5",
+    "pg": "^8.23.0",
+    "prettier": "^3.0.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.1",
+    "source-map-support": "^0.5.21",
+    "supertest": "^6.3.3",
+    "ts-jest": "^29.1.0",
+    "ts-loader": "^9.5.1",
+    "ts-mockito": "^2.6.1",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "tsconfig-paths-jest": "^0.0.1",
+    "tslib": "^2.7.0",
+    "typescript": "^5.8.3",
+    "ulid": "^3.0.1",
+    "webpack": "^5.97.1"
+  },
+  "packageManager": "pnpm@10.34.5",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./testing": {
+      "types": "./dist/src/testing/index.d.ts",
+      "import": "./dist/src/testing/index.js"
+    },
+    "./mikro": {
+      "types": "./dist/src/mikro/index.d.ts",
+      "import": "./dist/src/mikro/index.js"
+    }
+  },
+  "imports": {
+    "#app/*": {
+      "types": "./src/*.ts",
+      "default": "./dist/src/*.js"
+    }
+  },
+  "dependencies": {
+    "@mikro-orm/core": "7.1.14",
+    "@mikro-orm/decorators": "7.1.14",
+    "@mikro-orm/nestjs": "7.1.0",
+    "@mikro-orm/postgresql": "7.1.14"
+  },
+  "files": [
+    "dist"
+  ]
+}

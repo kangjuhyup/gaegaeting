@@ -1,0 +1,8 @@
+packages:
+  - 'packages/*'
+  - 'packages/core/*'
+
+# Optional package metadata/telemetry hooks are not needed by the runtime.
+ignoredBuiltDependencies:
+  - '@apollo/protobufjs'
+  - '@scarf/scarf'

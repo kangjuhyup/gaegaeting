@@ -1,0 +1,30 @@
+node_modules/
+.pnpm-store/
+.worktrees/
+*.tsbuildinfo
+
+.vscode
+
+# Local environment and secret material. Commit examples only.
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+.windsurf.json
+
+dist
+
+mariadb
+mysql
+redis
+
+
+# Claude Code documentation (auto-generated)
+CLAUDE.md

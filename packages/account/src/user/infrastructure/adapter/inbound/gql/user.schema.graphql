@@ -1,0 +1,77 @@
+scalar DateTime
+
+# Federation 지원을 위한 스키마 확장
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"])
+
+type UserProfile @key(fields: "id") {
+  id: ID!
+  name: String!
+  nickname: String!
+  email: String
+  gender: UserGender!
+  birthDate: DateTime!
+  region: UserRegion!
+  bio: String
+  phoneNumber: String
+  status: UserStatus!
+  profileImages: [String!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum UserGender {
+  MALE
+  FEMALE
+}
+
+enum UserRegion {
+  SEOUL
+  GYEONGGI
+  INCHEON
+  GANGWON
+  CHUNGCHEONG
+  JEOLLA
+  GYEONGSANG
+  JEJU
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+type PresignedUrl {
+  url: String!
+  expiresIn: Int!
+}
+
+input CreateUserProfileInput {
+  name: String!
+  nickname: String!
+  gender: UserGender!
+  birthDate: DateTime!
+  region: UserRegion!
+  bio: String
+}
+
+input UpdateUserProfileInput {
+  nickname: String
+  region: UserRegion
+  bio: String
+}
+
+type Query {
+  myProfile: UserProfile! # 내 프로필 조회
+  profile(id: ID!): UserProfile # 특정 사용자 조회
+}
+
+type Mutation {
+  createProfile(input: CreateUserProfileInput!): UserProfile! # 내 프로필 생성
+  updateProfile(id: ID!, input: UpdateUserProfileInput!): UserProfile! # 내 프로필 수정
+  generatePresignedUrl(imageNo: Int!): PresignedUrl! # 프로필 이미지 PresignedUrl 생성
+  deleteProfileImage(imageNo: Int!): Boolean! # 프로필 이미지 삭제
+}
+

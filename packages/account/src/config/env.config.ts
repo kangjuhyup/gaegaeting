@@ -1,0 +1,47 @@
+import Joi from 'joi';
+
+// 1) envSpec만 한 군데서 관리
+export const envSpec = {
+  NODE_ENV: { joi: Joi.string().valid('development', 'production', 'test').default('development') },
+  ACCOUNT_SERVICE_API_PORT: { joi: Joi.number().required() },
+  INTERNAL_AUTH_ASSERTION_SECRET: { joi: Joi.string().min(32).required() },
+  DATABASE_HOST: { joi: Joi.string().required() },
+  DATABASE_PORT: { joi: Joi.number().required() },
+  DATABASE_USERNAME: { joi: Joi.string().required() },
+  DATABASE_PASSWORD: { joi: Joi.string().required() },
+  DATABASE_NAME: { joi: Joi.string().default('ggt_account') },
+  PUBLIC_DATA_API_KEY: { joi: Joi.string().required() },
+  REDIS_HOST: { joi: Joi.string().required() },
+  REDIS_PORT: { joi: Joi.string().required() },
+
+  // user storage (S3 compatible)
+  STORAGE_HOST: { joi: Joi.string().required() },
+  STORAGE_PET_BUCKET: { joi: Joi.string().required() },
+  STORAGE_USER_BUCKET: { joi: Joi.string().required() },
+  // separated prefixes
+  STORAGE_PROFILE_PREFIX: { joi: Joi.string().required() },
+  STORAGE_REGION: { joi: Joi.string().required() },
+  STORAGE_ACCESS_KEY_ID: { joi: Joi.string().required() },
+  STORAGE_SECRET_ACCESS_KEY: { joi: Joi.string().required() },
+} as const;
+
+// 2) 타입과 상수 자동 추출
+export type EnvKey = keyof typeof envSpec; // 'PORT' | 'NODE_ENV' | ...
+export const ENV_KEY: { [K in EnvKey]: K } = Object.keys(envSpec).reduce(
+  (acc, key) => ({ ...acc, [key]: key }),
+  {} as any,
+);
+
+// 3) Joi 스키마 동적 생성
+export const validationSchema = Joi.object(
+  Object.fromEntries(Object.entries(envSpec).map(([k, v]) => [k, v.joi]))
+);
+
+// 4) 타입 자동 생성
+type EnvSpecToType<T extends Record<string, { joi: Joi.Schema }>> = {
+  [K in keyof T]:
+    T[K]['joi'] extends Joi.StringSchema ? string
+    : T[K]['joi'] extends Joi.NumberSchema ? number
+    : any;
+};
+export type EnvironmentVariables = EnvSpecToType<typeof envSpec>;
