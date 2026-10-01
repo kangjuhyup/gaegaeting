@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 
 const [service, image] = process.argv.slice(2);
 const services = new Set(['account', 'match', 'gateway', 'edge-authz', 'integration-ui']);
@@ -46,7 +47,9 @@ const args = ['run', '--rm', '--network', 'none', '--read-only', '--cap-drop', '
 for (const [key, value] of Object.entries(env)) args.push('-e', `${key}=${value}`);
 args.push('--entrypoint', 'node', image, '--input-type=module', '-e', code);
 // UI smoke uses loopback only; disabling external networking preserves this check's boundary.
-const result = spawnSync('docker', args, { stdio: 'inherit', timeout: 60_000 });
+const dockerExecutable = existsSync('/usr/bin/docker') ? '/usr/bin/docker'
+  : existsSync('/opt/homebrew/bin/docker') ? '/opt/homebrew/bin/docker' : '/usr/local/bin/docker';
+const result = spawnSync(dockerExecutable, args, { stdio: 'inherit', timeout: 60_000 });
 if (result.error) throw result.error;
 if (result.status !== 0) process.exit(result.status ?? 1);
 console.log(`${service}: production image runtime and packaged entries verified`);
