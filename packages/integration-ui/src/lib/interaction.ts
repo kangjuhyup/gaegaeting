@@ -99,7 +99,7 @@ function fromBase64Url(value: string): ArrayBuffer {
 
 function toBase64Url(value: ArrayBuffer): string {
   return btoa(String.fromCharCode(...new Uint8Array(value)))
-    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    .replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 
 export async function submitWebAuthn(): Promise<InteractionResult> {

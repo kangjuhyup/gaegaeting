@@ -22,9 +22,9 @@ const localAuthOrigin = new URL(publicConfig.authOrigin).origin;
 const localAuthProxyPrefix = "/local-auth";
 const toBase64Url = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
 
 const randomValue = (size = 32) => {
   const bytes = new Uint8Array(size);
