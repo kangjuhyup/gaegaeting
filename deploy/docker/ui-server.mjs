@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
-import { extname, resolve, sep } from 'node:path';
+import { readFileSync, readdirSync } from 'node:fs';
+import { extname, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export function readPublicConfig(env) {
@@ -30,8 +30,22 @@ export function createUiServer(config, root = resolve('dist')) {
   const origins = [...new Set([config.authOrigin, new URL(config.accountUrl).origin, new URL(config.gatewayUrl).origin])];
   const csp = `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' ${origins.join(' ')}; base-uri 'none'; frame-ancestors 'none'; form-action 'self' ${config.authOrigin}`;
   const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
+  // Build the allowed asset table from the image at startup. Request paths never
+  // become filesystem paths, and hidden files/symlinks are not served.
+  const assets = new Map();
+  const loadAssets = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      if (entry.name.startsWith('.')) continue;
+      const file = resolve(directory, entry.name);
+      if (entry.isDirectory()) loadAssets(file);
+      else if (entry.isFile()) assets.set('/' + relative(root, file).split(sep).join('/'), {
+        body: readFileSync(file), type: types[extname(file)] ?? 'application/octet-stream',
+      });
+    }
+  };
+  loadAssets(root);
   const routes = new Set(['/', '/login', '/interaction', '/signup', '/profile', '/pet', '/recommendations']);
-  return createServer(async (req, res) => {
+  return createServer((req, res) => {
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Content-Security-Policy', csp);
@@ -45,14 +59,11 @@ export function createUiServer(config, root = resolve('dist')) {
         res.writeHead(200).end(req.method === 'HEAD' ? undefined : `window.GAEGAETING_CONFIG=${JSON.stringify(config)};`);
         return;
       }
-      const file = resolve(root, routes.has(path) ? 'index.html' : `.${path}`);
-      if (!file.startsWith(`${root}${sep}`) || path.split('/').some(part => part.startsWith('.'))) {
-        res.writeHead(404).end(); return;
-      }
-      const body = await readFile(file);
-      res.setHeader('Content-Type', types[extname(file)] ?? 'application/octet-stream');
+      const asset = assets.get(routes.has(path) ? '/index.html' : path);
+      if (!asset) { res.writeHead(404).end(); return; }
+      res.setHeader('Content-Type', asset.type);
       if (path.startsWith('/assets/')) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      res.writeHead(200).end(req.method === 'HEAD' ? undefined : body);
+      res.writeHead(200).end(req.method === 'HEAD' ? undefined : asset.body);
     } catch { res.writeHead(404).end(); }
   });
 }

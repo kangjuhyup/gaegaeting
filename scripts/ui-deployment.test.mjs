@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -28,6 +28,8 @@ test('deployed UI requires HTTPS service addresses and exposes only public setti
 test('login callbacks and interaction routes serve the SPA with uncached config and secure headers', async () => {
   const root = await mkdtemp(join(tmpdir(), 'gaegaeting-ui-'));
   await writeFile(join(root, 'index.html'), '<div>UI</div>');
+  await writeFile(join(root, '.env'), 'must-not-serve');
+  await symlink('/etc/passwd', join(root, 'outside.txt'));
   const server = createUiServer(readPublicConfig(env), root);
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -45,6 +47,8 @@ test('login callbacks and interaction routes serve the SPA with uncached config 
     assert.match(await config.text(), /https:\/\/auth.example.test/);
     assert.equal((await fetch(`${base}/assets/missing.js`)).status, 404);
     assert.equal((await fetch(`${base}/%2eenv`)).status, 404);
+    assert.equal((await fetch(`${base}/outside.txt`)).status, 404);
+    assert.equal((await fetch(`${base}/assets/%2e%2e/%2e%2e/etc/passwd`)).status, 404);
     assert.equal((await fetch(`${base}/health`)).status, 200);
     assert.equal((await fetch(`${base}/`, { method: 'POST' })).status, 405);
   } finally {

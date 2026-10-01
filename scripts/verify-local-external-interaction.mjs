@@ -1,6 +1,16 @@
 import { randomBytes, createHash } from 'node:crypto';
 
 const issuer = process.env.OIDC_ISSUER ?? 'http://localhost:3010/t/gaegaeting/oidc';
+const authOrigin = new URL(issuer).origin;
+const tenantCode = /^\/t\/([a-z0-9-]+)\/oidc$/.exec(new URL(issuer).pathname)?.[1];
+if (!tenantCode) throw new Error('Invalid tenant issuer');
+const tenantPath = `/t/${tenantCode}/`;
+function authUrl(value) {
+  const parsed = new URL(value, issuer);
+  if (parsed.origin !== authOrigin || !parsed.pathname.startsWith(tenantPath) || parsed.username || parsed.password) throw new Error('Unsafe Auth URL');
+  // Reconstruct from the trusted origin; redirect metadata cannot choose a host.
+  return `${authOrigin}${parsed.pathname}${parsed.search}`;
+}
 const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:5173';
 const clientId = process.env.OIDC_CLIENT_ID ?? 'gaegaeting-web';
 const metadata = await (await fetch(`${issuer}/.well-known/openid-configuration`)).json();
@@ -11,11 +21,11 @@ async function jsonAt(response, label) {
 if (metadata.issuer !== issuer) throw new Error('Unexpected issuer');
 const verifier = randomBytes(48).toString('base64url');
 const challenge = createHash('sha256').update(verifier).digest('base64url');
-const authorize = new URL(metadata.authorization_endpoint);
+const authorize = new URL(authUrl(metadata.authorization_endpoint));
 for (const [key, value] of Object.entries({
   response_type: 'code', client_id: clientId, redirect_uri: `${webOrigin}/login`,
   scope: 'openid profile email account:read account:write match:read match:write',
-  resource: 'https://api.gaegaeting.app', code_challenge: challenge,
+  resource: process.env.OIDC_API_AUDIENCE ?? 'https://api.gaegaeting.app', code_challenge: challenge,
   code_challenge_method: 'S256', state: randomBytes(20).toString('base64url'),
   nonce: randomBytes(20).toString('base64url'), prompt: 'login',
 })) authorize.searchParams.set(key, value);
@@ -34,7 +44,7 @@ function cookieHeader() {
 let next = authorize.href;
 let external;
 for (let step = 0; step < 8; step++) {
-  const response = await fetch(next, { redirect: 'manual', headers: { cookie: cookieHeader() } });
+  const response = await fetch(authUrl(next), { redirect: 'manual', headers: { cookie: cookieHeader() } });
   collect(response);
   const location = response.headers.get('location');
   if (!location) throw new Error(`OIDC redirect missing (HTTP ${response.status})`);
@@ -49,7 +59,7 @@ const uid = external.searchParams.get('uid');
 const fragment = new URLSearchParams(external.hash.slice(1));
 const token = fragment.get('interaction_token');
 const csrf = fragment.get('csrf_token');
-if (tenant !== 'gaegaeting' || !uid || !token || !csrf) throw new Error('Interaction bootstrap incomplete');
+if (tenant !== tenantCode || !/^[A-Za-z0-9_-]+$/.test(uid ?? '') || !token || !csrf) throw new Error('Interaction bootstrap incomplete');
 const base = `${new URL(issuer).origin}/t/${tenant}/interaction/${uid}`;
 const headers = { cookie: cookieHeader(), origin: webOrigin, authorization: `Bearer ${token}`, 'x-interaction-csrf': csrf };
 const details = await fetch(`${base}/api/details`, { headers });
@@ -76,7 +86,7 @@ if (process.env.TEST_USERNAME && process.env.TEST_PASSWORD) {
   let resume = new URL(result.redirectTo, issuer);
   if (resume.origin !== new URL(issuer).origin) throw new Error('Unsafe Auth resume URL');
   for (let step = 0; step < 8; step++) {
-    const response = await fetch(resume, { redirect: 'manual', headers: { cookie: cookieHeader() } });
+    const response = await fetch(authUrl(resume), { redirect: 'manual', headers: { cookie: cookieHeader() } });
     collect(response);
     const location = response.headers.get('location');
     if (!location) throw new Error(`Auth resume redirect missing (HTTP ${response.status})`);
@@ -86,7 +96,7 @@ if (process.env.TEST_USERNAME && process.env.TEST_PASSWORD) {
     resume = target;
   }
   if (!callback?.searchParams.get('code')) throw new Error('OIDC callback code missing');
-  const tokenResponse = await fetch(metadata.token_endpoint, {
+  const tokenResponse = await fetch(authUrl(metadata.token_endpoint), {
     method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ grant_type: 'authorization_code', code: callback.searchParams.get('code'), client_id: clientId, redirect_uri: `${webOrigin}/login`, code_verifier: verifier }),
   });
