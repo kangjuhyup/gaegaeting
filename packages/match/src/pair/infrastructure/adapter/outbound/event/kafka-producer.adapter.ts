@@ -19,6 +19,6 @@ export class KafkaProducerAdapter implements KafkaProducerPort {
      */
     async produce<T extends Topics>(topic: T, payload: TopicPayloadMap[T]): Promise<void> {
         const prefix = this.configService.get<string>(ENV_KEY.KAFKA_TOPIC_PREFIX) ?? '';
-        await this.kafkaProducer.send(prefix ? `${prefix}.${topic}` : topic, payload)
+        await this.kafkaProducer.send(prefix ? `${prefix}.${topic}` : topic, [{ value: JSON.stringify(payload) }])
     }
 }

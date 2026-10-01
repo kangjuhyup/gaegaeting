@@ -17,7 +17,7 @@ describe.each([
     const payload = { userId: 'qa-user', eventId: 'qa-event' } as unknown as TopicPayloadMap[typeof topic];
     await producer.produce(topic, payload);
     expect(send).toHaveBeenCalledTimes(1);
-    expect(send).toHaveBeenCalledWith(`dev.gaegaeting.${topic}`, payload);
+    expect(send).toHaveBeenCalledWith(`dev.gaegaeting.${topic}`, [{ value: JSON.stringify(payload) }]);
   });
 
   it('uses a separate production namespace without changing the payload', async () => {
@@ -25,7 +25,7 @@ describe.each([
     const producer = new Producer({ send } as unknown as KafkaProducerService,
       new ConfigService({ KAFKA_TOPIC_PREFIX: 'prd.gaegaeting' }));
     await producer.produce(Topics.CHAT_ROOM_CREATED_V1, { pairId: 'qa-pair' });
-    expect(send).toHaveBeenCalledWith('prd.gaegaeting.chat.room.created.v1', { pairId: 'qa-pair' });
+    expect(send).toHaveBeenCalledWith('prd.gaegaeting.chat.room.created.v1', [{ value: JSON.stringify({ pairId: 'qa-pair' }) }]);
   });
 
   it.each([undefined, ''])('preserves legacy topics when prefix is %s', async (prefix) => {
@@ -33,7 +33,7 @@ describe.each([
     const producer = new Producer({ send } as unknown as KafkaProducerService,
       new ConfigService({ KAFKA_TOPIC_PREFIX: prefix }));
     await producer.produce(Topics.CHAT_ROOM_CREATED_V1, { pairId: 'qa-pair' });
-    expect(send).toHaveBeenCalledWith(Topics.CHAT_ROOM_CREATED_V1, { pairId: 'qa-pair' });
+    expect(send).toHaveBeenCalledWith(Topics.CHAT_ROOM_CREATED_V1, [{ value: JSON.stringify({ pairId: 'qa-pair' }) }]);
   });
 
   it('propagates broker failures instead of reporting delivery success', async () => {
