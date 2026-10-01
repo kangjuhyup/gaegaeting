@@ -1,15 +1,11 @@
 import { randomBytes, createHash } from 'node:crypto';
+import { authVerificationUrl } from './auth-verification-url.mjs';
 
 const issuer = process.env.OIDC_ISSUER ?? 'http://localhost:3010/t/gaegaeting/oidc';
-const authOrigin = new URL(issuer).origin;
 const tenantCode = /^\/t\/([a-z0-9-]+)\/oidc$/.exec(new URL(issuer).pathname)?.[1];
 if (!tenantCode) throw new Error('Invalid tenant issuer');
-const tenantPath = `/t/${tenantCode}/`;
 function authUrl(value) {
-  const parsed = new URL(value, issuer);
-  if (parsed.origin !== authOrigin || !parsed.pathname.startsWith(tenantPath) || parsed.username || parsed.password) throw new Error('Unsafe Auth URL');
-  // Reconstruct from the trusted origin; redirect metadata cannot choose a host.
-  return `${authOrigin}${parsed.pathname}${parsed.search}`;
+  return authVerificationUrl(value, issuer);
 }
 const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:5173';
 const clientId = process.env.OIDC_CLIENT_ID ?? 'gaegaeting-web';
@@ -101,6 +97,7 @@ if (process.env.TEST_USERNAME && process.env.TEST_PASSWORD) {
   }
   if (!callback?.searchParams.get('code')) throw new Error('OIDC callback code missing');
   const tokenResponse = await fetch(tokenEndpoint, {
+    redirect: 'error',
     method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ grant_type: 'authorization_code', code: callback.searchParams.get('code'), client_id: clientId, redirect_uri: `${webOrigin}/login`, code_verifier: verifier }),
   });
