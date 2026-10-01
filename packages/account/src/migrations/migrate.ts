@@ -1,6 +1,9 @@
 import { readDatabaseConnectionOptions, runSqlMigrations, type DatabaseConfigReader } from '@core/database';
 import { pathToFileURL } from 'node:url';
 import { initialAccountSchema } from './0001-account-schema.js';
+import { registrationEligibilityMigration } from './registration-eligibility.migration.js';
+import { accountSignupMigration } from './account-signup.migration.js';
+import { accountSignupConsentMigration } from './account-signup-consent.migration.js';
 
 const environment: DatabaseConfigReader = {
   get<T>(key: string, fallback?: T): T {
@@ -14,7 +17,7 @@ export async function runAccountMigrations(): Promise<void> {
     connection: readDatabaseConnectionOptions(environment),
     historyTable: 'account_migrations',
     lockKey: 'ggt_account:migrations',
-    migrations: [initialAccountSchema],
+    migrations: [initialAccountSchema, registrationEligibilityMigration, accountSignupMigration, accountSignupConsentMigration],
   });
 }
 

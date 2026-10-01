@@ -2,6 +2,8 @@ import type { EntityClass } from '@mikro-orm/core';
 import { DatabaseSchema } from '../../database-schema.js';
 import {
   ExternalUserSubjectOrmEntity,
+  AccountSignupOrmEntity,
+  RegistrationEligibilityOrmEntity,
   PetAttachmentOrmEntity,
   PetProfileOrmEntity,
   UserAttachmentOrmEntity,
@@ -30,6 +32,8 @@ type MikroEntity = EntityClass<Partial<any>>;
 export const MIKRO_USER_ENTITIES = Object.freeze([
   UserProfileOrmEntity,
   ExternalUserSubjectOrmEntity,
+  AccountSignupOrmEntity,
+  RegistrationEligibilityOrmEntity,
   PetProfileOrmEntity,
   UserAttachmentOrmEntity,
   PetAttachmentOrmEntity,

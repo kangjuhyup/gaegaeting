@@ -6,6 +6,8 @@ import { GenerateUserPresignedUrlHandler } from "./service/command/generate-user
 import { CreateUserProfileHandler } from "./service/command/create-user-profile.command.js";
 import { ReviewUserImageHandler } from "./service/command/review-user-image.command.js";
 import { DeleteProfileImageHandler } from "./service/command/delete-profile-image.command.js";
+import { RegistrationService } from './service/registration.service.js';
+import { AccountSignupService } from './service/account-signup.service.js';
 
 
 const providers : Provider[] = [
@@ -19,6 +21,8 @@ const providers : Provider[] = [
     GenerateUserPresignedUrlHandler,
     ReviewUserImageHandler,
     DeleteProfileImageHandler,
+    RegistrationService,
+    AccountSignupService,
 ]
 
 @Module({

@@ -14,6 +14,15 @@ import { ExternalUserSubjectRepositoryPort } from './port/external-user-subject-
 import { ExternalUserSubjectOrmRepository } from './adapter/outbound/persistence/external-user-subject-orm.repository.js';
 import { ResolveExternalUserSubjectService } from '../application/service/resolve-external-user-subject.service.js';
 import { ExternalUserSubjectController } from './adapter/inbound/http/user/external-user-subject.controller.js';
+import { IdentityVerificationPort } from '../application/port/identity-verification.port.js';
+import { RegistrationEligibilityRepositoryPort } from '../application/port/registration-eligibility-repository.port.js';
+import { MockIdentityVerificationAdapter } from './adapter/outbound/identity/mock-identity-verification.adapter.js';
+import { RegistrationEligibilityOrmRepository } from './adapter/outbound/persistence/registration-eligibility-orm.repository.js';
+import { REGISTRATION_OPTIONS } from '../application/service/registration.service.js';
+import { AuthAccountProvisioningPort } from '../application/port/auth-account-provisioning.port.js';
+import { AuthServiceAccountProvisioningAdapter } from './adapter/outbound/auth/auth-service-account-provisioning.adapter.js';
+import { AccountSignupRepositoryPort } from '../application/port/account-signup-repository.port.js';
+import { AccountSignupOrmRepository } from './adapter/outbound/persistence/account-signup-orm.repository.js';
 
 const providers : Provider[] = [
     {
@@ -30,6 +39,21 @@ const providers : Provider[] = [
     },
     ResolveExternalUserSubjectService,
     { provide: ExternalUserSubjectRepositoryPort, useClass: ExternalUserSubjectOrmRepository },
+    { provide: IdentityVerificationPort, useClass: MockIdentityVerificationAdapter },
+    { provide: RegistrationEligibilityRepositoryPort, useClass: RegistrationEligibilityOrmRepository },
+    { provide: AuthAccountProvisioningPort, useClass: AuthServiceAccountProvisioningAdapter },
+    { provide: AccountSignupRepositoryPort, useClass: AccountSignupOrmRepository },
+    {
+        provide: REGISTRATION_OPTIONS,
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+            diHmacSecret: config.getOrThrow<string>(ENV_KEY.REGISTRATION_DI_HMAC_SECRET),
+            diHmacKeyVersion: config.getOrThrow<number>(ENV_KEY.REGISTRATION_DI_HMAC_KEY_VERSION),
+            handoffTtlMs: config.getOrThrow<number>(ENV_KEY.REGISTRATION_HANDOFF_TTL_MS),
+            claimTtlMs: config.getOrThrow<number>(ENV_KEY.REGISTRATION_CLAIM_TTL_MS),
+            authIssuer: config.getOrThrow<string>(ENV_KEY.AUTH_ISSUER),
+        }),
+    },
 ]
 
 @Module({

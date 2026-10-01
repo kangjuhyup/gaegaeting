@@ -11,6 +11,7 @@ import { ENV_KEY } from './config/env.config.js';
 export async function bootstrap() {
   // NestJS 애플리케이션 생성
   const app = await NestFactory.create(AppModule);
+  app.enableShutdownHooks();
   
   // 전역 prefix 설정 (모든 HTTP 엔드포인트와 GraphQL에 /account prefix 추가)
   app.setGlobalPrefix('account');

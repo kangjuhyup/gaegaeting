@@ -20,6 +20,9 @@ export interface OidcRuntimeConfig {
 export function resolveOidcRuntimeConfig(
   environment: OidcRuntimeEnvironment,
 ): OidcRuntimeConfig {
+  if (environment.NODE_ENV === 'production' && !environment.OIDC_ISSUER?.trim()) {
+    throw new Error('OIDC_ISSUER is required in production');
+  }
   const issuer = environment.OIDC_ISSUER ?? PRODUCTION_ISSUER;
   const allowInsecureLoopbackHttp =
     environment.NODE_ENV !== 'production' &&
@@ -42,4 +45,14 @@ export function resolveOidcRuntimeConfig(
     allowInsecureLoopbackHttp,
     insecureHttpAllowedHosts,
   };
+}
+
+/** Resource audiences are configured per environment and never inferred from a token. */
+export function resolveApiAudience(environment: OidcRuntimeEnvironment): string {
+  const audience = environment.OIDC_API_AUDIENCE ?? 'https://api.gaegaeting.app';
+  const url = new URL(audience);
+  if (url.protocol !== 'https:' || url.username || url.password || url.hash || url.search) {
+    throw new Error('OIDC_API_AUDIENCE must be an HTTPS resource URL');
+  }
+  return audience;
 }

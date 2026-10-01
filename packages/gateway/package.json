@@ -14,6 +14,7 @@
     "start:dev": "doppler run -- ts-node src/main.ts",
     "start:debug": "ts-node --inspect src/main.ts",
     "start:prod": "node dist/src/main.js",
+    "start:edge-authz": "node dist/src/edge-authz/main.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
   },
   "dependencies": {

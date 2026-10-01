@@ -13,6 +13,7 @@ export class AuthServiceUnavailableError extends Error {
 }
 
 export interface ExternalPrincipal {
+  issuer: string;
   tenantId: string;
   subject: string;
   scopes: string[];
@@ -100,6 +101,7 @@ export class OpaqueTokenIntrospector {
     }
 
     return {
+      issuer: this.options.expectedIssuer,
       tenantId: response.tenant_id,
       subject: response.sub,
       scopes: typeof response.scope === 'string'
