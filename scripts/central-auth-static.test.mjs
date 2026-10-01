@@ -19,7 +19,8 @@ test('keeps the canonical issuer, discovery URL and origin audience', async () =
   ]);
   assert.match(runtimeConfig, /https:\/\/auth\.gaegaeting\.app\/t\/gaegaeting\/oidc/);
   assert.match(gateway, /resolveOidcRuntimeConfig\(process\.env\)/);
-  assert.match(gateway, /https:\/\/api\.gaegaeting\.app/);
+  assert.match(runtimeConfig, /https:\/\/api\.gaegaeting\.app/);
+  assert.match(gateway, /resolveApiAudience\(process\.env\)/);
 });
 
 test('keeps the legacy auth workspace out of the application', async () => {

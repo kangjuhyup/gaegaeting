@@ -17,20 +17,22 @@ describe('ResolveExternalUserSubjectService', () => {
     return { service: new ResolveExternalUserSubjectService(repository as any), rows };
   }
 
-  test('repeated resolution returns the same application user ID', async () => {
-    const { service } = harness();
+  test('registered subject resolves to its existing application user ID', async () => {
+    const { service, rows } = harness();
+    rows.set('tenant-a\0subject-a', '01J11111111111111111111111');
     const first = await service.resolve('tenant-a', 'subject-a');
     const second = await service.resolve('tenant-a', 'subject-a');
     expect(second).toBe(first);
-    expect(first).toHaveLength(26);
+    expect(first).toBe('01J11111111111111111111111');
     expect(first).not.toBe('subject-a');
   });
 
-  test('the same subject in another tenant receives a separate mapping', async () => {
-    const { service } = harness();
+  test('the same subject in another tenant cannot borrow the registered mapping', async () => {
+    const { service, rows } = harness();
+    rows.set('tenant-a\0same-subject', '01J11111111111111111111111');
     const first = await service.resolve('tenant-a', 'same-subject');
-    const second = await service.resolve('tenant-b', 'same-subject');
-    expect(second).not.toBe(first);
+    expect(first).toBe('01J11111111111111111111111');
+    await expect(service.resolve('tenant-b', 'same-subject')).rejects.toThrow('Auth subject is not linked');
   });
 
   test.each([
@@ -44,13 +46,9 @@ describe('ResolveExternalUserSubjectService', () => {
     );
   });
 
-  test('recovers the winning mapping after a duplicate-key race', async () => {
-    const winner = '01J11111111111111111111111';
-    const repository = {
-      findUserId: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(winner),
-      insert: jest.fn().mockRejectedValue(Object.assign(new Error('duplicate'), { code: '23505' })),
-    };
-    const service = new ResolveExternalUserSubjectService(repository as any);
-    await expect(service.resolve('tenant-a', 'subject-a')).resolves.toBe(winner);
+  test('unregistered Auth subject is rejected instead of creating an account during login', async () => {
+    const { service, rows } = harness();
+    await expect(service.resolve('tenant-a', 'subject-a')).rejects.toThrow('Auth subject is not linked');
+    expect(rows.size).toBe(0);
   });
 });

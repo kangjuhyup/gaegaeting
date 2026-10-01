@@ -3,8 +3,8 @@ import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MIKRO_USER_ENTITIES } from '../../datasource/database-schema.js';
 
 describe('MikroORM USER metadata', () => {
-  it('discovers the frozen six-table account schema', async () => {
-    expect(MIKRO_USER_ENTITIES).toHaveLength(6);
+  it('discovers the frozen account schema', async () => {
+    expect(MIKRO_USER_ENTITIES).toHaveLength(8);
     const orm = await MikroORM.init({
       driver: PostgreSqlDriver,
       dbName: 'metadata-only',
@@ -19,9 +19,11 @@ describe('MikroORM USER metadata', () => {
         .map(metadata => metadata.tableName)
         .sort();
       expect(tableNames).toEqual([
+        'account_signup',
         'external_user_subject',
         'pet',
         'pet_attachment',
+        'registration_eligibility',
         'user_attachment',
         'user_profile',
         'user_report',
@@ -37,6 +39,15 @@ describe('MikroORM USER metadata', () => {
           properties: ['tenantId', 'subject'],
         }),
       );
+
+      const registration = orm.getMetadata().get('RegistrationEligibilityOrmEntity');
+      expect(registration.properties.diDigest.columnTypes).toEqual(['char(64)']);
+      expect(registration.properties.handoffDigest.columnTypes).toEqual(['char(64)']);
+      expect(registration.properties).not.toHaveProperty('ci');
+      expect(registration.properties).not.toHaveProperty('di');
+      const signup = orm.getMetadata().get('AccountSignupOrmEntity');
+      expect(signup.properties.diDigest.columnTypes).toEqual(['char(64)']);
+      expect(signup.properties).not.toHaveProperty('password');
 
       const petAttachment = orm.getMetadata().get('PetAttachmentOrmEntity');
       expect(petAttachment.getPrimaryProps().map(property => property.name).sort())

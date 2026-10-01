@@ -1,6 +1,8 @@
 import type { FetchLike } from './oidc-discovery.js';
 import { AuthServiceUnavailableError } from './introspection-client.js';
 
+export class AccountSubjectNotLinkedError extends Error {}
+
 export class AccountSubjectClient {
   constructor(
     private readonly endpoint: string,
@@ -21,13 +23,15 @@ export class AccountSubjectClient {
         body: JSON.stringify({ tenant_id: input.tenantId, sub: input.subject }),
         signal: controller.signal,
       });
+      if (response.status === 404) throw new AccountSubjectNotLinkedError();
       if (!response.ok) throw new AuthServiceUnavailableError();
       const body = (await response.json()) as Record<string, unknown> | null;
       if (typeof body?.user_id !== 'string' || body.user_id.trim() === '') {
         throw new AuthServiceUnavailableError();
       }
       return { userId: body.user_id };
-    } catch {
+    } catch (error) {
+      if (error instanceof AccountSubjectNotLinkedError) throw error;
       throw new AuthServiceUnavailableError();
     } finally {
       clearTimeout(timeout);

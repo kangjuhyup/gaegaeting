@@ -4,7 +4,7 @@ This repository does not contain Flutter or Web/BFF application source. OIDC cli
 
 ## Shared endpoints and resource
 
-- Issuer: `https://auth.gaegaeting.app/t/gaegaeting/oidc`
+- Proposed production issuer: `https://auth.rvkang.app/t/gaegaeting/oidc`. The production tenant and clients have not yet been provisioned; verify the deployed Auth metadata before enabling this issuer. A DNS alias does not change the OIDC issuer.
 - Discover authorization, token, revocation, UserInfo, and end-session endpoints from the issuer metadata.
 - API resource/audience: `https://api.gaegaeting.app` (origin only; never add a path or query).
 - Scopes: `openid profile email offline_access account:read account:write match:read match:write`.
@@ -47,9 +47,9 @@ Run the issuer externally and supply the Gateway settings through `packages/gate
 | Variable | Value or source |
 | --- | --- |
 | `NODE_ENV` | `development` for local development |
-| `OIDC_ISSUER` | External tenant issuer URL |
+| `OIDC_ISSUER` | Required in production; set to the exact issuer in Auth discovery metadata (proposed: `https://auth.rvkang.app/t/gaegaeting/oidc`) |
 | `OIDC_ALLOW_INSECURE_HTTP` | `true` only for a loopback HTTP issuer in development |
-| `OIDC_INTROSPECTION_CLIENT_ID` | Registered confidential resource-server client ID |
+| `OIDC_INTROSPECTION_CLIENT_ID` | Required in production; registered service client ID (proposed: `gaegaeting-gateway`, once provisioned) |
 | `OIDC_INTROSPECTION_CLIENT_SECRET` | That client's secret supplied by the infrastructure owner |
 | `INTERNAL_AUTH_ASSERTION_SECRET` | Separate secret shared with account/match, at least 32 characters |
 | `ACCOUNT_SUBJECT_RESOLUTION_URL` | Account service's internal subject-resolution endpoint |
@@ -59,3 +59,13 @@ Run the issuer externally and supply the Gateway settings through `packages/gate
 Do not enable insecure HTTP in production. Runtime validation rejects non-loopback HTTP issuers and discovery/introspection endpoints even with the development flag.
 
 Infrastructure bootstrap, client registration, credential distribution, and full-stack environment provisioning belong to the infrastructure repository. Application guards, introspection, signed assertions, and account subject mapping remain tested here.
+
+## Production rollout gate
+
+The proposed `gaegaeting` tenant, `gaegaeting-web`, `gaegaeting-flutter`, and `gaegaeting-gateway` clients are not yet confirmed to exist in production. Do not enable the proposed issuer until discovery returns that exact `issuer`, the service client has introspection permission for `https://api.gaegaeting.app`, and its secret has been delivered through Doppler. Production Gateway startup requires explicit `OIDC_ISSUER` and `OIDC_INTROSPECTION_CLIENT_ID`; local defaults remain for development only.
+
+Confirm exact HTTPS web login/logout callbacks, Flutter callbacks, and whether the web client remains public before registration. Confirm the external Interaction UI release before configuring its URL. Auth must not call Account during signup; Account remains the signup owner.
+
+Account now uses Auth's tenant-scoped `POST /t/{tenantCode}/oidc/token` (`client_credentials`, scope `auth.user.provision`) and `POST /t/{tenantCode}/provisioning/users` contract. Provision a dedicated service client such as `gaegaeting-account-provisioner`; do not reuse the Gateway introspection client or distribute an Auth administrator credential. Set `AUTH_BASE_URL`, `AUTH_TENANT_CODE`, `AUTH_PROVISIONING_CLIENT_ID`, and `AUTH_PROVISIONING_CLIENT_SECRET` only on the Account server. The secret belongs in Doppler. The Auth request contains only `username`, `password`, and an opaque stable `Idempotency-Key`; identity verification and contact fields stay with Account. Production rollout still requires a real identity verification provider, because mock verification is disabled there.
+
+Account also requires `AUTH_ISSUER` matching the exact discovery issuer. Signup stores its verified identity digest, terms version and Auth provisioning state locally; after provisioning it links `(AUTH_ISSUER, subject)` to its own user ID. An Auth subject without this completed connection is rejected at Gateway rather than creating an implicit Account user. Local setup and the Gaegaeting-only bootstrap are documented in [Gaegaeting Auth 연결](../ops/local-auth/README.md).

@@ -15,6 +15,8 @@
     "test:postgresql-contract": "node --test scripts/postgresql-migration-static.test.mjs",
     "test:orm-removal-contract": "node --test scripts/orm-removal-contract.test.mjs",
     "dev": "node scripts/dev.mjs",
+    "dev:ui": "pnpm --filter @gaegaeting/integration-ui dev",
+    "dev:account:share-db": "sh scripts/migrate-account-to-shared-postgres.sh",
     "test:local-dev": "node --test scripts/dev.test.mjs"
   },
   "devDependencies": {

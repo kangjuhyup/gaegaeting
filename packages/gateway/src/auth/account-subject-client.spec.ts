@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { AccountSubjectClient } from './account-subject-client.js';
+import { AccountSubjectClient, AccountSubjectNotLinkedError } from './account-subject-client.js';
 import { AuthServiceUnavailableError } from './introspection-client.js';
 
 describe('AccountSubjectClient', () => {
@@ -35,5 +35,14 @@ describe('AccountSubjectClient', () => {
     await expect(
       client.resolve({ tenantId: 'tenant-gaegaeting', subject: 'central-subject' }),
     ).rejects.toBeInstanceOf(AuthServiceUnavailableError);
+  });
+
+  test('rejects an unregistered subject without treating Account as unavailable', async () => {
+    const client = new AccountSubjectClient(
+      'http://account.app.svc.cluster.local/account/internal/subjects/resolve',
+      jest.fn().mockResolvedValue({ ok: false, status: 404 }) as any,
+    );
+    await expect(client.resolve({ tenantId: 'gaegaeting', subject: 'unknown' }))
+      .rejects.toBeInstanceOf(AccountSubjectNotLinkedError);
   });
 });

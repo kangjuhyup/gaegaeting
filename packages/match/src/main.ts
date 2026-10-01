@@ -11,6 +11,7 @@ import { ENV_KEY } from './config/env.config.js';
 export async function bootstrap() {
   // NestJS 애플리케이션 생성
   const app = await NestFactory.create(AppModule);
+  app.enableShutdownHooks();
   
   // 스웨거 설정
   const config = new DocumentBuilder()

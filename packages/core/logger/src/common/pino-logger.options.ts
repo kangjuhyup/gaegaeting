@@ -22,6 +22,19 @@ export const createPinoLoggerOptions = (
   const pinoHttp: any = {
     name,
     level,
+    redact: {
+      paths: [
+        'req.headers.authorization',
+        'req.headers.cookie',
+        'req.body.ci',
+        'req.body.di',
+        'req.body.handoffId',
+        'req.body.variables.input.ci',
+        'req.body.variables.input.di',
+        'req.body.variables.input.handoffId',
+      ],
+      censor: '[REDACTED]',
+    },
     formatters: {
       level: (label) => {
         return { level: label };
