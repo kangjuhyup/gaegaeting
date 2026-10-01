@@ -19,6 +19,10 @@ async function jsonAt(response, label) {
   catch { throw new Error(`${label} response was not JSON (HTTP ${response.status})`); }
 }
 if (metadata.issuer !== issuer) throw new Error('Unexpected issuer');
+// This verifier targets the tenant Auth contract, whose token route is fixed.
+// Never post the authorization code to a discovery-controlled destination.
+const tokenEndpoint = `${issuer}/token`;
+if (metadata.token_endpoint !== tokenEndpoint) throw new Error('Unexpected token endpoint');
 const verifier = randomBytes(48).toString('base64url');
 const challenge = createHash('sha256').update(verifier).digest('base64url');
 const authorize = new URL(authUrl(metadata.authorization_endpoint));
@@ -96,7 +100,7 @@ if (process.env.TEST_USERNAME && process.env.TEST_PASSWORD) {
     resume = target;
   }
   if (!callback?.searchParams.get('code')) throw new Error('OIDC callback code missing');
-  const tokenResponse = await fetch(authUrl(metadata.token_endpoint), {
+  const tokenResponse = await fetch(tokenEndpoint, {
     method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ grant_type: 'authorization_code', code: callback.searchParams.get('code'), client_id: clientId, redirect_uri: `${webOrigin}/login`, code_verifier: verifier }),
   });
