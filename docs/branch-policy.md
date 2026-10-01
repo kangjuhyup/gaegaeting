@@ -11,7 +11,7 @@ GitHub에는 두 Ruleset을 active로 등록했다. [main squash 규칙](https:/
 스킬은 작업 절차를 안내한다. 실제 GitHub 머지 차단은 다음 두 요소를 함께 적용해야 동작한다.
 
 - [워크플로](../.github/workflows/branch-policy.yml): PR의 출발·대상 브랜치를 검사한다. 변경 파일 필터 없이 PR 생성, 커밋 추가, 재개, 대상 수정 시 실행한다.
-- [통합 Ruleset](../.github/rulesets/integration.json): main, dev, release에 PR과 GitHub Actions의 `branch-policy` 성공을 요구하며 직접 push·강제 push를 막는다.
+- [통합 Ruleset](../.github/rulesets/integration.json): main, dev, release에 PR, `branch-policy`, `service-verification` 및 다섯 `image-*` 검사 성공을 요구하며 직접 push·강제 push를 막는다.
 - [main Ruleset](../.github/rulesets/main.json): main에 squash만 허용하고 삭제를 막는다. dev와 release는 main 동기화를 위해 일반 merge를 사용할 수 있다.
 
 두 Ruleset에 우회 주체를 등록하지 않는다. 관리자가 규칙 자체를 수정하는 권한까지 없애는 설정은 아니다. 필수 승인 수는 현재 0이며, 팀 리뷰 인원 정책은 별도로 정한다.

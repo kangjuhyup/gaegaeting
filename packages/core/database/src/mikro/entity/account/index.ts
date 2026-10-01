@@ -1,4 +1,6 @@
 export * from './external-user-subject.js';
+export * from './account-signup.js';
+export * from './registration-eligibility.js';
 export * from './pet-attachment.js';
 export * from './pet-profile.js';
 export * from './user-attachment.js';

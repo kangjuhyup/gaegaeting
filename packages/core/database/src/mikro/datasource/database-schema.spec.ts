@@ -15,7 +15,7 @@ describe('MikroORM entity registry', () => {
 
   it('exposes immutable explicit group arrays', () => {
     expect(Object.isFrozen(MIKRO_USER_ENTITIES)).toBe(true);
-    expect(MIKRO_USER_ENTITIES).toHaveLength(6);
+    expect(MIKRO_USER_ENTITIES).toHaveLength(8);
     expect(Object.isFrozen(MIKRO_MATCH_ENTITIES)).toBe(true);
     expect(MIKRO_MATCH_ENTITIES).toHaveLength(6);
     expect(Object.isFrozen(MIKRO_CHAT_ENTITIES)).toBe(true);

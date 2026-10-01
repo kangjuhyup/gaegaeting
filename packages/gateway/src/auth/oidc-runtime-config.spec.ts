@@ -1,7 +1,7 @@
-import { resolveOidcRuntimeConfig } from './oidc-runtime-config.js';
+import { resolveApiAudience, resolveOidcRuntimeConfig } from './oidc-runtime-config.js';
 
 describe('OIDC runtime configuration', () => {
-  test('uses the production tenant issuer by default', () => {
+  test('preserves the existing issuer fallback outside production', () => {
     expect(resolveOidcRuntimeConfig({})).toEqual({
       issuer: 'https://auth.gaegaeting.app/t/gaegaeting/oidc',
       discoveryUrl:
@@ -9,6 +9,20 @@ describe('OIDC runtime configuration', () => {
       allowInsecureLoopbackHttp: false,
       insecureHttpAllowedHosts: [],
     });
+  });
+
+  test('requires an explicit issuer in production', () => {
+    expect(() => resolveOidcRuntimeConfig({ NODE_ENV: 'production' }))
+      .toThrow('OIDC_ISSUER is required in production');
+  });
+
+  test('accepts the proposed production issuer when explicitly configured', () => {
+    const issuer = 'https://auth.rvkang.app/t/gaegaeting/oidc';
+    expect(resolveOidcRuntimeConfig({ NODE_ENV: 'production', OIDC_ISSUER: issuer }))
+      .toMatchObject({
+        issuer,
+        discoveryUrl: `${issuer}/.well-known/openid-configuration`,
+      });
   });
 
   test('allows explicitly enabled loopback HTTP outside production', () => {
@@ -48,5 +62,18 @@ describe('OIDC runtime configuration', () => {
       allowInsecureLoopbackHttp: false,
       insecureHttpAllowedHosts: [],
     });
+  });
+});
+
+
+describe('resource audience isolation', () => {
+  test('uses the explicitly configured dev audience', () => {
+    expect(resolveApiAudience({ OIDC_API_AUDIENCE: 'https://api-dev.gaegaeting.app' }))
+      .toBe('https://api-dev.gaegaeting.app');
+    expect(resolveApiAudience({})).toBe('https://api.gaegaeting.app');
+  });
+  test('rejects credential-bearing or insecure resource URLs', () => {
+    expect(() => resolveApiAudience({ OIDC_API_AUDIENCE: 'http://api.test' })).toThrow();
+    expect(() => resolveApiAudience({ OIDC_API_AUDIENCE: 'https://user:password@api.test' })).toThrow();
   });
 });

@@ -5,7 +5,11 @@
   "bypass_actors": [],
   "conditions": {
     "ref_name": {
-      "include": ["refs/heads/main", "refs/heads/dev/**/*", "refs/heads/release/**/*"],
+      "include": [
+        "refs/heads/main",
+        "refs/heads/dev/**/*",
+        "refs/heads/release/**/*"
+      ],
       "exclude": []
     }
   },
@@ -25,9 +29,40 @@
       "parameters": {
         "strict_required_status_checks_policy": true,
         "do_not_enforce_on_create": true,
-        "required_status_checks": [{ "context": "branch-policy", "integration_id": 15368 }]
+        "required_status_checks": [
+          {
+            "context": "branch-policy",
+            "integration_id": 15368
+          },
+          {
+            "context": "service-verification",
+            "integration_id": 15368
+          },
+          {
+            "context": "image-account",
+            "integration_id": 15368
+          },
+          {
+            "context": "image-match",
+            "integration_id": 15368
+          },
+          {
+            "context": "image-gateway",
+            "integration_id": 15368
+          },
+          {
+            "context": "image-edge-authz",
+            "integration_id": 15368
+          },
+          {
+            "context": "image-integration-ui",
+            "integration_id": 15368
+          }
+        ]
       }
     },
-    { "type": "non_fast_forward" }
+    {
+      "type": "non_fast_forward"
+    }
   ]
 }

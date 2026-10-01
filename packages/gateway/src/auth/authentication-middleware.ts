@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { AccountSubjectClient } from './account-subject-client.js';
+import { AccountSubjectNotLinkedError, type AccountSubjectClient } from './account-subject-client.js';
 import {
   AuthServiceUnavailableError,
   InactiveTokenError,
@@ -51,7 +51,7 @@ export function createAuthenticationMiddleware(
       };
       next();
     } catch (error) {
-      if (error instanceof InactiveTokenError) {
+      if (error instanceof InactiveTokenError || error instanceof AccountSubjectNotLinkedError) {
         response.status(401).json({ error: 'authentication_required' });
         return;
       }

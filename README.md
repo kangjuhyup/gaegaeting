@@ -48,6 +48,10 @@ Gateway는 `ACCOUNT_SERVICE_URL`, `MATCH_SERVICE_URL`의 GraphQL 준비 상태�
 
 현재 소스를 빌드한 결과로 실행하므로 소스를 수정한 뒤에는 Ctrl+C 후 다시 실행합니다. Ctrl+C 또는 자식 서비스 종료 시 함께 시작한 로컬 프로세스도 종료합니다.
 
+## 이미지 및 배포
+
+main 병합 후 GitHub Actions가 검증한 서비스별 amd64/arm64 이미지를 GHCR에 게시합니다. k3s에서는 커밋 SHA와 digest를 고정하여 배포합니다. [이미지 게시·배포 계약](docs/image-delivery.md)을 참고하세요.
+
 ## 검증
 
 ```bash
@@ -70,4 +74,6 @@ import { DatabaseModule } from '@core/database';
 
 - [API 문서](https://kangjuhyup.github.io/gaegaeting/docs/#/)
 - [중앙 인증 클라이언트 계약](./docs/central-auth-client-integration.md)
+- [로컬 Envoy 인증 경로](./ops/local-envoy/README.md)
+- [Gaegaeting Auth 및 자체 Hosted UI 연결](./ops/local-auth/README.md)
 - [보안 취약점 신고](./SECURITY.md)

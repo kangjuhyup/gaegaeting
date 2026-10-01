@@ -8,7 +8,8 @@ import { OidcDiscoveryCache } from './auth/oidc-discovery.js';
 import { OpaqueTokenIntrospector } from './auth/introspection-client.js';
 import { AccountSubjectClient } from './auth/account-subject-client.js';
 import { createAuthenticationMiddleware } from './auth/authentication-middleware.js';
-import { resolveOidcRuntimeConfig } from './auth/oidc-runtime-config.js';
+import { createEdgeAuthenticationMiddleware } from './auth/edge-authentication-middleware.js';
+import { resolveApiAudience, resolveOidcRuntimeConfig } from './auth/oidc-runtime-config.js';
 import { pathToFileURL } from 'node:url';
 
 const { json } = bodyParser;
@@ -17,7 +18,6 @@ const { json } = bodyParser;
 config();
 
 const PORT = parseInt(process.env.GATEWAY_PORT || '4000', 10);
-const API_AUDIENCE = 'https://api.gaegaeting.app';
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -56,28 +56,34 @@ export async function bootstrap(): Promise<{
 
   // Gateway 초기화
   const assertionSecret = requireEnv('INTERNAL_AUTH_ASSERTION_SECRET');
-  const oidc = resolveOidcRuntimeConfig(process.env);
-  const discovery = new OidcDiscoveryCache(
-    oidc.discoveryUrl,
-    oidc.issuer,
-    fetch,
-    {
-      allowInsecureLoopbackHttp: oidc.allowInsecureLoopbackHttp,
-      allowedInsecureHttpHosts: oidc.insecureHttpAllowedHosts,
-    },
-  );
-  const introspector = new OpaqueTokenIntrospector(discovery, fetch, {
-    clientId: process.env.OIDC_INTROSPECTION_CLIENT_ID ?? 'gaegaeting-api',
-    clientSecret: requireEnv('OIDC_INTROSPECTION_CLIENT_SECRET'),
-    expectedIssuer: oidc.issuer,
-    expectedAudience: API_AUDIENCE,
-    timeoutMs: Number(process.env.OIDC_INTROSPECTION_TIMEOUT_MS ?? 2_000),
-  });
+  const authMode = process.env.GATEWAY_AUTH_MODE ?? 'direct';
+  if (authMode !== 'direct' && authMode !== 'edge') throw new Error('Invalid GATEWAY_AUTH_MODE');
+  const oidc = authMode === 'direct' ? resolveOidcRuntimeConfig(process.env) : undefined;
   const subjects = new AccountSubjectClient(
     process.env.ACCOUNT_SUBJECT_RESOLUTION_URL ??
       'http://account.app.svc.cluster.local:2800/account/internal/subjects/resolve',
   );
-  const authenticate = createAuthenticationMiddleware(introspector, subjects);
+  const authenticate = authMode === 'edge'
+    ? createEdgeAuthenticationMiddleware(subjects, requireEnv('EDGE_AUTH_ASSERTION_SECRET'))
+    : createAuthenticationMiddleware(
+        new OpaqueTokenIntrospector(
+          new OidcDiscoveryCache(oidc!.discoveryUrl, oidc!.issuer, fetch, {
+            allowInsecureLoopbackHttp: oidc!.allowInsecureLoopbackHttp,
+            allowedInsecureHttpHosts: oidc!.insecureHttpAllowedHosts,
+          }),
+          fetch,
+          {
+            clientId: process.env.NODE_ENV === 'production'
+              ? requireEnv('OIDC_INTROSPECTION_CLIENT_ID')
+              : process.env.OIDC_INTROSPECTION_CLIENT_ID ?? 'gaegaeting-api',
+            clientSecret: requireEnv('OIDC_INTROSPECTION_CLIENT_SECRET'),
+            expectedIssuer: oidc!.issuer,
+            expectedAudience: resolveApiAudience(process.env),
+            timeoutMs: Number(process.env.OIDC_INTROSPECTION_TIMEOUT_MS ?? 2_000),
+          },
+        ),
+        subjects,
+      );
 
   const gateway = new Gateway(assertionSecret);
   await gateway.initialize();

@@ -38,6 +38,11 @@ const migrationEntries = [
 
 Object.assign(process.env, {
   NODE_ENV: 'test',
+  AUTH_BASE_URL: 'http://127.0.0.1:3010',
+  AUTH_ISSUER: 'http://127.0.0.1:3010/t/gaegaeting/oidc',
+  AUTH_TENANT_CODE: 'gaegaeting',
+  AUTH_PROVISIONING_CLIENT_ID: 'esm-smoke-provisioner',
+  AUTH_PROVISIONING_CLIENT_SECRET: 'esm-smoke-secret-at-least-32-characters',
   ACCOUNT_SERVICE_API_PORT: '0',
   AUTH_SERVICE_API_PORT: '0',
   MATCH_SERVICE_API_PORT: '0',

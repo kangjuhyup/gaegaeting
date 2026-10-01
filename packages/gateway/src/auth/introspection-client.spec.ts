@@ -54,6 +54,7 @@ describe('OpaqueTokenIntrospector', () => {
     async (aud) => {
       const { client } = makeClient(active({ aud }));
       await expect(client.introspect('opaque-value')).resolves.toEqual({
+        issuer,
         tenantId: 'tenant-gaegaeting',
         subject: 'central-subject',
         scopes: ['openid', 'profile'],
