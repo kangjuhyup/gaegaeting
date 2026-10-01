@@ -29,6 +29,9 @@ export const envSpec = {
   DATABASE_PASSWORD: { joi: Joi.string().required() },
   DATABASE_NAME: { joi: Joi.string().default('ggt_match') },
   ACCOUNT_SERVICE_HOST : { joi : Joi.string().required().default('http://localhost:3000') },
+  KAFKA_TOPIC_PREFIX: {
+    joi: Joi.string().pattern(/^[A-Za-z0-9][A-Za-z0-9._-]*$/).max(200).allow('').default(''),
+  },
   KAFKA_BROKERS : {
     joi : Joi.alternatives()
       .try(
