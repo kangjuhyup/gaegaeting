@@ -3,10 +3,11 @@ type FeedItemStatusValue = {
     value : number
 }
 export const FeedItemStatus = {
-    DELIVERY : { label : 'DELIVERY' , value : 0 },
-    VIEW : { label : 'VIEW' , value : 1 },
-    LIKE : { label : 'LIKE' , value : 2 },
-    PASS : { label : 'PASS' , value : 3 },
+    // Preserve the numeric codes already written by FeedItemEntity and feed creation.
+    DELIVERY : { label : 'DELIVERY' , value : 1 },
+    VIEW : { label : 'VIEW' , value : 2 },
+    LIKE : { label : 'LIKE' , value : 3 },
+    PASS : { label : 'PASS' , value : 4 },
 
     from : (value:number) : FeedItemStatusValue => {
         const entries = Object.entries(FeedItemStatus) as [string, FeedItemStatusValue][];
