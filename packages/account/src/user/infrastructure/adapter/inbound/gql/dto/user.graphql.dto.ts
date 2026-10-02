@@ -39,7 +39,7 @@ export class UserGraphQLDto {
   /**
    * GraphQL CreateUserProfileInput을 도메인 엔티티 데이터로 변환
    */
-  static toDomainEntity(input: CreateUserProfileInput): IUserProfile {
+  static toDomainEntity(input: CreateUserProfileInput & { name: string; gender: UserGenderGql; birthDate: Date }): IUserProfile {
     return {
       name: input.name,
       nickname: input.nickname,
@@ -119,4 +119,3 @@ export class UserGraphQLDto {
     return status.label as UserStatusGql;
   }
 }
-

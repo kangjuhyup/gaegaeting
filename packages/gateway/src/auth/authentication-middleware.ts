@@ -11,6 +11,7 @@ export interface GatewayPrincipal {
   subject: string;
   userId: string;
   scopes: string[];
+  roles?: string[];
 }
 
 export type AuthenticatedRequest = Request & {
@@ -48,6 +49,7 @@ export function createAuthenticationMiddleware(
         subject: external.subject,
         userId: mapped.userId,
         scopes: external.scopes,
+        ...(external.roles === undefined ? {} : { roles: external.roles }),
       };
       next();
     } catch (error) {

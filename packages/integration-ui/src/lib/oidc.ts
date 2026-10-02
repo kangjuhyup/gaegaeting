@@ -83,7 +83,7 @@ function browserApiUrl(url: string): string {
     : url;
 }
 
-export async function beginLogin(config: AppConfig) {
+export async function beginLogin(config: AppConfig, admin = false) {
   const discovery = await discover(config.issuer);
   const verifier = randomValue(48);
   const digest = await crypto.subtle.digest(
@@ -102,7 +102,7 @@ export async function beginLogin(config: AppConfig) {
     client_id: config.clientId,
     redirect_uri: config.redirectUri,
     scope:
-      "openid profile email account:read account:write match:read match:write",
+      `openid profile email account:read account:write match:read match:write${admin ? ' tenant_roles' : ''}`,
     resource: publicConfig.apiAudience,
     code_challenge: toBase64Url(new Uint8Array(digest)),
     code_challenge_method: "S256",

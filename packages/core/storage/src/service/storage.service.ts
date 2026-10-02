@@ -23,11 +23,37 @@ export class StorageService {
         this.s3Client = new S3Client({
             region: this.region,
             endpoint: this.storageHost,
+            forcePathStyle: true,
+            // The browser supplies the body after signing; do not sign an empty-body CRC32.
+            requestChecksumCalculation: 'WHEN_REQUIRED',
             credentials: {
               accessKeyId: this.accessKeyId,
               secretAccessKey: this.secretAccessKey,
             },
           });
+    }
+
+    /** Read and validate the same object version before freezing an upload for review. */
+    async readImageHeader(key: string, maxBytes: number): Promise<{ etag: string; bytes: Uint8Array }> {
+      const storageKey = this.prefix ? `${this.prefix}/${key}` : key;
+      const head = await this.s3Client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: storageKey }));
+      if (!head.ETag || !head.ContentLength || head.ContentLength > maxBytes || head.ContentType !== 'image/png') {
+        throw new Error('INVALID_PROFILE_IMAGE');
+      }
+      const object = await this.s3Client.send(new GetObjectCommand({
+        Bucket: this.bucket, Key: storageKey, Range: 'bytes=0-31', IfMatch: head.ETag,
+      }));
+      if (!object.Body) throw new Error('INVALID_PROFILE_IMAGE');
+      return { etag: head.ETag, bytes: await object.Body.transformToByteArray() };
+    }
+
+    async freezeImage(sourceKey: string, destinationKey: string, etag: string): Promise<void> {
+      const key = (value: string) => this.prefix ? `${this.prefix}/${value}` : value;
+      const copySource = `/${[this.bucket, ...key(sourceKey).split('/')].map(encodeURIComponent).join('/')}`;
+      await this.s3Client.send(new CopyObjectCommand({
+        Bucket: this.bucket, Key: key(destinationKey), CopySource: copySource, CopySourceIfMatch: etag,
+        ContentType: 'image/png', MetadataDirective: 'REPLACE', CacheControl: 'private, max-age=300',
+      }));
     }
 
     async generateUploadPresignedUrl(param: {

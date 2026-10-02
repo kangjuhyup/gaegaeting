@@ -1,3 +1,4 @@
+import { ProfileImageModule } from '../../common/profile-images/profile-image.module.js';
 import { Module, type Provider } from "@nestjs/common";
 import { PetInfraStructureModule } from "../infrastructure/infrastructure.module.js";
 import { GetPetHandler } from "./service/query/get-pet.query.js";
@@ -22,6 +23,7 @@ const providers : Provider[] = [
 
 @Module({
     imports: [
+        ProfileImageModule,
         PetInfraStructureModule,
     ],
     providers : providers,

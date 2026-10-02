@@ -1,28 +1,12 @@
-import { CommandHandler } from "@nestjs/cqrs";
-import { GeneratePetPresignedCommand } from "../../port/command/generate-pet-presigned.port.js";
-import { PetStoragePort } from "#app/pet/infrastructure/port/pet-storage.port";
-import { PetAttachmentRepositoryPort } from "#app/pet/infrastructure/port/pet-attachment-repository.port";
-import { PresignedUrl } from "#app/common/vo/presigned-url";
-import { type ICommandHandler } from "@nestjs/cqrs";
-import { PetAttachemntEntity } from "#app/pet/domain/model/pet-attachment";
-import { Transactional } from "@core/database";
+import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
+import { GeneratePetPresignedCommand } from '../../port/command/generate-pet-presigned.port.js';
+import { ProfileImageService } from '../../../../common/profile-images/profile-image.service.js';
+import { PresignedUrl } from '../../../../common/vo/presigned-url.js';
 
 @CommandHandler(GeneratePetPresignedCommand)
-export class GeneratePetPresignedUrlHandler implements ICommandHandler<GeneratePetPresignedCommand,PresignedUrl> {
-
-    constructor(
-        private readonly petStoragePort : PetStoragePort,
-        private readonly petAttachmentRepositoryPort : PetAttachmentRepositoryPort,
-    ) {}
-    
-    @Transactional()
-    async execute(command: GeneratePetPresignedCommand): Promise<PresignedUrl> {
-        const presignedUrl = await this.petStoragePort.getPresignedUrl(command.petId, command.no);
-        const pet = PetAttachemntEntity.of({
-            path : presignedUrl.path,
-            active : false,
-        }).setPersistence({ petId : command.petId, no : command.no }, new Date(), new Date());
-        await this.petAttachmentRepositoryPort.insertPetAttachment(pet);
-        return presignedUrl;
-    }
+export class GeneratePetPresignedUrlHandler implements ICommandHandler<GeneratePetPresignedCommand, PresignedUrl> {
+  constructor(private readonly images: ProfileImageService) {}
+  execute(command: GeneratePetPresignedCommand): Promise<PresignedUrl> {
+    return this.images.begin('PET', String(command.petId), command.no, command.userId);
+  }
 }
