@@ -16,6 +16,8 @@ test('Gaegaeting bootstrap keeps login, API inspection and provisioning clients 
     'gaegaeting-web', 'gaegaeting-api', 'gaegaeting-account-provisioner',
   ]);
   assert.equal(clients[0].externalInteractionUiUrl, 'http://localhost:5173/interaction');
+  assert.deepEqual(clients[0].postLogoutRedirectUris, ['http://localhost:5173/']);
+  assert.ok(clients[0].scope.split(' ').includes('tenant_roles'));
   assert.equal(clients[2].scope, 'auth.user.provision');
   assert.equal(clients[1].introspectionResources[0], 'https://api.gaegaeting.app');
 });
@@ -26,7 +28,7 @@ test('Gaegaeting bootstrap never changes Vote and stops on a conflicting existin
     calls.push({ url, method: init.method ?? 'GET' });
     if (url.endsWith('/admin/session')) return new Response('{}', { headers: { 'set-cookie': 'admin_session=test; HttpOnly' } });
     if (url.includes('/admin/tenants?')) return Response.json({ items: [{ code: 'gaegaeting' }, { code: 'e-vote' }] });
-    if (url.includes('/admin/scopes?')) return Response.json({ items: ['offline_access', 'account:read', 'account:write', 'match:read', 'match:write', 'auth.user.provision'].map(name => ({ name, enabled: true })) });
+    if (url.includes('/admin/scopes?')) return Response.json({ items: ['offline_access', 'account:read', 'account:write', 'match:read', 'match:write', 'auth.user.provision', 'tenant_roles'].map(name => ({ name, enabled: true })) });
     if (url.includes('/admin/clients?')) return Response.json({ items: [{ clientId: 'gaegaeting-web', enabled: true, type: 'public' }] });
     throw new Error(`Unexpected request: ${url}`);
   };

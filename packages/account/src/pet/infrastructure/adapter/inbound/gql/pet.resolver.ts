@@ -1,3 +1,4 @@
+import { ProfileImageService } from '../../../../../common/profile-images/profile-image.service.js';
 import { Int, Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -19,6 +20,7 @@ export class PetResolver {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
+    private readonly images: ProfileImageService,
   ) {}
 
   @Query(() => [Pet])
@@ -26,7 +28,7 @@ export class PetResolver {
   @Scopes('account:read')
   async pets(@UserParam() user: UserPrincipal): Promise<Pet[]> {
     const pets = await this.queryBus.execute(new GetPetsQuery(user.userId));
-    return pets.map(pet => PetGraphQLDto.fromDomain(pet.pet, pet.profile.map(profile => profile.path)));
+    return Promise.all(pets.map(async pet => PetGraphQLDto.fromDomain(pet.pet, await this.images.approvedUrls('PET', String(pet.pet.id)))));
   }
 
   @Query(() => Pet, { nullable: true })
@@ -34,7 +36,7 @@ export class PetResolver {
   @Scopes('account:read')
   async pet(@Args('id', { type: () => Int }) id: number): Promise<Pet | null> {
     const pet = await this.queryBus.execute(new GetPetQuery(id));
-    return pet ? PetGraphQLDto.fromDomain(pet) : null;
+    return pet ? PetGraphQLDto.fromDomain(pet, await this.images.approvedUrls('PET', String(id))) : null;
   }
 
   @Query(() => [Pet])
@@ -42,7 +44,7 @@ export class PetResolver {
   @Scopes('account:read')
   async petsByUserId(@Args('userId', { type: () => String }) userId: string): Promise<Pet[]> {
     const pets = await this.queryBus.execute(new GetPetsQuery(userId));
-    return pets.map(pet => PetGraphQLDto.fromDomain(pet.pet, pet.profile.map(profile => profile.path)));
+    return Promise.all(pets.map(async pet => PetGraphQLDto.fromDomain(pet.pet, await this.images.approvedUrls('PET', String(pet.pet.id)))));
   }
 
   @Mutation(() => Pet)
@@ -99,11 +101,12 @@ export class PetResolver {
   @UseGuards(GraphqlAccessGuard)
   @Scopes('account:write')
   async generatePetPresignedUrl(
+    @UserParam() user: UserPrincipal,
     @Args('petId', { type: () => Int }) petId: number,
     @Args('imageNo', { type: () => Int }) imageNo: number,
   ): Promise<PresignedUrl> {
     const presignedUrl = await this.commandBus.execute(
-      new GeneratePetPresignedCommand(petId, imageNo),
+      new GeneratePetPresignedCommand(petId, imageNo, user.userId),
     );
     return PetGraphQLDto.fromPresignedUrl(presignedUrl);
   }
@@ -116,7 +119,6 @@ export class PetResolver {
     @Args('petId', { type: () => Int }) petId: number,
     @Args('imageNo', { type: () => Int }) imageNo: number,
   ): Promise<boolean> {
-    // TODO: DeletePetImageCommand 구현 필요
-    return true;
+    return this.images.remove('PET', String(petId), imageNo, user.userId);
   }
 }

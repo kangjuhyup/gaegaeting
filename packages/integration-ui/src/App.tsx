@@ -1,14 +1,14 @@
-import { publicConfig } from './runtime-config.js';
+import { publicConfig } from "@gaegaeting/ui-common";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell, type RouteKey } from "./components/Shell.js";
-import { completeLogin } from "./lib/oidc.js";
-import { errorMessage } from "./lib/api.js";
+import { beginLogout, completeLogin } from "@gaegaeting/ui-common";
+import { errorMessage } from "@gaegaeting/ui-common";
 import { SignupPage } from "./pages/SignupPage.js";
 import { LoginPage } from "./pages/LoginPage.js";
 import { ProfilePage } from "./pages/ProfilePage.js";
 import { PetPage } from "./pages/PetPage.js";
 import { RecommendationsPage } from "./pages/RecommendationsPage.js";
-import type { AppConfig, SignupDraft } from "./types.js";
+import type { AppConfig } from "./types.js";
 
 const defaultConfig: AppConfig = {
   issuer: publicConfig.issuer,
@@ -16,6 +16,7 @@ const defaultConfig: AppConfig = {
   gatewayUrl: publicConfig.gatewayUrl,
   accountUrl: publicConfig.accountUrl,
   redirectUri: `${window.location.origin}/login`,
+  postLogoutRedirectUri: `${window.location.origin}/`,
 };
 
 function readRoute(): RouteKey {
@@ -30,9 +31,11 @@ function readRoute(): RouteKey {
 export default function App() {
   const [route, setRoute] = useState<RouteKey>(readRoute);
   const config = defaultConfig;
-  const [token, setToken] = useState<string>();
-  const [signupDraft, setSignupDraft] = useState<SignupDraft>();
+  const [session, setSession] = useState<{ accessToken: string; idToken: string }>();
+  const token = session?.accessToken;
   const [callbackError, setCallbackError] = useState("");
+  const [logoutError, setLogoutError] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
   const callbackStarted = useRef(false);
   const callbackPending = useMemo(
     () =>
@@ -45,6 +48,22 @@ export default function App() {
     setRoute(next);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+  async function logout() {
+    if (!session || loggingOut) return;
+    setLoggingOut(true);
+    setSession(undefined);
+    setCallbackError("");
+    setLogoutError("");
+    window.history.replaceState({}, "", "/login");
+    setRoute("login");
+    window.scrollTo({ top: 0 });
+    try {
+      await beginLogout(config, session);
+    } catch (cause) {
+      setLogoutError(errorMessage(cause));
+      setLoggingOut(false);
+    }
+  }
   useEffect(() => {
     const listener = () => setRoute(readRoute());
     window.addEventListener("popstate", listener);
@@ -54,8 +73,8 @@ export default function App() {
     if (!callbackPending || callbackStarted.current) return;
     callbackStarted.current = true;
     void completeLogin(config)
-      .then(({ accessToken }) => {
-        setToken(accessToken);
+      .then(({ accessToken, idToken }) => {
+        setSession({ accessToken, idToken });
         window.history.replaceState({}, "", "/login");
         setRoute("login");
       })
@@ -65,9 +84,6 @@ export default function App() {
     signup: (
       <SignupPage
         config={config}
-        onComplete={(draft) => {
-          setSignupDraft(draft);
-        }}
         onLogin={() => navigate("login")}
       />
     ),
@@ -75,6 +91,7 @@ export default function App() {
       <LoginPage
         config={config}
         connected={Boolean(token)}
+        loggingOut={loggingOut}
         onNext={() => navigate("profile")}
       />
     ),
@@ -82,7 +99,6 @@ export default function App() {
       <ProfilePage
         config={config}
         token={token}
-        signupDraft={signupDraft}
         onNext={() => navigate("pet")}
       />
     ),
@@ -96,10 +112,18 @@ export default function App() {
     recommendations: <RecommendationsPage config={config} token={token} />,
   }[route];
   return (
-    <Shell route={route} onNavigate={navigate} connected={Boolean(token)}>
+    <Shell route={route} onNavigate={navigate} connected={Boolean(token)} loggingOut={loggingOut} onLogout={() => void logout()}>
       {callbackError && (
         <div className="global-error" role="alert">
           로그인 처리 실패: {callbackError}
+        </div>
+      )}
+      {loggingOut && (
+        <div className="global-status" role="status">로그아웃 처리 중입니다.</div>
+      )}
+      {logoutError && (
+        <div className="global-error" role="alert">
+          이 기기에서는 로그아웃했지만 인증 서버 로그아웃에 실패했습니다: {logoutError}
         </div>
       )}
       {page}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Alert, Button, PageTitle, Spinner } from "../components/Ui.js";
-import { errorMessage, graphql } from "../lib/api.js";
+import { Alert, Button, PageTitle, Spinner } from "@gaegaeting/ui-common";
+import { errorMessage, graphql } from "@gaegaeting/ui-common";
 import type { AppConfig, Feed, FeedItem } from "../types.js";
 
 export function RecommendationsPage({

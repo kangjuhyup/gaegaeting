@@ -1,3 +1,4 @@
+import { ProfileImageModule } from '../../common/profile-images/profile-image.module.js';
 import { Module, type Provider } from "@nestjs/common";
 import { UpdateUserProfileHandler } from "./service/command/update-user-profile.command.js";
 import { GetUserProfileHandler } from "./service/query/get-user-profile.query.js";
@@ -27,6 +28,7 @@ const providers : Provider[] = [
 
 @Module({
     imports: [
+        ProfileImageModule,
         UserInfraStructureModule,
     ],
     providers : providers,

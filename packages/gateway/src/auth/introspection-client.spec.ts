@@ -49,6 +49,24 @@ function makeClient(response: unknown, responseStatus = 200) {
 }
 
 describe('OpaqueTokenIntrospector', () => {
+  test('accepts tenant role codes only from Auth with the granted tenant_roles scope', async () => {
+    const { client } = makeClient(active({ scope: 'account:write tenant_roles', tenant_roles: [{ id: 'role-1', code: 'ADMIN' }] }));
+    expect((await client.introspect('opaque-value')).roles).toEqual(['ADMIN']);
+  });
+
+  test.each([
+    { roles: ['ADMIN'] },
+    { tenant_roles: [{ id: 'role-1', code: 'ADMIN' }] },
+    { scope: 'tenant_roles', roles: ['ADMIN'] },
+  ])('does not grant privileges from unscoped or unrelated role claims', async overrides => {
+    const { client } = makeClient(active(overrides));
+    expect((await client.introspect('opaque-value')).roles).toBeUndefined();
+  });
+
+  test.each([['ADMIN'], [{ id: 'role-1', code: '' }], [{ code: 'ADMIN' }], 'ADMIN'])('rejects malformed tenant roles', async tenant_roles => {
+    const { client } = makeClient(active({ scope: 'tenant_roles', tenant_roles }));
+    await expect(client.introspect('opaque-value')).rejects.toBeInstanceOf(InactiveTokenError);
+  });
   test.each([[audience], [[audience]]])(
     'accepts the exact API audience in string or array form',
     async (aud) => {

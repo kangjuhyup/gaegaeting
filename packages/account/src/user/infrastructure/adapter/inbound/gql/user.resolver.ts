@@ -1,5 +1,5 @@
 import { Int, Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
+import { UnprocessableEntityException, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UserParam, type UserPrincipal, GraphqlAccessGuard, Scopes } from '@core/auth';
 import { CreateUserProfileCommand } from '#app/user/application/port/command/create-user-profile.port';
@@ -11,20 +11,23 @@ import { PresignedUrl } from '#app/common/graphql/dto/presigned-url.type';
 import { UserGraphQLDto } from './dto/user.graphql.dto.js';
 import { CreateUserProfileInput, UpdateUserProfileInput } from './dto/user.input.js';
 import { UserProfile } from './dto/user.type.js';
+import { AccountSignupRepositoryPort } from '../../../../application/port/account-signup-repository.port.js';
+import { UserGenderGql } from './dto/user.enum.js';
 
 @Resolver(() => UserProfile)
 export class UserResolver {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
+    private readonly signups: AccountSignupRepositoryPort,
   ) {}
 
-  @Query(() => UserProfile)
+  @Query(() => UserProfile, { nullable: true })
   @UseGuards(GraphqlAccessGuard)
   @Scopes('account:read')
-  async myProfile(@UserParam() user: UserPrincipal): Promise<UserProfile> {
+  async myProfile(@UserParam() user: UserPrincipal): Promise<UserProfile | null> {
     const userProfile = await this.queryBus.execute(new GetUserProfileQuery(user.userId));
-    return UserGraphQLDto.fromDomain(userProfile.profile, userProfile.profileImages);
+    return userProfile?.profile ? UserGraphQLDto.fromDomain(userProfile.profile, userProfile.profileImages) : null;
   }
 
   @Query(() => UserProfile, { nullable: true })
@@ -32,7 +35,7 @@ export class UserResolver {
   @Scopes('account:read')
   async profile(@Args('id', { type: () => String }) id: string): Promise<UserProfile | null> {
     const user = await this.queryBus.execute(new GetUserProfileQuery(id));
-    return user ? UserGraphQLDto.fromDomain(user.profile, user.profileImages) : null;
+    return user?.profile ? UserGraphQLDto.fromDomain(user.profile, user.profileImages) : null;
   }
 
   @Mutation(() => UserProfile)
@@ -42,7 +45,14 @@ export class UserResolver {
     @UserParam() user: UserPrincipal,
     @Args('input') input: CreateUserProfileInput,
   ): Promise<UserProfile> {
-    const userData = UserGraphQLDto.toDomainEntity(input);
+    const identity = await this.signups.findIdentity(user.userId);
+    const name = identity?.name ?? input.name;
+    const gender = (identity?.gender as UserGenderGql | undefined) ?? input.gender;
+    const birthDate = identity?.birthDate ?? input.birthDate;
+    if (!name || !gender || !birthDate) {
+      throw new UnprocessableEntityException('가입 시 저장된 본인 정보가 없습니다. 고객 지원에 문의해 주세요.');
+    }
+    const userData = UserGraphQLDto.toDomainEntity({ ...input, name, gender, birthDate });
     const profile = await this.commandBus.execute(
       new CreateUserProfileCommand(user, userData),
     );

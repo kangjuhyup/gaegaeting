@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url';
 
-const USER_SCOPES = 'openid profile email account:read account:write match:read match:write';
+const USER_SCOPES = 'openid profile email account:read account:write match:read match:write tenant_roles';
 
 function required(env, name) {
   const value = env[name]?.trim();
@@ -55,7 +55,7 @@ export function desiredClients(env) {
   const audience = validUrl(env.OIDC_API_AUDIENCE ?? 'https://api.gaegaeting.app', { production }).replace(/\/$/, '');
   const common = { redirectUris: [], responseTypes: [], postLogoutRedirectUris: [], applicationType: 'web', skipConsent: false, allowedResources: [], introspectionResources: [] };
   return [
-    { ...common, clientId: 'gaegaeting-web', name: 'Gaegaeting Web', type: 'public', redirectUris: [redirect], grantTypes: ['authorization_code'], responseTypes: ['code'], tokenEndpointAuthMethod: 'none', scope: USER_SCOPES, skipConsent: true, allowedResources: [audience], externalInteractionUiUrl: interaction },
+    { ...common, clientId: 'gaegaeting-web', name: 'Gaegaeting Web', type: 'public', redirectUris: [redirect], postLogoutRedirectUris: [new URL(redirect).origin + '/'], grantTypes: ['authorization_code'], responseTypes: ['code'], tokenEndpointAuthMethod: 'none', scope: USER_SCOPES, skipConsent: true, allowedResources: [audience], externalInteractionUiUrl: interaction },
     { ...common, clientId: 'gaegaeting-api', name: 'Gaegaeting API introspection', type: 'service', secret: serviceSecret(env, 'GAEGAETING_INTROSPECTION_CLIENT_SECRET'), grantTypes: ['client_credentials'], tokenEndpointAuthMethod: 'client_secret_basic', scope: 'openid', introspectionResources: [audience] },
     { ...common, clientId: 'gaegaeting-account-provisioner', name: 'Gaegaeting Account provisioning', type: 'service', secret: serviceSecret(env, 'GAEGAETING_PROVISIONING_CLIENT_SECRET'), grantTypes: ['client_credentials'], tokenEndpointAuthMethod: 'client_secret_basic', scope: 'auth.user.provision' },
   ];
@@ -78,7 +78,7 @@ export async function bootstrapGaegaetingAuth({ env = process.env, fetchImpl = f
   }
   const prefix = `/t/${tenantCode}/admin`;
   const scopes = await list(base, `${prefix}/scopes`, cookie, fetchImpl);
-  for (const name of ['offline_access', 'account:read', 'account:write', 'match:read', 'match:write', 'auth.user.provision']) {
+  for (const name of ['offline_access', 'account:read', 'account:write', 'match:read', 'match:write', 'auth.user.provision', 'tenant_roles']) {
     const found = scopes.find(item => item.name === name);
     if (found && !found.enabled) throw new Error(`Disabled Auth scope: ${name}`);
     if (!found) await checked(await fetchImpl(`${base}${prefix}/scopes`, {

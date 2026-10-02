@@ -63,7 +63,7 @@ describe('authentication middleware', () => {
     expect(JSON.stringify(response.body)).not.toContain('opaque-value');
   });
 
-  test('stores only the mapped principal and continues', async () => {
+  test.each([undefined, ['ADMIN']])('stores only the verified mapped principal and roles and continues', async (roles) => {
     const request: any = {
       headers: { authorization: 'Bearer opaque-value' },
     };
@@ -74,6 +74,7 @@ describe('authentication middleware', () => {
           tenantId: 'tenant-gaegaeting',
           subject: 'central-subject',
           scopes: ['openid'],
+          ...(roles === undefined ? {} : { roles }),
           issuedAt: 1,
           expiresAt: 2,
         }),
@@ -88,6 +89,7 @@ describe('authentication middleware', () => {
       subject: 'central-subject',
       userId: '01J00000000000000000000000',
       scopes: ['openid'],
+      ...(roles === undefined ? {} : { roles }),
     });
     expect(next).toHaveBeenCalledTimes(1);
   });

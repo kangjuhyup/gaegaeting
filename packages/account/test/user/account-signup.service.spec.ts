@@ -6,6 +6,7 @@ describe('Account signup', () => {
     providerTransactionId: 'mock-tx-1', ci: 'private-ci', di: 'private-di', adult: true,
     termsVersion: '2026-09-01', termsAgreed: true, username: 'alice', password: 'password123',
     email: 'alice@example.com', phone: '01012345678',
+    name: '홍길동', birthDate: '1996-05-14', gender: 'FEMALE' as const,
   };
 
   test('verified signup sends only credentials and a stable opaque key to Auth', async () => {
@@ -30,9 +31,28 @@ describe('Account signup', () => {
     });
     expect(authAccounts.provision.mock.calls[1]![0]).toEqual(first);
     expect(signups.reserve).toHaveBeenCalledTimes(2);
+    expect(signups.reserve).toHaveBeenCalledWith(expect.objectContaining({ identity: {
+      name: input.name, birthDate: new Date('1996-05-14T00:00:00.000Z'), gender: input.gender, phone: input.phone,
+    } }));
     expect(signups.complete).toHaveBeenCalledWith({ diDigest: expect.stringMatching(/^[a-f0-9]{64}$/), subject: 'auth-subject' });
     expect(JSON.stringify(first)).not.toContain('private-di');
     expect(JSON.stringify(first)).not.toContain('alice@example.com');
+  });
+
+  test.each([
+    { name: '' }, { birthDate: '1996-02-31' }, { birthDate: 'not-a-date' },
+    { birthDate: '2099-01-01' }, { birthDate: '2020-01-01' }, { gender: undefined },
+  ])('invalid or incomplete signup identity is rejected before persistence or Auth provisioning: %j', async patch => {
+    const verifier = { verify: jest.fn(async (value: unknown) => value) };
+    const authAccounts = { provision: jest.fn() };
+    const signups = { reserve: jest.fn() };
+    const service = new AccountSignupService(verifier as any, authAccounts as any, signups as any, {
+      diHmacSecret: 's'.repeat(32), diHmacKeyVersion: 1, handoffTtlMs: 600000, claimTtlMs: 300000,
+      authIssuer: 'http://localhost:3010/t/gaegaeting/oidc',
+    });
+    await expect(service.register({ ...input, ...patch })).rejects.toThrow();
+    expect(signups.reserve).not.toHaveBeenCalled();
+    expect(authAccounts.provision).not.toHaveBeenCalled();
   });
 
   test('completed signup returns the existing subject without creating another Auth user', async () => {

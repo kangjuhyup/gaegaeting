@@ -57,6 +57,10 @@
           {
             "context": "image-integration-ui",
             "integration_id": 15368
+          },
+          {
+            "context": "image-admin-ui",
+            "integration_id": 15368
           }
         ]
       }

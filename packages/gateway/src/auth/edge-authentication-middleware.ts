@@ -36,6 +36,7 @@ export function createEdgeAuthenticationMiddleware(
         subject: external.subject,
         userId: mapped.userId,
         scopes: external.scopes,
+        ...(external.roles === undefined ? {} : { roles: external.roles }),
       };
       next();
     } catch (error) {

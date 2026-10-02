@@ -7,6 +7,7 @@ export interface AuthenticatedPrincipal {
   subject: string;
   userId: string;
   scopes: string[];
+  roles?: string[];
   issuedAt: number;
   expiresAt: number;
 }
@@ -26,6 +27,7 @@ interface AssertionPayload {
   sub: string;
   user_id: string;
   scope: string[];
+  roles?: string[];
   iat: number;
   exp: number;
 }
@@ -36,6 +38,11 @@ function invalid(): never {
 
 function requireText(value: unknown): string {
   if (typeof value !== 'string' || value.trim() === '') invalid();
+  return value;
+}
+
+function roleList(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length > 64 || !value.every(role => typeof role === 'string' && role.trim() !== '' && role.length <= 64)) invalid();
   return value;
 }
 
@@ -68,6 +75,7 @@ export function createInternalAuthAssertion(
     scope: Array.isArray(principal.scopes)
       ? principal.scopes.filter((scope): scope is string => typeof scope === 'string' && scope !== '')
       : [],
+    ...(principal.roles === undefined ? {} : { roles: roleList(principal.roles) }),
     iat: issuedAt,
     exp: issuedAt + ttlSeconds,
   };
@@ -83,6 +91,7 @@ export function verifyInternalAuthAssertion(
     const secret = requireText(options.secret);
     const issuer = requireText(options.issuer);
     const audience = requireText(options.audience);
+    if (assertion.length > 8192) invalid();
     const parts = assertion.split('.');
     if (parts.length !== 2 || parts.some((part) => part === '')) invalid();
 
@@ -118,6 +127,7 @@ export function verifyInternalAuthAssertion(
       scopes: Array.isArray(payload.scope)
         ? payload.scope.map(requireText)
         : [],
+      ...(payload.roles === undefined ? {} : { roles: roleList(payload.roles) }),
       issuedAt: payload.iat as number,
       expiresAt: payload.exp as number,
     };

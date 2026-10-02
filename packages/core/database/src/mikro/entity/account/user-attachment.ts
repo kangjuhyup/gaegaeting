@@ -28,4 +28,15 @@ export class UserAttachmentOrmEntity extends BaseEntity {
 
   @Property({ fieldName: 'is_active', columnType: 'boolean', default: false })
   isActive = false;
+  @Property({ fieldName: 'upload_key', columnType: 'varchar(255)', nullable: true })
+  uploadKey?: string;
+
+  @Property({ fieldName: 'review_status', columnType: 'varchar(16)', default: 'UPLOADING' })
+  reviewStatus: 'UPLOADING' | 'PENDING' | 'APPROVED' | 'REJECTED' = 'UPLOADING';
+
+  @Property({ fieldName: 'reviewed_by', columnType: 'char(26)', nullable: true })
+  reviewedBy?: string;
+
+  @Property({ fieldName: 'reviewed_at', columnType: 'timestamptz', nullable: true })
+  reviewedAt?: Date;
 }
