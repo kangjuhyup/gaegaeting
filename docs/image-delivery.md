@@ -58,6 +58,8 @@ UI 컨테이너는 다음 **공개 설정만** `/config.js`로 제공합니다. 
 
 ## 최초 dev 배포 계약
 
-사용자가 선택한 주소는 UI `https://dev.gaegaeting.app`, API `https://api-dev.gaegaeting.app`입니다. 최초 배포는 edge 인증 모드, 별도 fresh Account/Match DB 및 role, 독립 `gaegaeting-dev` Auth tenant를 사용합니다. issuer는 `https://auth.rvkang.app/t/gaegaeting-dev/oidc`, API audience는 `https://api-dev.gaegaeting.app`입니다. bootstrap의 `AUTH_TENANT_CODE=gaegaeting-dev`, `OIDC_API_AUDIENCE`와 runtime의 `UI_API_AUDIENCE`까지 일치시킵니다.
+사용자가 선택한 주소는 UI `https://test-ggt-ui.rvkang.app`, API `https://test-ggt-api.rvkang.app`입니다. 최초 배포는 edge 인증 모드, 별도 fresh Account/Match DB 및 role, 독립 `gaegaeting-dev` Auth tenant를 사용합니다. issuer는 `https://auth.rvkang.app/t/gaegaeting-dev/oidc`, API audience는 `https://test-ggt-api.rvkang.app`입니다. bootstrap의 `AUTH_TENANT_CODE=gaegaeting-dev`, `OIDC_API_AUDIENCE`와 runtime의 `UI_API_AUDIENCE`까지 일치시킵니다.
 
 실제 dev 가입 검증에는 dev namespace에만 `NODE_ENV=development`, `REGISTRATION_MOCK_ENABLED=true`를 주입합니다. 운영 승격 시 mock을 금지하고 실제 본인인증 공급자를 준비합니다. 현재 k3s는 ARM64 한 노드이며, 신규 DB/pg_hba/CA 접근, Kafka, Secret, namespace, DNS/TLS/Ingress 및 Auth 클라이언트가 준비돼야 최초 rollout을 시작할 수 있습니다. PostgreSQL `verify-full` 사용 시 CNPG CA를 파일로 mount하고 `NODE_EXTRA_CA_CERTS`로 신뢰를 공급합니다. 스토리지·외부 API 자격증명의 실효성도 별도 확인합니다.
+
+공용 Kafka를 사용할 때 Match에 `KAFKA_TOPIC_PREFIX=dev.gaegaeting`을 설정합니다. Feed/Like/Pair의 모든 Kafka 발행은 `${KAFKA_TOPIC_PREFIX}.${topic}`으로 전송하므로 `dev.gaegaeting.notification.fcm.send.v1`, `dev.gaegaeting.chat.room.created.v1`, `dev.gaegaeting.match.pair.reported.v1` 등을 별도로 준비합니다. Nest 로컬 EventEmitter 이벤트 이름과 페이로드는 변경하지 않습니다. 다른 환경에는 별도 prefix를 설정합니다. prefix 생략/빈 값은 기존 토픽을 유지하는 호환 모드이며, 공유 broker의 환경 격리에는 사용하지 않습니다. prefix는 영숫자로 시작하는 영숫자·점·밑줄·하이픈 최대 200자이며 잘못된 설정은 앱 부팅 시 거부합니다. 토픽 prefix는 이름 격리이며 보안 접근 제어를 대신하지 않습니다.
