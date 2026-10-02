@@ -11,7 +11,7 @@ export const serviceRoots = {
 export const services = Object.keys(serviceRoots);
 const domainServices = { core: services, account: ['account'], match: ['match'], gateway: ['gateway', 'edge-authz'] };
 const sharedRuntime = new Set(['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.npmrc', '.nvmrc', '.dockerignore', 'tsconfig.json', 'scripts/build.mjs', 'deploy/docker/Dockerfile']);
-const git = (cwd, args) => execFileSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+const git = (cwd, args) => execFileSync('/usr/bin/git', args, { cwd, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
 const diff = (cwd, range) => git(cwd, ['diff', '--name-only', '--no-renames', '-z', ...range]).split('\0').filter(Boolean);
 
 export function pendingPullRequestFiles(cwd, base, head, main = 'origin/main') {
@@ -32,8 +32,7 @@ export function loadPackages(cwd, revisions) {
     }));
 }
 
-export function affectedServices(files, packages) {
-  const affected = new Set();
+function workspaceConsumers(packages) {
   const dependencies = new Map();
   for (const pkg of packages) {
     const deps = dependencies.get(pkg.name) ?? new Set();
@@ -46,18 +45,27 @@ export function affectedServices(files, packages) {
     visited.add(name);
     return [...(dependencies.get(name) ?? [])].some(next => consumes(next, dependency, visited));
   };
+  return owners => services.filter(service => packages.some(root => root.dir === serviceRoots[service]
+    && owners.some(owner => consumes(root.name, owner.name))));
+}
+
+function isVerificationOnly(file) {
+  return /^(?:docs|\.agents|\.github|scripts)\//.test(file) || /(?:^|\/)AGENTS\.md$/.test(file)
+    || /(?:^|\/)README(?:\.[^/]*)?$/.test(file) || (!file.startsWith('packages/') && file.endsWith('.md'))
+    || ['.gitignore', '.gitattributes', 'sonar-project.properties', '.sonarcloud.properties', '.prettierignore'].includes(file)
+    || /(?:^|\/)(?:test|tests|docs)\//.test(file) || /\.(?:spec|test)\.[cm]?[jt]sx?$/.test(file);
+}
+
+export function affectedServices(files, packages) {
+  const affected = new Set();
+  const consumers = workspaceConsumers(packages);
   for (const file of files) {
     if (sharedRuntime.has(file)) { services.forEach(service => affected.add(service)); continue; }
     if (file === 'deploy/docker/ui-server.mjs') { affected.add('integration-ui'); affected.add('admin-ui'); continue; }
-    if (/^(?:docs|\.agents|\.github|scripts)\//.test(file) || /(?:^|\/)AGENTS\.md$/.test(file)
-      || /(?:^|\/)README(?:\.[^/]*)?$/.test(file) || (!file.startsWith('packages/') && file.endsWith('.md'))
-      || ['.gitignore', '.gitattributes', 'sonar-project.properties', '.sonarcloud.properties', '.prettierignore'].includes(file)) continue;
-    if (/(?:^|\/)(?:test|tests|docs)\//.test(file) || /\.(?:spec|test)\.[cm]?[jt]sx?$/.test(file)) continue;
+    if (isVerificationOnly(file)) continue;
     const owners = packages.filter(pkg => file === pkg.dir + '/package.json' || file.startsWith(pkg.dir + '/'));
     if (!owners.length) { services.forEach(service => affected.add(service)); continue; }
-    for (const [service, dir] of Object.entries(serviceRoots)) {
-      if (packages.some(root => root.dir === dir && owners.some(owner => consumes(root.name, owner.name)))) affected.add(service);
-    }
+    consumers(owners).forEach(service => affected.add(service));
   }
   return services.filter(service => affected.has(service));
 }
@@ -75,7 +83,8 @@ export function planImages({ files, packages, domain, verifyService = 'affected'
 
 function releaseDomain(repository, revision) {
   if (!/^[\w.-]+\/[\w.-]+$/.test(repository ?? '')) throw new Error('Invalid repository');
-  const prs = JSON.parse(execFileSync('gh', ['api', `repos/${repository}/commits/${revision}/pulls`], { encoding: 'utf8' }));
+  const gh = process.platform === 'darwin' ? '/opt/homebrew/bin/gh' : '/usr/bin/gh';
+  const prs = JSON.parse(execFileSync(gh, ['api', `repos/${repository}/commits/${revision}/pulls`], { encoding: 'utf8' }));
   const release = prs.filter(pr => pr.merged_at && pr.merge_commit_sha === revision && pr.base.ref === 'main'
     && branchPolicy.parseBranch(pr.head.ref)?.kind === 'release');
   if (release.length !== 1) throw new Error('Main image publication requires one merged release PR');

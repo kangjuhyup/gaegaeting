@@ -64,6 +64,8 @@ test('main carryover, newer main changes, squash-equivalent files and dev sync a
   const commit = message => { git('-c', 'user.name=Image scope test', '-c', 'user.email=image-scope@example.test', 'commit', '--no-gpg-sign', '-am', message); return git('rev-parse', 'HEAD'); };
   try {
     git('init', '-b', 'main');
+    git('config', 'user.name', 'Image scope test');
+    git('config', 'user.email', 'image-scope@example.test');
     await writeFile(join(cwd, 'ui.txt'), 'initial');
     await writeFile(join(cwd, 'match.txt'), 'initial');
     git('add', '.');
