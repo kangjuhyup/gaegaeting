@@ -35,7 +35,7 @@ test('login callbacks and interaction routes serve the SPA with uncached config 
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
-    for (const route of ['/login?code=opaque', '/interaction?uid=opaque', '/signup']) {
+    for (const route of ['/login?code=opaque', '/interaction?uid=opaque', '/signup', '/likes', '/chats', '/chats/sample-room_1', '/storyboard']) {
       const res = await fetch(`${base}${route}`);
       assert.equal(res.status, 200);
       assert.equal(await res.text(), '<div>UI</div>');
@@ -49,6 +49,12 @@ test('login callbacks and interaction routes serve the SPA with uncached config 
     assert.equal((await fetch(`${base}/%2eenv`)).status, 404);
     assert.equal((await fetch(`${base}/outside.txt`)).status, 404);
     assert.equal((await fetch(`${base}/assets/%2e%2e/%2e%2e/etc/passwd`)).status, 404);
+    for (const route of ['/chats/', '/chats/room/extra', '/chats/.env', '/chats/%2Fetc', '/chats/' + 'a'.repeat(129)]) {
+      assert.equal((await fetch(base + route)).status, 404, route);
+    }
+    const head = await fetch(base + '/chats/sample-room_1', { method: 'HEAD' });
+    assert.equal(head.status, 200);
+    assert.equal(await head.text(), '');
     assert.equal((await fetch(`${base}/health`)).status, 200);
     assert.equal((await fetch(`${base}/`, { method: 'POST' })).status, 405);
   } finally {
@@ -101,7 +107,7 @@ test('independent admin app serves only its /admin routes and assets using its o
     assert.match(runtime, /"basePath":"\/admin"/);
     assert.match(runtime, /"clientId":"gaegaeting-admin-web"/);
     assert.equal(await (await fetch(base + '/admin/entry.js')).text(), 'admin asset');
-    for (const route of ['/', '/login', '/config.js', '/administrator', '/admin/signup', '/admin/profile', '/admin/pet']) {
+    for (const route of ['/', '/login', '/config.js', '/administrator', '/admin/signup', '/admin/profile', '/admin/pet', '/admin/likes', '/admin/chats', '/admin/chats/sample-room_1', '/admin/storyboard']) {
       assert.equal((await fetch(base + route)).status, 404, route);
     }
   } finally {
