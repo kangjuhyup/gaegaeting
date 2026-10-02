@@ -1,6 +1,6 @@
 # Central auth client contract
 
-This repository does not contain Flutter or Web/BFF application source. OIDC client provisioning belongs to the separate infrastructure repository; each client repository implements the runtime contract below.
+This repository contains the Gaegaeting consumer Web UI; Flutter and BFF application source are external. OIDC client provisioning belongs to the separate infrastructure repository; each client implements the runtime contract below.
 
 ## Shared endpoints and resource
 
@@ -37,6 +37,10 @@ Scopes only authorize these broad API capabilities. Account/match services still
 - Validate the ID token server-side when a BFF exists, store only a server-side session identifier in an `HttpOnly`, `Secure`, `SameSite` cookie, and keep API/refresh tokens server-side.
 - Serialize refresh per server session and atomically persist the rotated token pair.
 - Logout must revoke the refresh token, delete the local session, and use the discovered end-session endpoint. Register a back-channel logout URI with the external issuer when a BFF endpoint is available.
+
+The current public consumer UI keeps access and verified ID tokens in memory; it does not request or store refresh tokens and has no application session cookie. Logout clears that memory and client-specific PKCE data, revokes the access token when advertised, and redirects the **current window** to the discovered end-session endpoint. It sends the verified ID token, client ID, unchanged registered post-logout URI and a fresh client-specific `state`. The returned state is accepted once at the configured callback; missing, mismatched, duplicate and replayed states are rejected. Login and other clients' state remain separate. A matching callback correlates the response with the request; it is not independent proof that the OP session ended.
+
+This preserves **Auth SSO logout**, rather than silently changing to app-only logout. There is no `window.open`, silent iframe or consumer confirmation dialog. Auth's own confirmation form can remain: removing it while retaining SSO logout requires Auth to automatically approve only a valid hint matching the current tenant/client/user/session. Gaegaeting does not bypass that check or submit the Auth confirmation form. App-only logout would leave the SSO session available for automatic sign-in and is not the selected behavior. See [RP-Initiated Logout](https://openid.net/specs/openid-connect-rpinitiated-1_0.html#RPLogout).
 
 Redirect and post-logout URI registration is managed in the separate infrastructure repository. Production `http:` redirect URIs must not be added.
 

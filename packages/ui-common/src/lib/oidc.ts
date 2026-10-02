@@ -138,6 +138,7 @@ export async function beginLogin(
   config: AppConfig,
   options: { scopes?: string; prompt?: "login" } = {},
 ) {
+  sessionStorage.removeItem(storageKey(config, "logout-state"));
   const discovery = await discover(config.issuer);
   const verifier = randomValue(48);
   const digest = await crypto.subtle.digest(
@@ -219,9 +220,16 @@ export async function beginLogout(
   config: AppConfig,
   session: { accessToken: string; idToken: string },
 ) {
-  ["verifier", "state", "nonce"].forEach((part) =>
+  ["verifier", "state", "nonce", "logout-state"].forEach((part) =>
     sessionStorage.removeItem(storageKey(config, part)),
   );
+  if (!session.idToken) {
+    throw new Error("인증 서버 로그아웃에 필요한 ID token이 없습니다.");
+  }
+  const redirectUri = config.postLogoutRedirectUri ?? config.redirectUri;
+  if (new URL(redirectUri).origin !== window.location.origin) {
+    throw new Error("로그아웃 반환 주소가 현재 앱과 일치하지 않습니다.");
+  }
 
   const discovery = await discover(config.issuer);
   if (!discovery.end_session_endpoint) {
@@ -251,6 +259,43 @@ export async function beginLogout(
   }
   endpoint.searchParams.set("id_token_hint", session.idToken);
   endpoint.searchParams.set("client_id", config.clientId);
-  endpoint.searchParams.set("post_logout_redirect_uri", config.postLogoutRedirectUri ?? config.redirectUri);
-  window.location.assign(endpoint.href);
+  endpoint.searchParams.set("post_logout_redirect_uri", redirectUri);
+  const state = randomValue();
+  endpoint.searchParams.set("state", state);
+  sessionStorage.setItem(storageKey(config, "logout-state"), state);
+  try {
+    window.location.assign(endpoint.href);
+  } catch (cause) {
+    sessionStorage.removeItem(storageKey(config, "logout-state"));
+    throw cause;
+  }
+}
+
+export function completeLogout(config: AppConfig): boolean {
+  const callback = new URL(window.location.href);
+  if (callback.searchParams.has("code") || callback.searchParams.has("error"))
+    return false;
+  const key = storageKey(config, "logout-state");
+  const expected = sessionStorage.getItem(key);
+  if (!expected && !callback.searchParams.has("state")) return false;
+  const registered = new URL(config.postLogoutRedirectUri ?? config.redirectUri);
+  if (
+    callback.origin !== registered.origin ||
+    callback.pathname !== registered.pathname
+  )
+    return false;
+  const states = callback.searchParams.getAll("state");
+  callback.searchParams.delete("state");
+  callback.searchParams.sort();
+  registered.searchParams.sort();
+  sessionStorage.removeItem(key);
+  if (
+    !expected ||
+    states.length !== 1 ||
+    states[0] !== expected ||
+    callback.href !== registered.href
+  ) {
+    throw new Error("인증 서버 로그아웃 반환 state가 일치하지 않습니다.");
+  }
+  return true;
 }
