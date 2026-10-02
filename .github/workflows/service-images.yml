@@ -30,6 +30,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:workspaces
       - run: node --test scripts/*.test.mjs
+      - run: pnpm test:ui
       - run: pnpm test:workspaces
 
   images:

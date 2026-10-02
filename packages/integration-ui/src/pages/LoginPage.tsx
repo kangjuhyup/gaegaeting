@@ -7,13 +7,15 @@ import { Alert, Button, PageTitle, Spinner } from "@gaegaeting/ui-common";
 export function LoginPage({
   config,
   connected,
-  loggingOut,
+  loggingOut = false,
   onNext,
+  onSignup,
 }: {
   config: AppConfig;
   connected: boolean;
-  loggingOut: boolean;
+  loggingOut?: boolean;
   onNext: () => void;
+  onSignup: () => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -58,7 +60,7 @@ export function LoginPage({
             <p>
               {connected
                 ? "프로필을 등록할 준비가 됐어요."
-                : "로그인 화면으로 이동합니다."}
+                : "오늘의 산책 친구를 만나보세요."}
             </p>
           </div>
         </div>
@@ -67,8 +69,20 @@ export function LoginPage({
           <Button onClick={onNext}>내 프로필 등록하기 →</Button>
         ) : (
           <>
-            <Button onClick={() => login()} disabled={loading || loggingOut}>
-              {loading && <Spinner />} 로그인
+            <Button
+              onClick={() => login()}
+              disabled={loading || loggingOut}
+              aria-busy={loading || loggingOut}
+            >
+              {loading && <Spinner />}{" "}
+              {loading ? "로그인으로 이동 중…" : "로그인"}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={onSignup}
+              disabled={loading || loggingOut}
+            >
+              처음 오셨나요? 회원가입
             </Button>
           </>
         )}

@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { Alert, Button, PageTitle, Spinner } from "@gaegaeting/ui-common";
 import { errorMessage, graphql } from "@gaegaeting/ui-common";
 import type { AppConfig, Feed, FeedItem } from "../types.js";
+import { RecommendationCard } from "../components/RecommendationCard.js";
+import {
+  loadRecommendationDetails,
+  type RecommendationDetails,
+} from "../lib/recommendation-details.js";
 
 export function RecommendationsPage({
   config,
@@ -14,9 +19,17 @@ export function RecommendationsPage({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [acted, setActed] = useState<Record<string, string>>({});
+  const [pending, setPending] = useState<Record<string, boolean>>({});
+  const [details, setDetails] = useState<Record<string, RecommendationDetails>>(
+    {},
+  );
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsFailed, setDetailsFailed] = useState(false);
   function currentPosition(): Promise<GeolocationPosition> {
     if (!navigator.geolocation) {
-      return Promise.reject(new Error("이 브라우저에서는 위치를 사용할 수 없어요."));
+      return Promise.reject(
+        new Error("이 브라우저에서는 위치를 사용할 수 없어요."),
+      );
     }
     return new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -39,14 +52,23 @@ export function RecommendationsPage({
         try {
           position = await currentPosition();
         } catch {
-          throw new Error("추천을 만들려면 위치 권한이 필요해요. 브라우저에서 위치 사용을 허용해 주세요.");
+          throw new Error(
+            "추천을 만들려면 위치 권한이 필요해요. 브라우저에서 위치 사용을 허용해 주세요.",
+          );
         }
         await graphql<{ setCurrentLocation: boolean }>(
           config.gatewayUrl,
-          `mutation SetCurrentLocation($input: SetLocationInput!) {
-            setCurrentLocation(input: $input)
-          }`,
-          { input: { latitude: position.coords.latitude, longitude: position.coords.longitude } },
+          `
+            mutation SetCurrentLocation($input: SetLocationInput!) {
+              setCurrentLocation(input: $input)
+            }
+          `,
+          {
+            input: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            },
+          },
           token,
         );
         await graphql<{ createDailyFeed: boolean }>(
@@ -89,13 +111,49 @@ export function RecommendationsPage({
     }
   }
   useEffect(() => {
+    setFeeds([]);
+    setActed({});
+    setPending({});
     void load(false);
   }, [config.gatewayUrl, token]);
+  useEffect(() => {
+    let cancelled = false;
+    setDetails({});
+    setDetailsFailed(false);
+    const ids = feeds.flatMap((feed) =>
+      feed.items.map((item) => item.targetUserId),
+    );
+    if (!token || !ids.length) {
+      setDetailsLoading(false);
+      return;
+    }
+    setDetailsLoading(true);
+    loadRecommendationDetails(config.gatewayUrl, ids, token)
+      .then((data) => {
+        if (!cancelled) setDetails(data);
+      })
+      .catch(() => {
+        if (!cancelled) setDetailsFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setDetailsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [config.gatewayUrl, token, feeds]);
   async function action(item: FeedItem, state: "LIKE" | "PASS") {
-    if (!token) return;
+    if (
+      !token ||
+      pending[item.id] ||
+      acted[item.id] ||
+      ["LIKE", "PASS"].includes(item.state)
+    )
+      return;
     setError("");
+    setPending((current) => ({ ...current, [item.id]: true }));
     try {
-      await graphql<{ actionFeed: boolean }>(
+      const result = await graphql<{ actionFeed: boolean }>(
         config.gatewayUrl,
         `
           mutation ActionFeed($input: ActionFeedInput!) {
@@ -105,9 +163,13 @@ export function RecommendationsPage({
         { input: { id: Number(item.id), state } },
         token,
       );
-      setActed({ ...acted, [item.id]: state });
+      if (!result.actionFeed)
+        throw new Error("관심 상태를 저장하지 못했어요. 다시 시도해 주세요.");
+      setActed((current) => ({ ...current, [item.id]: state }));
     } catch (cause) {
       setError(errorMessage(cause));
+    } finally {
+      setPending((current) => ({ ...current, [item.id]: false }));
     }
   }
   const items = feeds.flatMap((feed) => feed.items);
@@ -138,41 +200,20 @@ export function RecommendationsPage({
       )}
       <div className="recommend-grid">
         {items.map((item, index) => (
-          <article className="match-card" key={item.id}>
-            <div className={`match-photo match-photo--${index % 4}`}>
-              <span>{["🐕", "🐩", "🐶", "🦮"][index % 4]}</span>
-              <b>{index + 91}% MATCH</b>
-            </div>
-            <div className="match-card__body">
-              <h2>새로운 산책 친구</h2>
-              <p>오늘 같은 시간대에 산책을 기다리고 있어요.</p>
-              <div className="match-meta">
-                <span>
-                  ☀ {feeds.find((f) => f.items.includes(item))?.slot || "오늘"}
-                </span>
-                <span>● {item.state}</span>
-              </div>
-              {acted[item.id] ? (
-                <Alert type="success">
-                  {acted[item.id] === "LIKE"
-                    ? "관심을 보냈어요 ♥"
-                    : "다음 추천을 볼게요."}
-                </Alert>
-              ) : (
-                <div className="card-actions">
-                  <Button
-                    variant="secondary"
-                    onClick={() => action(item, "PASS")}
-                  >
-                    다음에
-                  </Button>
-                  <Button onClick={() => action(item, "LIKE")}>
-                    ♥ 관심 있어요
-                  </Button>
-                </div>
-              )}
-            </div>
-          </article>
+          <RecommendationCard
+            key={item.id}
+            item={item}
+            index={index}
+            slot={feeds.find((feed) => feed.items.includes(item))?.slot}
+            details={details[item.targetUserId]}
+            detailsLoading={detailsLoading}
+            detailsFailed={detailsFailed}
+            acted={acted[item.id]}
+            pending={pending[item.id]}
+            onAction={(state) => {
+              void action(item, state);
+            }}
+          />
         ))}
       </div>
     </section>
