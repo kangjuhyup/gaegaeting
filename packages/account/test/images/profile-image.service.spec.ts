@@ -24,9 +24,9 @@ function fixture() {
   const storage = () => ({
     generateUploadPresignedUrl: jest.fn(async ({ key }: any) => ({ presignedUrl: `https://storage.test/${key}?signed=put`, path: key })),
     generateDownloadPresignedUrl: jest.fn(async ({ key }: any) => ({ presignedUrl: `https://storage.test/${key}?signed=get`, path: key })),
-    readImageHeader: jest.fn(async () => ({ etag: 'same-version', bytes: header })),
+    readImageSnapshot: jest.fn(async () => header),
     getObjectMetadata: jest.fn(async () => ({ ContentType: 'image/png', ContentLength: 100 })),
-    freezeImage: jest.fn(async () => undefined), deleteObject: jest.fn(async () => undefined),
+    writeImageSnapshot: jest.fn(async () => undefined), deleteObject: jest.fn(async () => undefined),
   });
   const userStorage = storage(), petStorage = storage();
   const users = { selectUserProfileFromId: jest.fn(async () => ({ id: 'owner' })) };
@@ -49,7 +49,7 @@ describe.each(['USER', 'PET'] as const)('%s photos reviewed by an administrator'
     expect(await f.service.pending()).toEqual([]);
     const submitted = await f.service.complete(kind, targetId, 0, 'owner');
     expect(submitted).toMatchObject({ status: 'PENDING', active: false });
-    expect(storageFor(f).freezeImage).toHaveBeenCalledWith(expect.stringContaining('/uploads/'), expect.stringContaining('/review/'), 'same-version');
+    expect(storageFor(f).writeImageSnapshot).toHaveBeenCalledWith(expect.stringContaining('/review/'), expect.any(Uint8Array));
     expect((await f.service.own(kind, targetId, 'owner'))[0].url).toContain('/review/');
     expect((await f.service.pending())[0].url).toContain('/review/');
     expect(await f.service.approvedUrls(kind, targetId)).toEqual([]);
@@ -61,7 +61,7 @@ describe.each(['USER', 'PET'] as const)('%s photos reviewed by an administrator'
   test('repeated completion cannot replace the frozen photo or reset an approved photo', async () => {
     const f = fixture(); const first = await pending(f);
     expect((await f.service.complete(kind, targetId, 0, 'owner')).url).toBe(first.url);
-    expect(storageFor(f).freezeImage).toHaveBeenCalledTimes(1);
+    expect(storageFor(f).writeImageSnapshot).toHaveBeenCalledTimes(1);
     await f.service.review(kind, targetId, 0, true, 'admin');
     await expect(f.service.complete(kind, targetId, 0, 'owner')).rejects.toThrow('업로드 중인');
     expect(await f.service.approvedUrls(kind, targetId)).toHaveLength(1);
@@ -94,16 +94,25 @@ describe.each(['USER', 'PET'] as const)('%s photos reviewed by an administrator'
   });
   test('missing or oversized files cannot enter the admin review queue', async () => {
     const f = fixture(); await f.service.begin(kind, targetId, 0, 'owner');
-    storageFor(f).readImageHeader.mockRejectedValueOnce(new Error('INVALID_PROFILE_IMAGE'));
+    storageFor(f).readImageSnapshot.mockRejectedValueOnce(new Error('INVALID_PROFILE_IMAGE'));
     await expect(f.service.complete(kind, targetId, 0, 'owner')).rejects.toThrow('5MB');
-    expect(storageFor(f).freezeImage).not.toHaveBeenCalled();
+    expect(storageFor(f).writeImageSnapshot).not.toHaveBeenCalled();
     expect(await f.service.pending()).toEqual([]);
   });
   test('non-PNG bytes cannot be submitted or activated', async () => {
     const f = fixture(); await f.service.begin(kind, targetId, 0, 'owner');
-    storageFor(f).readImageHeader.mockResolvedValueOnce({ etag: 'text', bytes: Buffer.from('<svg>not a PNG</svg>') });
+    storageFor(f).readImageSnapshot.mockResolvedValueOnce(Buffer.from('<svg>not a PNG</svg>'));
     await expect(f.service.complete(kind, targetId, 0, 'owner')).rejects.toThrow('지원하지 않는');
     expect(await f.service.pending()).toEqual([]);
+  });
+  test('a failed review-object PUT leaves the photo retryable and out of the queue', async () => {
+    const f = fixture(); await f.service.begin(kind, targetId, 0, 'owner');
+    storageFor(f).writeImageSnapshot.mockRejectedValueOnce(new Error('storage unavailable'));
+    await expect(f.service.complete(kind, targetId, 0, 'owner')).rejects.toThrow('사진 저장');
+    expect(f.repository.transition).not.toHaveBeenCalled();
+    expect(storageFor(f).deleteObject).not.toHaveBeenCalled();
+    expect(await f.service.pending()).toEqual([]);
+    expect((await f.service.complete(kind, targetId, 0, 'owner')).status).toBe('PENDING');
   });
   test('missing frozen files cannot be approved', async () => {
     const f = fixture(); await pending(f); storageFor(f).getObjectMetadata.mockResolvedValueOnce(undefined as any);
