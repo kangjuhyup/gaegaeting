@@ -94,10 +94,10 @@ export interface CertifyPetInput {
 }
 
 export interface CreateUserProfileInput {
-    name: string;
+    name?: Nullable<string>;
     nickname: string;
-    gender: UserGender;
-    birthDate: DateTime;
+    gender?: Nullable<UserGender>;
+    birthDate?: Nullable<DateTime>;
     region: UserRegion;
     bio?: Nullable<string>;
 }
@@ -133,7 +133,7 @@ export interface IQuery {
     pets(): Pet[] | Promise<Pet[]>;
     pet(id: number): Nullable<Pet> | Promise<Nullable<Pet>>;
     petsByUserId(userId: string): Pet[] | Promise<Pet[]>;
-    myProfile(): UserProfile | Promise<UserProfile>;
+    myProfile(): Nullable<UserProfile> | Promise<Nullable<UserProfile>>;
     profile(id: string): Nullable<UserProfile> | Promise<Nullable<UserProfile>>;
 }
 

@@ -6,11 +6,9 @@ import { Alert, Button, Field, PageTitle, Spinner } from "../components/Ui.js";
 
 export function SignupPage({
   config,
-  onComplete,
   onLogin,
 }: {
   config: AppConfig;
-  onComplete: (draft: SignupDraft) => void;
   onLogin: () => void;
 }) {
   const suffix = crypto.randomUUID().slice(0, 8);
@@ -68,14 +66,15 @@ export function SignupPage({
             password: form.password,
             email: form.email,
             phone: form.phoneNumber,
+            name: form.name,
+            birthDate: form.birthDate,
+            gender: form.gender,
             tenantId: publicConfig.tenantCode,
             clientId: config.clientId,
           },
         },
       );
       setResult(data.registerAccount);
-      const { password: _password, ...draft } = form;
-      onComplete(draft);
     } catch (cause) {
       setError(errorMessage(cause));
     } finally {
@@ -137,6 +136,7 @@ export function SignupPage({
           <input
             required
             autoComplete="name"
+            maxLength={50}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="홍길동"
@@ -171,6 +171,7 @@ export function SignupPage({
             required
             type="tel"
             autoComplete="tel"
+            maxLength={32}
             inputMode="tel"
             value={form.phoneNumber}
             onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}

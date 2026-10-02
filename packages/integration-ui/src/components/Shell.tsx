@@ -5,7 +5,8 @@ export type RouteKey =
   | "login"
   | "profile"
   | "pet"
-  | "recommendations";
+  | "recommendations"
+  | "image-review";
 
 const routes: Array<{ key: RouteKey; label: string; short: string }> = [
   { key: "signup", label: "회원가입", short: "01" },
@@ -19,10 +20,11 @@ type Props = {
   route: RouteKey;
   onNavigate: (route: RouteKey) => void;
   connected: boolean;
+  canReviewImages?: boolean;
   children: ReactNode;
 };
 
-export function Shell({ route, onNavigate, connected, children }: Props) {
+export function Shell({ route, onNavigate, connected, canReviewImages, children }: Props) {
   const routeIndex = routes.findIndex((item) => item.key === route);
   return (
     <div className="app-shell">
@@ -40,6 +42,7 @@ export function Shell({ route, onNavigate, connected, children }: Props) {
             <small>산책으로 시작하는 만남</small>
           </span>
         </button>
+        {canReviewImages && <button className="button button--ghost" onClick={() => onNavigate("image-review")}>사진 검토</button>}
         {connected && (
           <span className="connection connection--on">로그인됨</span>
         )}

@@ -1,3 +1,4 @@
+import { ProfileImageModule } from '../common/profile-images/profile-image.module.js';
 import { Module } from "@nestjs/common";
 import { join } from "path";
 import { fileURLToPath } from "node:url";
@@ -16,6 +17,7 @@ export const PET_GRAPHQL_DEFINITIONS_PATH = join(process.cwd(), './src/pet/infra
 
 @Module({
     imports : [
+        ProfileImageModule,
         PetApplicationModule,
         PetInfraStructureModule,
     ],

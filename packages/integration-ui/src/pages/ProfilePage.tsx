@@ -1,7 +1,10 @@
+import { ProfileImages } from '../components/ProfileImages.js';
 import { useEffect, useState, type FormEvent } from "react";
 import { Alert, Button, Field, PageTitle, Spinner } from "../components/Ui.js";
 import { errorMessage, graphql } from "../lib/api.js";
-import type { AppConfig, SignupDraft, UserProfile } from "../types.js";
+import type { AppConfig, UserProfile } from "../types.js";
+
+type ProfileSummary = Pick<UserProfile, "id" | "nickname" | "region" | "bio">;
 
 const regions = [
   ["SEOUL", "서울"],
@@ -17,23 +20,19 @@ const regions = [
 export function ProfilePage({
   config,
   token,
-  signupDraft,
   onNext,
 }: {
   config: AppConfig;
   token?: string;
-  signupDraft?: SignupDraft;
   onNext: () => void;
 }) {
   const [form, setForm] = useState({
-    name: signupDraft?.name ?? "김개팅",
-    nickname: "산책러",
-    gender: signupDraft?.gender ?? "FEMALE",
-    birthDate: signupDraft?.birthDate ?? "1996-05-14",
-    region: "SEOUL",
-    bio: "저녁 산책과 새로운 카페를 좋아해요.",
+    nickname: "",
+    region: "",
+    bio: "",
   });
-  const [existing, setExisting] = useState<UserProfile | null>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string>();
+  const [existing, setExisting] = useState<ProfileSummary | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">(
     "idle",
   );
@@ -41,19 +40,15 @@ export function ProfilePage({
 
   useEffect(() => {
     if (!token) return;
-    graphql<{ myProfile: UserProfile }>(
+    graphql<{ myProfile: ProfileSummary | null }>(
       config.gatewayUrl,
       `
         query MyProfile {
           myProfile {
             id
-            name
             nickname
-            gender
-            birthDate
             region
             bio
-            profileImages
           }
         }
       `,
@@ -61,17 +56,18 @@ export function ProfilePage({
       token,
     )
       .then((data) => {
+        if (!data.myProfile) return;
         setExisting(data.myProfile);
         setForm({
-          name: data.myProfile.name,
           nickname: data.myProfile.nickname,
-          gender: data.myProfile.gender,
-          birthDate: data.myProfile.birthDate.slice(0, 10),
           region: data.myProfile.region,
           bio: data.myProfile.bio || "",
         });
       })
-      .catch(() => undefined);
+      .catch((cause) => {
+        setState("error");
+        setMessage(errorMessage(cause));
+      });
   }, [config.gatewayUrl, token]);
 
   async function submit(event: FormEvent) {
@@ -84,23 +80,16 @@ export function ProfilePage({
     setState("loading");
     setMessage("");
     try {
-      const input = {
-        ...form,
-        birthDate: new Date(`${form.birthDate}T00:00:00.000Z`).toISOString(),
-      };
-      const data = await graphql<{ createProfile: UserProfile }>(
+      const input = { ...form };
+      const data = await graphql<{ createProfile: ProfileSummary }>(
         config.gatewayUrl,
         `
           mutation CreateProfile($input: CreateUserProfileInput!) {
             createProfile(input: $input) {
               id
-              name
               nickname
-              gender
-              birthDate
               region
               bio
-              profileImages
             }
           }
         `,
@@ -121,16 +110,12 @@ export function ProfilePage({
       <div className="profile-preview">
         <span className="eyebrow">미리보기</span>
         <div className="avatar">
-          <span>{form.nickname.slice(0, 1) || "?"}</span>
+          {profilePhoto ? <img src={profilePhoto} alt="승인된 프로필 사진" referrerPolicy="no-referrer" /> : <span>{form.nickname.slice(0, 1) || "?"}</span>}
           <i>✦</i>
         </div>
         <h2>{form.nickname || "닉네임"}</h2>
         <p>
-          {regions.find(([key]) => key === form.region)?.[1]} ·{" "}
-          {form.birthDate
-            ? new Date().getFullYear() - Number(form.birthDate.slice(0, 4))
-            : "--"}
-          세
+          {regions.find(([key]) => key === form.region)?.[1] || "활동 지역"}
         </p>
         <blockquote>
           “{form.bio || "나를 소개하는 한 줄을 적어주세요."}”
@@ -149,53 +134,23 @@ export function ProfilePage({
               <em>프로필</em>을 완성해요.
             </>
           }
-          description="나를 소개할 정보를 입력해 주세요."
+          description="닉네임, 활동 지역, 소개글을 입력해 주세요."
         />
-        <div className="form-row">
-          <Field label="이름">
-            <input
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-          </Field>
-          <Field label="닉네임">
-            <input
-              required
-              value={form.nickname}
-              onChange={(e) => setForm({ ...form, nickname: e.target.value })}
-            />
-          </Field>
-        </div>
-        <div className="form-row">
-          <Field label="성별">
-            <select
-              value={form.gender}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  gender: e.target.value as SignupDraft["gender"],
-                })
-              }
-            >
-              <option value="FEMALE">여성</option>
-              <option value="MALE">남성</option>
-            </select>
-          </Field>
-          <Field label="생년월일">
-            <input
-              required
-              type="date"
-              value={form.birthDate}
-              onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
-            />
-          </Field>
-        </div>
+        <Field label="닉네임">
+          <input
+            required
+            maxLength={50}
+            value={form.nickname}
+            onChange={(e) => setForm({ ...form, nickname: e.target.value })}
+          />
+        </Field>
         <Field label="활동 지역">
           <select
+            required
             value={form.region}
             onChange={(e) => setForm({ ...form, region: e.target.value })}
           >
+            <option value="" disabled>활동 지역을 선택해 주세요.</option>
             {regions.map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
@@ -226,6 +181,7 @@ export function ProfilePage({
           )}
         </div>
       </form>
+      {existing && <div className="profile-photos card"><ProfileImages config={config} token={token} onApprovedPhoto={setProfilePhoto} /></div>}
     </section>
   );
 }

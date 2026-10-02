@@ -4,7 +4,7 @@ import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { GetUserProfileQuery } from "#app/user/application/port/query/get-user-profile.port";
 import { UserResponse } from "./dto/response/user.response.js";
 import { ReviewUserImageCommand } from "#app/user/application/port/command/review-user-image.port";
-import { AccessGuard, Roles, Scopes } from "@core/auth";
+import { AccessGuard, Roles, Scopes, UserParam, type UserPrincipal } from "@core/auth";
 import { ApiBearerAuth, ApiOperation, ApiResponse } from "@nestjs/swagger";
 
 @Controller('/admin/users')
@@ -36,10 +36,11 @@ export class AdminUserContorller {
     @ApiResponse({ status : 204 })
     @ApiBearerAuth('admin-token')
     async reviewUserImage(
+        @UserParam() reviewer: UserPrincipal,
         @Param('userId') userId : string,
         @Body() body : ReviewUserImagesRequestBody
     ) {
-        await this.commandBus.execute(new ReviewUserImageCommand(userId,body.path,body.approve))
+        await this.commandBus.execute(new ReviewUserImageCommand(userId,body.path,body.approve,reviewer.userId))
         return
     }
 

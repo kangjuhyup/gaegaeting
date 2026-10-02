@@ -6,6 +6,7 @@ export type PublicConfig = {
   clientId: string;
   accountUrl: string;
   gatewayUrl: string;
+  imageStorageOrigin?: string;
 };
 
 declare global {
@@ -14,6 +15,7 @@ declare global {
 
 const developmentIssuer = import.meta.env.VITE_OIDC_ISSUER ?? 'http://localhost:3010/t/gaegaeting/oidc';
 const developmentConfig: PublicConfig = {
+  imageStorageOrigin: import.meta.env.VITE_IMAGE_STORAGE_ORIGIN,
   tenantCode: new URL(developmentIssuer).pathname.split('/')[2],
   apiAudience: import.meta.env.VITE_API_AUDIENCE ?? 'https://api.gaegaeting.app',
   issuer: import.meta.env.VITE_OIDC_ISSUER ?? 'http://localhost:3010/t/gaegaeting/oidc',

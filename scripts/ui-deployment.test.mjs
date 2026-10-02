@@ -56,3 +56,26 @@ test('login callbacks and interaction routes serve the SPA with uncached config 
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test('photo storage is a single explicit HTTPS origin and never reveals credentials', async () => {
+  const photoEnv = { ...env, UI_IMAGE_STORAGE_ORIGIN: 'https://storage.example.test' };
+  const config = readPublicConfig(photoEnv);
+  assert.equal(config.imageStorageOrigin, 'https://storage.example.test');
+  for (const origin of ['http://storage.example.test', 'https://user:secret@storage.example.test', 'https://storage.example.test/private', 'https://storage.example.test?secret=value']) {
+    assert.throws(() => readPublicConfig({ ...env, UI_IMAGE_STORAGE_ORIGIN: origin }));
+  }
+  const root = await mkdtemp(join(tmpdir(), 'gaegaeting-ui-photos-'));
+  await writeFile(join(root, 'index.html'), '<div>UI</div>');
+  const server = createUiServer(config, root);
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  try {
+    const res = await fetch(`http://127.0.0.1:${server.address().port}/image-review`);
+    assert.equal(res.status, 200);
+    const csp = res.headers.get('content-security-policy');
+    assert.match(csp, /img-src 'self' data: blob: https:\/\/storage.example.test;/);
+    assert.match(csp, /connect-src [^;]*https:\/\/storage.example.test;/);
+    assert.doesNotMatch(csp, /\*/);
+  } finally {
+    await new Promise(resolve => server.close(resolve)); await rm(root, { recursive: true, force: true });
+  }
+});

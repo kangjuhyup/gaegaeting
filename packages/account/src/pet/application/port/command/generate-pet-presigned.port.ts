@@ -5,6 +5,7 @@ export class GeneratePetPresignedCommand extends Command<PresignedUrl> {
     constructor(
         public readonly petId : number,
         public readonly no : number,
+        public readonly userId: string,
     ) {
         super();
     }
