@@ -2,6 +2,7 @@ import { LocationEntity } from "#app/location/domain/model/location";
 import { MainAreaEntity } from "#app/location/domain/model/main-area";
 import { PersistenceEntity } from "@core/model";
 import { ItemDetail } from "./vo/item-detail.js";
+import { FeedItemStatus } from "../enum/feed-item-status.enum.js";
 
 interface IFeedItem {
     targetUserId : string;
@@ -71,19 +72,19 @@ export class FeedItemEntity extends PersistenceEntity<number,IFeedItem> {
     }
 
     setDelivery() {
-        this.etc.state = 1
+        this.etc.state = FeedItemStatus.DELIVERY.value
     }
 
     setView() {
-        this.etc.state = 2
+        this.etc.state = FeedItemStatus.VIEW.value
     }
 
     setLike() {
-        this.etc.state = 3
+        this.etc.state = FeedItemStatus.LIKE.value
     }
 
     setPass() {
-        this.etc.state = 4
+        this.etc.state = FeedItemStatus.PASS.value
     }
 
     setReport() {

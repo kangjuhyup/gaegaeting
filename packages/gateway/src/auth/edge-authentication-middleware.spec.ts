@@ -18,11 +18,11 @@ function recorder() {
 }
 
 describe('Gateway edge authentication', () => {
-  test('maps validated Auth subject through Account, then strips untrusted headers', async () => {
+  test.each([undefined, ['ADMIN']])('maps verified Auth subject and roles through Account, then strips untrusted headers', async (roles) => {
     const subjects = { resolve: jest.fn().mockResolvedValue({ userId: 'account-user' }) };
     const request: any = { headers: {
       authorization: 'Bearer opaque-token',
-      [EDGE_ASSERTION_HEADER]: createEdgeAssertion(principal, 'opaque-token', secret),
+      [EDGE_ASSERTION_HEADER]: createEdgeAssertion({ ...principal, ...(roles === undefined ? {} : { roles }) }, 'opaque-token', secret),
       'x-gaegaeting-principal': 'forged',
     } };
     const next = jest.fn();
@@ -31,6 +31,7 @@ describe('Gateway edge authentication', () => {
     expect(request.authenticatedPrincipal).toEqual({
       tenantId: principal.tenantId, subject: principal.subject,
       userId: 'account-user', scopes: principal.scopes,
+      ...(roles === undefined ? {} : { roles }),
     });
     expect(subjects.resolve).toHaveBeenCalledWith({
       tenantId: principal.issuer,

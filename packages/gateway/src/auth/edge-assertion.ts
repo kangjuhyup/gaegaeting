@@ -13,6 +13,7 @@ type Payload = {
   auth_issuer: string;
   sub: string;
   scope: string[];
+  roles?: string[];
   token_hash: string;
   iat: number;
   exp: number;
@@ -40,6 +41,7 @@ export function createEdgeAssertion(
     auth_issuer: principal.issuer,
     sub: principal.subject,
     scope: principal.scopes,
+    ...(principal.roles === undefined ? {} : { roles: principal.roles }),
     token_hash: tokenHash(token),
     iat: now,
     exp: Math.min(principal.expiresAt, now + MAX_AGE_SECONDS),
@@ -54,7 +56,7 @@ export function verifyEdgeAssertion(
   token: string,
   secret: string,
   now = Math.floor(Date.now() / 1000),
-): Pick<ExternalPrincipal, 'issuer' | 'tenantId' | 'subject' | 'scopes'> {
+): Pick<ExternalPrincipal, 'issuer' | 'tenantId' | 'subject' | 'scopes' | 'roles'> {
   try {
     if (secret.length < 32 || !token || assertion.length > 8192) throw new Error();
     const parts = assertion.split('.');
@@ -74,13 +76,15 @@ export function verifyEdgeAssertion(
       typeof payload.auth_issuer !== 'string' || !payload.auth_issuer ||
       typeof payload.sub !== 'string' || !payload.sub ||
       !Array.isArray(payload.scope) || !payload.scope.every((scope) => typeof scope === 'string' && scope !== '') ||
+      (payload.roles !== undefined && (!Array.isArray(payload.roles) || payload.roles.length > 64 ||
+        !payload.roles.every(role => typeof role === 'string' && role.trim() !== '' && role.length <= 64))) ||
       !Number.isInteger(payload.iat) || !Number.isInteger(payload.exp) ||
       payload.iat > now || payload.exp <= now ||
       payload.exp - payload.iat > MAX_AGE_SECONDS ||
       receivedHash.length !== expectedHash.length ||
       !timingSafeEqual(receivedHash, expectedHash)
     ) throw new Error();
-    return { issuer: payload.auth_issuer, tenantId: payload.tenant_id, subject: payload.sub, scopes: payload.scope };
+    return { issuer: payload.auth_issuer, tenantId: payload.tenant_id, subject: payload.sub, scopes: payload.scope, ...(payload.roles === undefined ? {} : { roles: payload.roles }) };
   } catch {
     throw new Error('Invalid edge authentication assertion');
   }

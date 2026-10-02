@@ -56,3 +56,70 @@ test('login callbacks and interaction routes serve the SPA with uncached config 
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test('photo storage is a single explicit HTTPS origin and never reveals credentials', async () => {
+  const photoEnv = { ...env, UI_IMAGE_STORAGE_ORIGIN: 'https://storage.example.test' };
+  const config = readPublicConfig(photoEnv);
+  assert.equal(config.imageStorageOrigin, 'https://storage.example.test');
+  for (const origin of ['http://storage.example.test', 'https://user:secret@storage.example.test', 'https://storage.example.test/private', 'https://storage.example.test?secret=value']) {
+    assert.throws(() => readPublicConfig({ ...env, UI_IMAGE_STORAGE_ORIGIN: origin }));
+  }
+  const root = await mkdtemp(join(tmpdir(), 'gaegaeting-ui-photos-'));
+  await writeFile(join(root, 'index.html'), '<div>UI</div>');
+  const server = createUiServer(config, root);
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  try {
+    const res = await fetch(`http://127.0.0.1:${server.address().port}/profile`);
+    assert.equal(res.status, 200);
+    const csp = res.headers.get('content-security-policy');
+    assert.match(csp, /img-src 'self' data: blob: https:\/\/storage.example.test;/);
+    assert.match(csp, /connect-src [^;]*https:\/\/storage.example.test;/);
+    assert.doesNotMatch(csp, /\*/);
+  } finally {
+    await new Promise(resolve => server.close(resolve)); await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('independent admin app serves only its /admin routes and assets using its own client', async () => {
+  const adminEnv = { ...env, UI_APP: 'admin', UI_OIDC_CLIENT_ID: 'gaegaeting-admin-web' };
+  assert.throws(() => readPublicConfig({ ...env, UI_APP: 'admin' }), /own UI_OIDC_CLIENT_ID/);
+  assert.throws(() => readPublicConfig({ ...adminEnv, UI_OIDC_CLIENT_ID: 'gaegaeting-web' }), /own UI_OIDC_CLIENT_ID/);
+  assert.throws(() => readPublicConfig({ ...env, UI_APP: 'unknown' }), /Invalid UI_APP/);
+  const config = readPublicConfig(adminEnv);
+  assert.equal(config.basePath, '/admin');
+  const root = await mkdtemp(join(tmpdir(), 'gaegaeting-admin-'));
+  await writeFile(join(root, 'index.html'), '<div>ADMIN</div>');
+  await writeFile(join(root, 'entry.js'), 'admin asset');
+  const server = createUiServer(config, root);
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    for (const route of ['/admin', '/admin/', '/admin/login?code=opaque', '/admin/interaction?uid=opaque', '/admin/image-review', '/admin/health']) {
+      assert.equal((await fetch(base + route)).status, 200, route);
+    }
+    const runtime = await (await fetch(base + '/admin/config.js')).text();
+    assert.match(runtime, /"basePath":"\/admin"/);
+    assert.match(runtime, /"clientId":"gaegaeting-admin-web"/);
+    assert.equal(await (await fetch(base + '/admin/entry.js')).text(), 'admin asset');
+    for (const route of ['/', '/login', '/config.js', '/administrator', '/admin/signup', '/admin/profile', '/admin/pet']) {
+      assert.equal((await fetch(base + route)).status, 404, route);
+    }
+  } finally {
+    await new Promise(resolve => server.close(resolve)); await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('user app no longer exposes the administrator routes', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'gaegaeting-user-'));
+  await writeFile(join(root, 'index.html'), '<div>USER</div>');
+  const server = createUiServer(readPublicConfig(env), root);
+  server.listen(0, '127.0.0.1'); await once(server, 'listening');
+  try {
+    const base = `http://127.0.0.1:${server.address().port}`;
+    for (const route of ['/image-review', '/admin', '/admin/login']) assert.equal((await fetch(base + route)).status, 404);
+    assert.equal((await fetch(base + '/profile')).status, 200);
+    assert.equal((await fetch(base + '/pet')).status, 200);
+  } finally {
+    await new Promise(resolve => server.close(resolve)); await rm(root, { recursive: true, force: true });
+  }
+});

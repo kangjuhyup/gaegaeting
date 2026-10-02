@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 
 const [service, image] = process.argv.slice(2);
-const services = new Set(['account', 'match', 'gateway', 'edge-authz', 'integration-ui']);
+const services = new Set(['account', 'match', 'gateway', 'edge-authz', 'integration-ui', 'admin-ui']);
 if (!services.has(service) || !image || image.startsWith('-')) throw new Error('Usage: node scripts/smoke-service-image.mjs <service> <image>');
 const env = {
   NODE_ENV: 'test', ACCOUNT_SERVICE_API_PORT: '2800', MATCH_SERVICE_API_PORT: '2801',
@@ -19,17 +19,17 @@ const env = {
   KAFKA_BROKERS: '127.0.0.1:9092',
 };
 let code;
-if (service === 'integration-ui') {
+if (service === 'integration-ui' || service === 'admin-ui') {
   code = `
     const { createUiServer, readPublicConfig } = await import('./server.mjs');
-    const config = readPublicConfig({ UI_OIDC_ISSUER: 'https://auth.example.test/t/gaegaeting-dev/oidc',
+    const config = readPublicConfig({ UI_APP: '${service === 'admin-ui' ? 'admin' : 'user'}', UI_OIDC_CLIENT_ID: '${service === 'admin-ui' ? 'gaegaeting-admin-web' : 'gaegaeting-web'}', UI_OIDC_ISSUER: 'https://auth.example.test/t/gaegaeting-dev/oidc',
       UI_API_AUDIENCE: 'https://api-dev.example.test', UI_ACCOUNT_GRAPHQL_URL: 'https://api-dev.example.test/account/graphql',
       UI_GATEWAY_GRAPHQL_URL: 'https://api-dev.example.test/gateway/graphql' });
     const server = createUiServer(config);
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     try {
       for (const path of ['/health', '/login', '/interaction', '/config.js']) {
-        const res = await fetch('http://127.0.0.1:' + server.address().port + path);
+        const res = await fetch('http://127.0.0.1:' + server.address().port + config.basePath + path);
         if (res.status !== 200) throw new Error('UI route failed: ' + path);
       }
     } finally { await new Promise(resolve => server.close(resolve)); }

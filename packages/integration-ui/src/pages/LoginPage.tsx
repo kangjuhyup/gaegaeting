@@ -1,16 +1,18 @@
 import { useState } from "react";
 import type { AppConfig } from "../types.js";
-import { beginLogin } from "../lib/oidc.js";
-import { errorMessage } from "../lib/api.js";
-import { Alert, Button, PageTitle, Spinner } from "../components/Ui.js";
+import { beginLogin } from "@gaegaeting/ui-common";
+import { errorMessage } from "@gaegaeting/ui-common";
+import { Alert, Button, PageTitle, Spinner } from "@gaegaeting/ui-common";
 
 export function LoginPage({
   config,
   connected,
+  loggingOut,
   onNext,
 }: {
   config: AppConfig;
   connected: boolean;
+  loggingOut: boolean;
   onNext: () => void;
 }) {
   const [loading, setLoading] = useState(false);
@@ -64,9 +66,11 @@ export function LoginPage({
         {connected ? (
           <Button onClick={onNext}>내 프로필 등록하기 →</Button>
         ) : (
-          <Button onClick={() => login()} disabled={loading}>
-            {loading && <Spinner />} 로그인
-          </Button>
+          <>
+            <Button onClick={() => login()} disabled={loading || loggingOut}>
+              {loading && <Spinner />} 로그인
+            </Button>
+          </>
         )}
       </div>
     </section>

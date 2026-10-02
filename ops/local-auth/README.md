@@ -25,3 +25,7 @@ node scripts/bootstrap-gaegaeting-auth.mjs
 추가로 `AUTH_ADMIN_USERNAME`, `AUTH_ADMIN_PASSWORD`, `GAEGAETING_INTROSPECTION_CLIENT_SECRET`, `GAEGAETING_PROVISIONING_CLIENT_SECRET`이 실행 환경에 있어야 합니다. 예시 명령에는 비밀값을 넣지 않았습니다. 부트스트랩 후 UI를 실행해 가입→로그인→프로필 흐름을 확인합니다. Account DB 마이그레이션은 `pnpm --filter account migration:run`을 실행 환경의 Account DB 연결값으로 별도 수행합니다.
 
 운영 Auth 이미지 digest, redirect/logout URI, UI HTTPS origin, 본인인증 공급자와 cookie 정책은 배포 전에 확정해야 합니다. 로컬 mock 본인인증은 운영에서 비활성입니다.
+
+로그인 후 UI 상단의 **로그아웃**은 메모리의 인증 정보를 지우고, discovery의 토큰 폐기 주소가 있으면 access token을 폐기한 뒤 `end_session_endpoint`로 이동합니다. Auth 로그아웃 후 UI origin의 `/`로 돌아와 로그인 화면을 표시합니다. 이 UI는 refresh token을 요청하거나 보관하지 않습니다. Auth 연결 실패 시 로컬 로그아웃은 유지하며 화면에 오류를 표시합니다.
+
+웹 client의 `postLogoutRedirectUris`에는 UI origin의 `/`를 정확히 등록합니다(로컬 `http://localhost:5173/`). 부트스트랩은 신규 client에 이 주소를 등록합니다. 이미 생성된 client 설정이 다르면 Auth 관리자 UI에서 해당 주소를 추가한 뒤 확인합니다. 기존 설정을 덮어쓰지 않는 부트스트랩 정책은 유지됩니다.

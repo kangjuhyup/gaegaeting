@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.js";
-import { InteractionPage } from "./pages/InteractionPage.js";
+import { InteractionPage } from "@gaegaeting/ui-common/interaction";
 import "./styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

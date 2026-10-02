@@ -274,6 +274,34 @@ importers:
         specifier: ^5.97.1
         version: 5.106.2
 
+  packages/admin-ui:
+    dependencies:
+      '@gaegaeting/ui-common':
+        specifier: workspace:*
+        version: link:../ui-common
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: 18.3.18
+        version: 18.3.18
+      '@types/react-dom':
+        specifier: 18.3.5
+        version: 18.3.5(@types/react@18.3.18)
+      '@vitejs/plugin-react':
+        specifier: 4.3.4
+        version: 4.3.4(vite@6.1.0(@types/node@25.0.2)(terser@5.44.1))
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+      vite:
+        specifier: 6.1.0
+        version: 6.1.0(@types/node@25.0.2)(terser@5.44.1)
+
   packages/core/auth:
     dependencies:
       '@core/auth-assertion':
@@ -1289,6 +1317,9 @@ importers:
 
   packages/integration-ui:
     dependencies:
+      '@gaegaeting/ui-common':
+        specifier: workspace:*
+        version: link:../ui-common
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -1540,6 +1571,21 @@ importers:
       webpack:
         specifier: ^5.97.1
         version: 5.106.2
+
+  packages/ui-common:
+    devDependencies:
+      '@types/react':
+        specifier: 18.3.18
+        version: 18.3.18
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+      vite:
+        specifier: 6.1.0
+        version: 6.1.0(@types/node@25.0.2)(terser@5.44.1)
 
 packages:
 

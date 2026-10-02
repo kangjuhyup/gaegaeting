@@ -868,7 +868,8 @@ textarea {
   font-size: 11px;
   margin-top: 24px;
 }
-.global-error {
+.global-error,
+.global-status {
   max-width: 800px;
   margin: 25px auto 0;
   padding: 14px;
@@ -920,12 +921,8 @@ footer {
     display: none;
   }
   .topbar__actions .button {
-    font-size: 0;
-    width: 42px;
-    padding: 0;
-  }
-  .topbar__actions .button:first-letter {
-    font-size: 16px;
+    font-size: 13px;
+    padding: 0 12px;
   }
   .stepper {
     padding: 0 10px;
@@ -1007,4 +1004,26 @@ footer {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Profile and pet photos remain private until an administrator approves them. */
+.profile-photos, .pet-photos { grid-column: 1 / -1; padding: 24px; min-width: 0; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.photo-panel h3 { margin: 0 0 8px; }
+.photo-panel p { color: var(--muted, #666); font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0; }
+.photo-card { min-width: 0; border: 1px solid #eee; border-radius: 16px; padding: 12px; }
+.photo-card img, .photo-placeholder { width: 100%; height: 180px; object-fit: cover; border-radius: 10px; }
+.photo-placeholder { background: #f5f3ef; display: grid; place-items: center; color: #666; }
+.photo-status { display: inline-block; font-size: 13px; margin: 8px 0; padding: 4px 8px; border-radius: 6px; background: #f5eee0; }
+.photo-status--approved { background: #e0f3e7; color: #24643b; }
+.photo-status--rejected { background: #fce8e5; color: #9d3528; }
+.photo-selected-preview { max-width: 240px; max-height: 200px; object-fit: contain; border-radius: 12px; margin: 12px 0; }
+.photo-panel .button-row { flex-wrap: wrap; }
+@media (max-width: 600px) { .photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .photo-card img, .photo-placeholder { height: 140px; } .photo-card .button { padding: 8px; } }
+
+.global-status {
+  background: #f2f6ef;
+  border-color: #dbe4d5;
+  color: #4d7548;
 }

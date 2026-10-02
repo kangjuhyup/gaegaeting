@@ -1,6 +1,7 @@
+import { ProfileImages } from '../components/ProfileImages.js';
 import { useEffect, useState, type FormEvent } from "react";
-import { Alert, Button, Field, PageTitle, Spinner } from "../components/Ui.js";
-import { errorMessage, graphql } from "../lib/api.js";
+import { Alert, Button, Field, PageTitle, Spinner } from "@gaegaeting/ui-common";
+import { errorMessage, graphql } from "@gaegaeting/ui-common";
 import type { AppConfig, Pet } from "../types.js";
 
 const breeds = [
@@ -263,6 +264,7 @@ export function PetPage({
           )}
         </div>
       </form>
+      {pets.map(pet => <div className="card pet-photos" key={pet.id}><ProfileImages config={config} token={token} petId={pet.id} title={`${pet.name}의 프로필 사진`} /></div>)}
     </section>
   );
 }

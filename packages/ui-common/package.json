@@ -1,0 +1,22 @@
+{
+  "name": "@gaegaeting/ui-common",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./interaction": "./src/InteractionPage.tsx"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "peerDependencies": {
+    "react": "18.3.1"
+  },
+  "devDependencies": {
+    "react": "18.3.1",
+    "@types/react": "18.3.18",
+    "typescript": "5.8.3",
+    "vite": "6.1.0"
+  }
+}

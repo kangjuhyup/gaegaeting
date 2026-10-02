@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Button, Spinner } from "@gaegaeting/ui-common";
 
 export type RouteKey =
   | "signup"
@@ -19,10 +20,12 @@ type Props = {
   route: RouteKey;
   onNavigate: (route: RouteKey) => void;
   connected: boolean;
+  loggingOut: boolean;
+  onLogout: () => void;
   children: ReactNode;
 };
 
-export function Shell({ route, onNavigate, connected, children }: Props) {
+export function Shell({ route, onNavigate, connected, loggingOut, onLogout, children }: Props) {
   const routeIndex = routes.findIndex((item) => item.key === route);
   return (
     <div className="app-shell">
@@ -40,8 +43,14 @@ export function Shell({ route, onNavigate, connected, children }: Props) {
             <small>산책으로 시작하는 만남</small>
           </span>
         </button>
-        {connected && (
-          <span className="connection connection--on">로그인됨</span>
+        {(connected || loggingOut) && (
+          <div className="topbar__actions">
+            {connected && <span className="connection connection--on">로그인됨</span>}
+            <Button type="button" variant="ghost" onClick={onLogout} disabled={loggingOut}>
+              {loggingOut && <Spinner />}
+              {loggingOut ? "로그아웃 중…" : "로그아웃"}
+            </Button>
+          </div>
         )}
       </header>
 

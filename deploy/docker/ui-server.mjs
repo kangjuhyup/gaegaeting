@@ -4,6 +4,11 @@ import { extname, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export function readPublicConfig(env) {
+  if (env.UI_APP && !['user', 'admin'].includes(env.UI_APP)) throw new Error('Invalid UI_APP');
+  const admin = env.UI_APP === 'admin';
+  if (admin && (!env.UI_OIDC_CLIENT_ID || env.UI_OIDC_CLIENT_ID === 'gaegaeting-web')) {
+    throw new Error('Admin UI requires its own UI_OIDC_CLIENT_ID');
+  }
   const url = (name) => {
     if (!env[name]) throw new Error(`${name} is required`);
     const value = new URL(env[name]);
@@ -15,7 +20,12 @@ export function readPublicConfig(env) {
   const issuer = url('UI_OIDC_ISSUER');
   const tenantCode = /^\/t\/([a-z0-9-]+)\/oidc$/.exec(new URL(issuer).pathname)?.[1];
   if (!tenantCode) throw new Error('UI_OIDC_ISSUER must identify a tenant');
+  const imageStorageUrl = env.UI_IMAGE_STORAGE_ORIGIN ? new URL(url('UI_IMAGE_STORAGE_ORIGIN')) : undefined;
+  if (imageStorageUrl && (imageStorageUrl.pathname !== '/' || imageStorageUrl.search)) {
+    throw new Error('UI_IMAGE_STORAGE_ORIGIN must be an HTTPS origin without path or query');
+  }
   return {
+    basePath: admin ? '/admin' : '',
     issuer,
     tenantCode,
     apiAudience: url('UI_API_AUDIENCE'),
@@ -23,12 +33,14 @@ export function readPublicConfig(env) {
     clientId: env.UI_OIDC_CLIENT_ID || 'gaegaeting-web',
     accountUrl: url('UI_ACCOUNT_GRAPHQL_URL'),
     gatewayUrl: url('UI_GATEWAY_GRAPHQL_URL'),
+    ...(imageStorageUrl ? { imageStorageOrigin: imageStorageUrl.origin } : {}),
   };
 }
 
 export function createUiServer(config, root = resolve('dist')) {
-  const origins = [...new Set([config.authOrigin, new URL(config.accountUrl).origin, new URL(config.gatewayUrl).origin])];
-  const csp = `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' ${origins.join(' ')}; base-uri 'none'; frame-ancestors 'none'; form-action 'self' ${config.authOrigin}`;
+  const storageOrigin = config.imageStorageOrigin ? new URL(config.imageStorageOrigin).origin : '';
+  const origins = [...new Set([config.authOrigin, new URL(config.accountUrl).origin, new URL(config.gatewayUrl).origin, storageOrigin].filter(Boolean))];
+  const csp = `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: ${storageOrigin}; connect-src 'self' ${origins.join(' ')}; base-uri 'none'; frame-ancestors 'none'; form-action 'self' ${config.authOrigin}`;
   const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
   // Build the allowed asset table from the image at startup. Request paths never
   // become filesystem paths, and hidden files/symlinks are not served.
@@ -44,7 +56,9 @@ export function createUiServer(config, root = resolve('dist')) {
     }
   };
   loadAssets(root);
-  const routes = new Set(['/', '/login', '/interaction', '/signup', '/profile', '/pet', '/recommendations']);
+  const basePath = config.basePath || '';
+  const routes = new Set(basePath === '/admin' ? ['/', '/login', '/interaction', '/image-review']
+    : ['/', '/login', '/interaction', '/signup', '/profile', '/pet', '/recommendations']);
   return createServer((req, res) => {
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -52,7 +66,11 @@ export function createUiServer(config, root = resolve('dist')) {
     res.setHeader('Cache-Control', 'no-store');
     if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end(); return; }
     try {
-      const path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+      let path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+      if (basePath) {
+        if (path !== basePath && !path.startsWith(basePath + '/')) { res.writeHead(404).end(); return; }
+        path = path.slice(basePath.length) || '/';
+      }
       if (path === '/health') { res.writeHead(200).end(req.method === 'HEAD' ? undefined : 'ok'); return; }
       if (path === '/config.js') {
         res.setHeader('Content-Type', types['.js']);
