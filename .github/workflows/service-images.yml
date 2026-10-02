@@ -5,6 +5,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      verify-service:
+        description: 'Also validate this image without publishing an unchanged artifact'
+        type: choice
+        default: affected
+        options: [affected, account, match, gateway, edge-authz, integration-ui, admin-ui]
 
 permissions:
   contents: read
@@ -16,17 +22,29 @@ concurrency:
 jobs:
   verify:
     name: service-verification
+    permissions:
+      contents: read
+      pull-requests: read
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      services: ${{ steps.scope.outputs.services }}
+      publishServices: ${{ steps.scope.outputs.publishServices }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      - name: Select images for the branch changes
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/service-image-scope.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:workspaces
       - run: node --test scripts/*.test.mjs
@@ -45,27 +63,39 @@ jobs:
       fail-fast: false
       matrix:
         service: [account, match, gateway, edge-authz, integration-ui, admin-ui]
+    env:
+      BUILD_IMAGE: ${{ contains(fromJSON(needs.verify.outputs.services), matrix.service) }}
+      PUBLISH_IMAGE: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && contains(fromJSON(needs.verify.outputs.publishServices), matrix.service) }}
     steps:
+      - name: No runtime changes for this image
+        if: env.BUILD_IMAGE != 'true'
+        run: echo 'No image build or publication needed for ${{ matrix.service }}.'
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        if: env.BUILD_IMAGE == 'true'
         with:
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: env.BUILD_IMAGE == 'true'
         with:
           node-version-file: .nvmrc
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
+        if: env.BUILD_IMAGE == 'true'
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+        if: env.BUILD_IMAGE == 'true'
       - name: Image identity
         id: identity
+        if: env.BUILD_IMAGE == 'true'
         env:
           REPOSITORY: ${{ github.repository }}
         run: echo "image=ghcr.io/${REPOSITORY,,}/${{ matrix.service }}" >> "$GITHUB_OUTPUT"
       - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: env.PUBLISH_IMAGE == 'true'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build native smoke candidate
+        if: env.BUILD_IMAGE == 'true'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
@@ -76,16 +106,18 @@ jobs:
           tags: gaegaeting-${{ matrix.service }}:smoke
           cache-from: type=gha,scope=${{ matrix.service }}
       - name: Verify packaged runtime
+        if: env.BUILD_IMAGE == 'true'
         run: node scripts/smoke-service-image.mjs '${{ matrix.service }}' 'gaegaeting-${{ matrix.service }}:smoke'
       - name: Build and publish
         id: build
+        if: env.BUILD_IMAGE == 'true'
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: .
           file: deploy/docker/Dockerfile
           target: ${{ matrix.service }}
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+          push: ${{ env.PUBLISH_IMAGE == 'true' }}
           tags: ${{ steps.identity.outputs.image }}:sha-${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -95,7 +127,7 @@ jobs:
           provenance: true
           sbom: true
       - name: Deployment identity
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: env.PUBLISH_IMAGE == 'true'
         env:
           IMAGE: ${{ steps.identity.outputs.image }}
           DIGEST: ${{ steps.build.outputs.digest }}
@@ -105,7 +137,7 @@ jobs:
           jq -n --arg service '${{ matrix.service }}' --arg image "$IMAGE" --arg digest "$DIGEST" --arg revision "$REVISION" '{service:$service,image:$image,digest:$digest,revision:$revision,platforms:["linux/amd64","linux/arm64"]}' > 'image-manifest/${{ matrix.service }}.json'
           echo "$IMAGE:sha-$REVISION@$DIGEST" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: env.PUBLISH_IMAGE == 'true'
         with:
           name: image-${{ matrix.service }}-${{ github.sha }}
           path: image-manifest/*.json

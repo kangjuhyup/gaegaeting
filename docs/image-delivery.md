@@ -2,7 +2,11 @@
 
 ## 이미지 자동화
 
-`Service images` GitHub Actions는 PR에서 전체 workspace 빌드, Node 계약 테스트, Jest 테스트와 Docker 이미지 빌드를 수행합니다. 검증을 통과한 main push와 main의 수동 실행은 아래 이미지를 GHCR에 게시합니다. PR 코드는 이미지를 게시하지 않습니다.
+`Service images` GitHub Actions는 전체 workspace 빌드, Node·UI 계약 테스트와 Jest 테스트를 수행한 뒤 **해당 기능이 바꾼 서비스만** Docker 빌드·런타임·멀티 플랫폼 검증을 수행합니다. 검증을 통과한 main push와 main 수동 실행은 선택된 서비스만 GHCR에 게시합니다. PR 코드는 이미지를 게시하지 않습니다.
+
+`scripts/service-image-scope.mjs`는 브랜치 도메인, 변경 파일과 production workspace 의존성으로 대상을 선택합니다. main push는 병합된 release PR의 브랜치에서 도메인을 확인합니다. Match 소스는 Match만, Account는 Account만, Gateway는 gateway/edge-authz를 선택합니다. 공통 UI와 UI HTTP 서버는 두 UI를 선택하고, core 라이브러리는 직접·간접 소비 서비스만 선택합니다. 공통 lockfile·런타임·빌드 설정은 전체 서비스에 영향을 주므로 core 릴리즈에서 처리합니다. 다른 도메인 런타임 변경을 섞으면 CI가 거부합니다.
+
+PR은 해당 PR의 변경 중 아직 main과 다른 변경만 검사하며, main에서 가져온 기존 릴리즈와 뒤처진 도메인 브랜치의 역방향 차이는 제외합니다. 문서·테스트·CI 설정만 바꾸거나 main을 dev에 동기화하면 이미지를 만들거나 게시하지 않습니다. 기존 `image-*` 필수 검사 이름은 유지되며 대상이 아닌 항목은 Docker 작업 없이 완료됩니다. 전체 workspace 검증은 유지됩니다. 수동 실행의 `verify-service`는 변경 없는 이미지 한 개를 추가 검증할 수 있으며, 추가 검증만으로 그 이미지를 게시하지 않습니다.
 
 | 이미지 | 포트 | 준비 상태 확인 | 실행 |
 | --- | --- | --- | --- |
@@ -26,9 +30,9 @@ docker buildx build --load --target account \
 ## 배포 순서
 
 1. [브랜치 규칙](branch-policy.md)에 따라 작업을 dev에 통합하고 release 브랜치를 생성합니다. release → main은 squash합니다. 공통 자동화와 최초 통합 릴리즈는 `feat/core/image-delivery → dev/core → release/core/1.0.0 → main`을 사용합니다.
-2. 해당 main 커밋의 모든 이미지와 검증 작업 성공을 확인합니다. GHCR가 private이면 k3s에 최소 read:packages 권한의 pull secret을 별도로 공급합니다.
-3. k3s 저장소에서 환경별 ConfigMap·Doppler Secret·Service·NetworkPolicy·Ingress와 digest를 준비합니다. 비밀 값은 이 저장소에 기록하지 않습니다.
-4. 대상 Account/Match DB 연결 환경변수로 각 이미지의 `/app`에서 `node dist/src/migrations/migrate.js`를 별도 Job으로 실행합니다. 성공 전에 API를 rollout하지 않습니다. 마이그레이션은 Pod 시작에서 자동 실행하지 않습니다.
+2. 해당 기능의 선택된 이미지와 검증 작업 성공을 확인합니다. GHCR가 private이면 k3s에 최소 read:packages 권한의 pull secret을 별도로 공급합니다.
+3. k3s 저장소에서 **해당 기능의 서비스 digest만** 바꿉니다. 다른 서비스는 기존 검증된 소스·digest를 유지합니다. 환경별 ConfigMap·Doppler Secret·Service·NetworkPolicy·Ingress 변경도 실제 필요한 범위로 제한합니다. 비밀 값은 이 저장소에 기록하지 않습니다.
+4. 마이그레이션 파일이 바뀌면 대상 Account/Match DB 연결 환경변수로 이미지의 `/app`에서 `node dist/src/migrations/migrate.js`를 별도 Job으로 실행합니다. 성공 전에 API를 rollout하지 않습니다. 파일 변경이 없으면 기존 완료된 Job과 schema artifact를 유지하며, k3s의 `migrationImages`에서 serving image와 구분해 검증합니다. 마이그레이션은 Pod 시작에서 자동 실행하지 않습니다.
 5. account/match를 먼저 준비한 후 gateway를 rollout합니다. Gateway는 두 subgraph의 schema composition이 성공해야 포트를 엽니다. Edge 모드에서는 ext_authz가 정상 작동한 다음 외부 ingress를 연결합니다.
 6. 상태 검사, 인증 실패의 401/403, 인증 의존성 장애의 503, 등록 사용자 토큰의 GraphQL 호출, 본인인증·가입·로그인과 redirect/CORS/cookie를 실제 환경에서 검증합니다. 실패 시 이전 digest를 복구하며, DB의 역마이그레이션은 별도 판단합니다.
 
