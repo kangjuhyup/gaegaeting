@@ -1,9 +1,8 @@
-import { ImageReviewPage } from './pages/ImageReviewPage.js';
-import { publicConfig } from './runtime-config.js';
+import { publicConfig } from "@gaegaeting/ui-common";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell, type RouteKey } from "./components/Shell.js";
-import { completeLogin } from "./lib/oidc.js";
-import { graphql, errorMessage } from "./lib/api.js";
+import { completeLogin } from "@gaegaeting/ui-common";
+import { errorMessage } from "@gaegaeting/ui-common";
 import { SignupPage } from "./pages/SignupPage.js";
 import { LoginPage } from "./pages/LoginPage.js";
 import { ProfilePage } from "./pages/ProfilePage.js";
@@ -21,7 +20,7 @@ const defaultConfig: AppConfig = {
 
 function readRoute(): RouteKey {
   const value = window.location.pathname.replace(/^\//, "") as RouteKey;
-  return ["signup", "login", "profile", "pet", "recommendations", "image-review"].includes(
+  return ["signup", "login", "profile", "pet", "recommendations"].includes(
     value,
   )
     ? value
@@ -31,7 +30,6 @@ function readRoute(): RouteKey {
 export default function App() {
   const [route, setRoute] = useState<RouteKey>(readRoute);
   const config = defaultConfig;
-  const [canReviewImages, setCanReviewImages] = useState(false);
   const [token, setToken] = useState<string>();
   const [callbackError, setCallbackError] = useState("");
   const callbackStarted = useRef(false);
@@ -62,17 +60,7 @@ export default function App() {
       })
       .catch((cause) => setCallbackError(errorMessage(cause)));
   }, [callbackPending, config]);
-  useEffect(() => {
-    let cancelled = false;
-    setCanReviewImages(false);
-    if (token) void graphql<{ canReviewProfileImages: boolean }>(config.gatewayUrl,
-      'query CanReviewProfileImages { canReviewProfileImages }', {}, token)
-      .then(data => { if (!cancelled) setCanReviewImages(data.canReviewProfileImages); })
-      .catch(() => undefined);
-    return () => { cancelled = true; };
-  }, [config.gatewayUrl, token]);
   const page = {
-    "image-review": <ImageReviewPage config={config} token={token} allowed={canReviewImages} />,
     signup: (
       <SignupPage
         config={config}
@@ -103,7 +91,7 @@ export default function App() {
     recommendations: <RecommendationsPage config={config} token={token} />,
   }[route];
   return (
-    <Shell route={route} onNavigate={navigate} connected={Boolean(token)} canReviewImages={canReviewImages}>
+    <Shell route={route} onNavigate={navigate} connected={Boolean(token)}>
       {callbackError && (
         <div className="global-error" role="alert">
           로그인 처리 실패: {callbackError}

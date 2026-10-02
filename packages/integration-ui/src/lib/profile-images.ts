@@ -1,4 +1,4 @@
-import { publicConfig } from '../runtime-config.js';
+import { publicConfig } from "@gaegaeting/ui-common";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 

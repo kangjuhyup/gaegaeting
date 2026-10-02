@@ -4,6 +4,11 @@ import { extname, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export function readPublicConfig(env) {
+  if (env.UI_APP && !['user', 'admin'].includes(env.UI_APP)) throw new Error('Invalid UI_APP');
+  const admin = env.UI_APP === 'admin';
+  if (admin && (!env.UI_OIDC_CLIENT_ID || env.UI_OIDC_CLIENT_ID === 'gaegaeting-web')) {
+    throw new Error('Admin UI requires its own UI_OIDC_CLIENT_ID');
+  }
   const url = (name) => {
     if (!env[name]) throw new Error(`${name} is required`);
     const value = new URL(env[name]);
@@ -20,6 +25,7 @@ export function readPublicConfig(env) {
     throw new Error('UI_IMAGE_STORAGE_ORIGIN must be an HTTPS origin without path or query');
   }
   return {
+    basePath: admin ? '/admin' : '',
     issuer,
     tenantCode,
     apiAudience: url('UI_API_AUDIENCE'),
@@ -50,7 +56,9 @@ export function createUiServer(config, root = resolve('dist')) {
     }
   };
   loadAssets(root);
-  const routes = new Set(['/', '/login', '/interaction', '/signup', '/profile', '/pet', '/recommendations', '/image-review']);
+  const basePath = config.basePath || '';
+  const routes = new Set(basePath === '/admin' ? ['/', '/login', '/interaction', '/image-review']
+    : ['/', '/login', '/interaction', '/signup', '/profile', '/pet', '/recommendations']);
   return createServer((req, res) => {
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -58,7 +66,11 @@ export function createUiServer(config, root = resolve('dist')) {
     res.setHeader('Cache-Control', 'no-store');
     if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end(); return; }
     try {
-      const path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+      let path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+      if (basePath) {
+        if (path !== basePath && !path.startsWith(basePath + '/')) { res.writeHead(404).end(); return; }
+        path = path.slice(basePath.length) || '/';
+      }
       if (path === '/health') { res.writeHead(200).end(req.method === 'HEAD' ? undefined : 'ok'); return; }
       if (path === '/config.js') {
         res.setHeader('Content-Type', types['.js']);

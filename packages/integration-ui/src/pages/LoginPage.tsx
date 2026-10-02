@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { AppConfig } from "../types.js";
-import { beginLogin } from "../lib/oidc.js";
-import { errorMessage } from "../lib/api.js";
-import { Alert, Button, PageTitle, Spinner } from "../components/Ui.js";
+import { beginLogin } from "@gaegaeting/ui-common";
+import { errorMessage } from "@gaegaeting/ui-common";
+import { Alert, Button, PageTitle, Spinner } from "@gaegaeting/ui-common";
 
 export function LoginPage({
   config,
@@ -15,11 +15,11 @@ export function LoginPage({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  async function login(admin = false) {
+  async function login() {
     setLoading(true);
     setError("");
     try {
-      await beginLogin(config, admin);
+      await beginLogin(config);
     } catch (cause) {
       setError(errorMessage(cause));
       setLoading(false);
@@ -68,7 +68,6 @@ export function LoginPage({
             <Button onClick={() => login()} disabled={loading}>
               {loading && <Spinner />} 로그인
             </Button>
-            <Button variant="secondary" onClick={() => login(true)} disabled={loading}>관리자로 로그인</Button>
           </>
         )}
       </div>
