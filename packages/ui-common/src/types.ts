@@ -4,6 +4,7 @@ export type AppConfig = {
   gatewayUrl: string;
   accountUrl: string;
   redirectUri: string;
+  postLogoutRedirectUri?: string;
 };
 export type ApiResult<T> = { data?: T; errors?: Array<{ message: string }> };
 export type ProfileImage = {

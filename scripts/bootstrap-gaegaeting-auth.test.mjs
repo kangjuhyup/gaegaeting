@@ -16,6 +16,7 @@ test('Gaegaeting bootstrap keeps login, API inspection and provisioning clients 
     'gaegaeting-web', 'gaegaeting-api', 'gaegaeting-account-provisioner',
   ]);
   assert.equal(clients[0].externalInteractionUiUrl, 'http://localhost:5173/interaction');
+  assert.deepEqual(clients[0].postLogoutRedirectUris, ['http://localhost:5173/']);
   assert.ok(clients[0].scope.split(' ').includes('tenant_roles'));
   assert.equal(clients[2].scope, 'auth.user.provision');
   assert.equal(clients[1].introspectionResources[0], 'https://api.gaegaeting.app');
