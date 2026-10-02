@@ -11,3 +11,10 @@
 사용자·관리자 로그인에 공유되는 인증 입력 화면의 모바일 개선도 포함한다. 기존 개발 Auth 확인 화면의 `xsrf token invalid` 문제는 k3s 에이전트에게 별도 전달된 미해결 항목으로, UI 릴리즈가 이를 해결했다고 간주하지 않는다.
 
 이번 사용자 지시로 모바일 변경의 커밋과 원격 개발 배포가 승인되었다. UI는 core 릴리즈, 저장된 추천 상태 라벨 수정은 Match 릴리즈로 통합하고 정확한 이미지 digest를 GitOps에 반영한다. 다른 서비스 이미지·데이터는 보존한다.
+# Deployment route correction
+
+Remote post-rollout checks found that the image's HTTP server omitted the new
+likes, chats, chat-room and storyboard SPA routes. Client navigation worked, but
+direct navigation and refresh returned 404. Add only those user-app routes,
+with bounded chat identifiers; administrator and filesystem path boundaries remain
+enforced. HTTP GET/HEAD and rejected-path regressions cover the packaged server.
