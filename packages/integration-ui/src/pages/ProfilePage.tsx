@@ -1,7 +1,7 @@
 import { ProfileImages } from '../components/ProfileImages.js';
 import { useEffect, useState, type FormEvent } from "react";
-import { Alert, Button, Field, PageTitle, Spinner } from "../components/Ui.js";
-import { errorMessage, graphql } from "../lib/api.js";
+import { Alert, Button, Field, PageTitle, Spinner } from "@gaegaeting/ui-common";
+import { errorMessage, graphql } from "@gaegaeting/ui-common";
 import type { AppConfig, UserProfile } from "../types.js";
 
 type ProfileSummary = Pick<UserProfile, "id" | "nickname" | "region" | "bio">;

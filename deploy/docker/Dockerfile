@@ -41,3 +41,10 @@ COPY --from=build --chown=node:node /workspace/packages/integration-ui/dist /app
 COPY --chown=node:node deploy/docker/ui-server.mjs /app/server.mjs
 EXPOSE 8080
 CMD ["node", "server.mjs"]
+
+FROM runtime AS admin-ui
+ENV UI_APP=admin
+COPY --from=build --chown=node:node /workspace/packages/admin-ui/dist /app/dist
+COPY --chown=node:node deploy/docker/ui-server.mjs /app/server.mjs
+EXPOSE 8080
+CMD ["node", "server.mjs"]

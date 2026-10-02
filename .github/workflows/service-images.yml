@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [account, match, gateway, edge-authz, integration-ui]
+        service: [account, match, gateway, edge-authz, integration-ui, admin-ui]
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:

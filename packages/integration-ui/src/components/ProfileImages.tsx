@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useId, useState } from 'react';
-import { graphql, errorMessage } from '../lib/api.js';
+import { graphql, errorMessage } from "@gaegaeting/ui-common";
 import { prepareProfileImage, uploadProfileImage } from '../lib/profile-images.js';
 import type { AppConfig } from '../types.js';
-import { Alert, Button, Spinner } from './Ui.js';
+import { Alert, Button, Spinner } from '@gaegaeting/ui-common';
 
-export type ProfileImage = { kind: 'USER' | 'PET'; targetId: string; imageNo: number; status: 'UPLOADING' | 'PENDING' | 'APPROVED' | 'REJECTED'; url?: string; updatedAt: string };
+import type { ProfileImage } from "@gaegaeting/ui-common";
 const fields = 'kind targetId imageNo status url updatedAt';
 const labels = { UPLOADING: '업로드 미완료', PENDING: '승인 대기', APPROVED: '승인됨', REJECTED: '거절됨' };
 
