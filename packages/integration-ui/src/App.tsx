@@ -1,7 +1,11 @@
 import { Alert, Button, Spinner, publicConfig } from "@gaegaeting/ui-common";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell, type RouteKey } from "./components/Shell.js";
-import { beginLogout, completeLogin } from "@gaegaeting/ui-common";
+import {
+  beginLogout,
+  completeLogin,
+  completeLogout,
+} from "@gaegaeting/ui-common";
 import { errorMessage } from "@gaegaeting/ui-common";
 import { SignupPage } from "./pages/SignupPage.js";
 import { LoginPage } from "./pages/LoginPage.js";
@@ -110,8 +114,21 @@ export default function App() {
       ?.focus({ preventScroll: true });
   }, [route, roomId]);
   useEffect(() => {
-    if (!callbackPending || callbackStarted.current) return;
+    if (callbackStarted.current) return;
     callbackStarted.current = true;
+    if (!callbackPending) {
+      try {
+        if (completeLogout(config)) {
+          window.history.replaceState({}, "", "/login");
+          setRoute("login");
+        }
+      } catch (cause) {
+        setLogoutError(errorMessage(cause));
+        window.history.replaceState({}, "", "/login");
+        setRoute("login");
+      }
+      return;
+    }
     void completeLogin(config)
       .then(({ accessToken, idToken }) => {
         setSession({ accessToken, idToken });
@@ -221,7 +238,7 @@ export default function App() {
       )}
       {logoutError && (
         <div className="global-error" role="alert">
-          이 기기에서는 로그아웃했지만 인증 서버 로그아웃에 실패했습니다:{" "}
+          이 기기에서는 로그아웃했습니다. 인증 서버 로그아웃을 확인하지 못했습니다:{" "}
           {logoutError}
         </div>
       )}
