@@ -76,7 +76,9 @@ UI 컨테이너는 다음 **공개 설정만** `/config.js`로 제공합니다. 
 1. Account `ProfileImageReview1790899200000` 마이그레이션을 적용합니다. 기존 활성 사진은 `APPROVED`로 보존하고 비활성 사진은 자동 승인하지 않습니다.
 2. 기존 `gaegaeting-web` Auth client의 허용 scope에 `tenant_roles`를 추가하고 지정된 검토자에게 해당 tenant의 `ADMIN` 역할을 별도로 부여합니다. bootstrap 스크립트는 기존 client와 설정이 다르면 충돌로 중단하며 자동 수정하거나 관리자 역할을 부여하지 않습니다.
 3. USER/PET 버킷을 비공개로 유지합니다. Account storage credential에 해당 버킷·prefix의 PUT/GET/HEAD/DELETE 및 동일 버킷 조건부 CopyObject 권한을 확인합니다. 정확한 UI origin의 CORS에 PUT·GET·HEAD와 Content-Type을 허용합니다. UI의 `UI_IMAGE_STORAGE_ORIGIN`과 Account `STORAGE_HOST` origin을 맞춥니다. 로컬 Vite는 `VITE_IMAGE_STORAGE_ORIGIN`을 사용합니다.
-4. Account → Edge-authz → Gateway → UI 순서로 새 이미지를 전환하고 실제 관리자 토큰과 브라우저에서 양쪽 업로드·검토·승인 후 프로필 조회를 확인합니다.
+4. dev 자동 sync를 Git에서 잠시 보류하고 Account를 0 replica로 내려 구 Pod 종료를 확인합니다. 두 Account 마이그레이션 성공 후 새 Account → Edge-authz → Gateway → UI 순서로 새 이미지를 전환하고 실제 관리자 토큰과 브라우저에서 양쪽 업로드·검토·승인 후 프로필 조회를 확인합니다. Account 중단 구간에는 가입·프로필 API 요청이 일시 실패할 수 있습니다. 새 Account Ready 전에는 새 UI를 노출하지 않습니다.
+
+이 마이그레이션의 `is_active = (review_status = 'APPROVED')` 제약은 구 Account의 사진 활성 상태만 변경하는 쓰기와 호환되지 않습니다. 구 Account는 새 검토용 object key를 signed GET로 변환하지도 않습니다. 따라서 새 사진 제출·승인 데이터가 생긴 뒤 이전 이미지만 복구하는 롤백은 지원하지 않습니다. 장애 시 새 코드 수정 또는 별도 호환 코드·데이터 절차를 검토하며, 검토 메타데이터를 삭제하는 자동 역마이그레이션을 수행하지 않습니다.
 
 거절·삭제 시 DB에서 먼저 노출을 차단한 뒤 스토리지 삭제를 시도합니다. 스토리지 장애나 이전 PUT URL 재사용으로 비참조 파일이 남을 수 있으므로 `profile-images/uploads/`에는 만료 lifecycle을 설정하고 고아 객체를 운영 점검합니다. 검토·승인 파일 prefix에는 일괄 만료를 적용하지 않습니다. 서버는 헤더 검증을 수행하며 이미지 전체 디코딩이나 악성 파일 분석기는 포함하지 않습니다.
 
