@@ -58,7 +58,7 @@ export function createUiServer(config, root = resolve('dist')) {
   loadAssets(root);
   const basePath = config.basePath || '';
   const routes = new Set(basePath === '/admin' ? ['/', '/login', '/interaction', '/image-review']
-    : ['/', '/login', '/interaction', '/signup', '/profile', '/pet', '/recommendations']);
+    : ['/', '/login', '/interaction', '/signup', '/profile', '/pet', '/recommendations', '/likes', '/chats', '/storyboard']);
   return createServer((req, res) => {
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -77,7 +77,8 @@ export function createUiServer(config, root = resolve('dist')) {
         res.writeHead(200).end(req.method === 'HEAD' ? undefined : `window.GAEGAETING_CONFIG=${JSON.stringify(config)};`);
         return;
       }
-      const asset = assets.get(routes.has(path) ? '/index.html' : path);
+      const chatRoom = !basePath && /^\/chats\/[a-zA-Z0-9_-]{1,128}$/.test(path);
+      const asset = assets.get(routes.has(path) || chatRoom ? '/index.html' : path);
       if (!asset) { res.writeHead(404).end(); return; }
       res.setHeader('Content-Type', asset.type);
       if (path.startsWith('/assets/')) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');

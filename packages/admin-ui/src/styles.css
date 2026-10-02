@@ -208,6 +208,32 @@ p {
   margin: 20px auto 0;
   color: #5e7065;
   cursor: pointer;
+  min-height: 44px;
+  padding: 10px 18px;
+}
+.interaction-password {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.interaction-password input {
+  width: 100%;
+  padding-right: 72px;
+}
+.interaction-password-toggle {
+  position: absolute;
+  right: 4px;
+  min-width: 56px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #5e7065;
+  font-size: 13px;
+}
+.interaction-progress {
+  font-size: 13px;
+  text-align: center;
 }
 .interaction-secret {
   display: block;
@@ -227,6 +253,16 @@ p {
   }
 }
 @media (max-width: 640px) {
+  .interaction-screen {
+    margin: 0 auto;
+    padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  }
+  .interaction-card .field input,
+  .interaction-card .field select,
+  .interaction-card .button {
+    min-height: 52px;
+    font-size: 16px;
+  }
   .admin-shell {
     padding: 0 16px 32px;
   }
