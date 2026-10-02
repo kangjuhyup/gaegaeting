@@ -62,10 +62,10 @@ export class ProfileImageService {
     if (image.status === 'PENDING') return this.view(image);
     if (image.status !== 'UPLOADING') throw new ConflictException('업로드 중인 사진만 제출할 수 있습니다.');
     const storage = this.storage(kind);
-    let header: { etag: string; bytes: Uint8Array };
-    try { header = await storage.readImageHeader(this.key(image), MAX_PROFILE_IMAGE_BYTES); }
+    let snapshot: Uint8Array;
+    try { snapshot = await storage.readImageSnapshot(this.key(image), MAX_PROFILE_IMAGE_BYTES); }
     catch { throw new BadRequestException('업로드한 사진을 확인할 수 없습니다. PNG 형식·5MB 이하 사진을 다시 올려 주세요.'); }
-    const bytes = Buffer.from(header.bytes);
+    const bytes = Buffer.from(snapshot);
     const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
     if (bytes.length < 24 || !bytes.subarray(0, 8).equals(png) || bytes.toString('ascii', 12, 16) !== 'IHDR' ||
         !bytes.readUInt32BE(16) || !bytes.readUInt32BE(20) || bytes.readUInt32BE(16) > 4096 || bytes.readUInt32BE(20) > 4096) {
@@ -73,8 +73,8 @@ export class ProfileImageService {
     }
     // No PUT URL is ever issued for this key. The exact bytes seen by the admin stay immutable.
     const frozenKey = `profile-images/review/${randomUUID()}.png`;
-    try { await storage.freezeImage(this.key(image), frozenKey, header.etag); }
-    catch { throw new ConflictException('업로드 중 사진이 변경됐습니다. 다시 제출해 주세요.'); }
+    try { await storage.writeImageSnapshot(frozenKey, snapshot); }
+    catch { throw new ServiceUnavailableException('사진 저장을 잠시 사용할 수 없습니다. 다시 제출해 주세요.'); }
     const changed = await this.images.transition(image, 'PENDING', frozenKey);
     if (!changed) {
       await storage.deleteObject({ key: frozenKey });
