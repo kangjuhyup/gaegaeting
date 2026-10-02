@@ -17,6 +17,7 @@ export interface ExternalPrincipal {
   tenantId: string;
   subject: string;
   scopes: string[];
+  roles?: string[];
   issuedAt: number;
   expiresAt: number;
 }
@@ -95,18 +96,26 @@ export class OpaqueTokenIntrospector {
       response.tenant_id.trim() === '' ||
       typeof response.sub !== 'string' ||
       response.sub.trim() === '' ||
-      (response.scope !== undefined && typeof response.scope !== 'string')
+      (response.scope !== undefined && typeof response.scope !== 'string') ||
+      (response.tenant_roles !== undefined && (!Array.isArray(response.tenant_roles) || response.tenant_roles.length > 64 ||
+        !response.tenant_roles.every(role => role && typeof role === 'object' &&
+          typeof role.id === 'string' && role.id.trim() !== '' &&
+          typeof role.code === 'string' && role.code.trim() !== '' && role.code.length <= 64)))
     ) {
       throw new InactiveTokenError();
     }
 
+    const scopes = typeof response.scope === 'string' ? response.scope.split(/\s+/).filter(Boolean) : [];
+    // Auth owns tenant role assignment; arbitrary `roles` claims never grant privileges.
+    const roles = scopes.includes('tenant_roles') && Array.isArray(response.tenant_roles)
+      ? [...new Set(response.tenant_roles.map(role => role.code as string))]
+      : undefined;
     return {
       issuer: this.options.expectedIssuer,
       tenantId: response.tenant_id,
       subject: response.sub,
-      scopes: typeof response.scope === 'string'
-        ? response.scope.split(/\s+/).filter(Boolean)
-        : [],
+      scopes,
+      ...(roles === undefined ? {} : { roles }),
       issuedAt: response.iat,
       expiresAt: response.exp,
     };

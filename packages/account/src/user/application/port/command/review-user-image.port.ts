@@ -6,6 +6,7 @@ export class ReviewUserImageCommand extends Command<void> {
         public readonly userId : string,
         public readonly path : string,
         public readonly approve : boolean,
+        public readonly reviewerId: string,
     ) {
         super()
     }

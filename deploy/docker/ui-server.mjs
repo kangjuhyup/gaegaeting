@@ -15,6 +15,10 @@ export function readPublicConfig(env) {
   const issuer = url('UI_OIDC_ISSUER');
   const tenantCode = /^\/t\/([a-z0-9-]+)\/oidc$/.exec(new URL(issuer).pathname)?.[1];
   if (!tenantCode) throw new Error('UI_OIDC_ISSUER must identify a tenant');
+  const imageStorageUrl = env.UI_IMAGE_STORAGE_ORIGIN ? new URL(url('UI_IMAGE_STORAGE_ORIGIN')) : undefined;
+  if (imageStorageUrl && (imageStorageUrl.pathname !== '/' || imageStorageUrl.search)) {
+    throw new Error('UI_IMAGE_STORAGE_ORIGIN must be an HTTPS origin without path or query');
+  }
   return {
     issuer,
     tenantCode,
@@ -23,12 +27,14 @@ export function readPublicConfig(env) {
     clientId: env.UI_OIDC_CLIENT_ID || 'gaegaeting-web',
     accountUrl: url('UI_ACCOUNT_GRAPHQL_URL'),
     gatewayUrl: url('UI_GATEWAY_GRAPHQL_URL'),
+    ...(imageStorageUrl ? { imageStorageOrigin: imageStorageUrl.origin } : {}),
   };
 }
 
 export function createUiServer(config, root = resolve('dist')) {
-  const origins = [...new Set([config.authOrigin, new URL(config.accountUrl).origin, new URL(config.gatewayUrl).origin])];
-  const csp = `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' ${origins.join(' ')}; base-uri 'none'; frame-ancestors 'none'; form-action 'self' ${config.authOrigin}`;
+  const storageOrigin = config.imageStorageOrigin ? new URL(config.imageStorageOrigin).origin : '';
+  const origins = [...new Set([config.authOrigin, new URL(config.accountUrl).origin, new URL(config.gatewayUrl).origin, storageOrigin].filter(Boolean))];
+  const csp = `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: ${storageOrigin}; connect-src 'self' ${origins.join(' ')}; base-uri 'none'; frame-ancestors 'none'; form-action 'self' ${config.authOrigin}`;
   const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
   // Build the allowed asset table from the image at startup. Request paths never
   // become filesystem paths, and hidden files/symlinks are not served.
@@ -44,7 +50,7 @@ export function createUiServer(config, root = resolve('dist')) {
     }
   };
   loadAssets(root);
-  const routes = new Set(['/', '/login', '/interaction', '/signup', '/profile', '/pet', '/recommendations']);
+  const routes = new Set(['/', '/login', '/interaction', '/signup', '/profile', '/pet', '/recommendations', '/image-review']);
   return createServer((req, res) => {
     res.setHeader('Referrer-Policy', 'no-referrer');
     res.setHeader('X-Content-Type-Options', 'nosniff');

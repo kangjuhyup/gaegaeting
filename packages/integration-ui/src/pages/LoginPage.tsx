@@ -15,11 +15,11 @@ export function LoginPage({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  async function login() {
+  async function login(admin = false) {
     setLoading(true);
     setError("");
     try {
-      await beginLogin(config);
+      await beginLogin(config, admin);
     } catch (cause) {
       setError(errorMessage(cause));
       setLoading(false);
@@ -64,9 +64,12 @@ export function LoginPage({
         {connected ? (
           <Button onClick={onNext}>내 프로필 등록하기 →</Button>
         ) : (
-          <Button onClick={() => login()} disabled={loading}>
-            {loading && <Spinner />} 로그인
-          </Button>
+          <>
+            <Button onClick={() => login()} disabled={loading}>
+              {loading && <Spinner />} 로그인
+            </Button>
+            <Button variant="secondary" onClick={() => login(true)} disabled={loading}>관리자로 로그인</Button>
+          </>
         )}
       </div>
     </section>

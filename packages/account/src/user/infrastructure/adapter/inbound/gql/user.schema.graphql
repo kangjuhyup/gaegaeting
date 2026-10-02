@@ -49,10 +49,10 @@ type PresignedUrl {
 }
 
 input CreateUserProfileInput {
-  name: String!
+  name: String
   nickname: String!
-  gender: UserGender!
-  birthDate: DateTime!
+  gender: UserGender
+  birthDate: DateTime
   region: UserRegion!
   bio: String
 }
@@ -64,7 +64,7 @@ input UpdateUserProfileInput {
 }
 
 type Query {
-  myProfile: UserProfile! # 내 프로필 조회
+  myProfile: UserProfile # 내 프로필 조회
   profile(id: ID!): UserProfile # 특정 사용자 조회
 }
 

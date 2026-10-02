@@ -1,45 +1,17 @@
-import { GetUserProfileQuery } from "../../port/query/get-user-profile.port.js";
-import { type IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { UserStoragePort } from '../../../infrastructure/port/user-storage.port.js';
-import { UserAttachmentEntity } from "#app/user/domain/model/user-attachment";
-import { UserProfileEntity } from "#app/user/domain/model/user-profile";
-import { UserProfileRepositoryPort } from "#app/user/infrastructure/port/user-profile-repository.port";
-import { UserAttachmentRepositoryPort } from "#app/user/infrastructure/port/user-attachment-repository.port";
+import { GetUserProfileQuery } from '../../port/query/get-user-profile.port.js';
+import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { UserAttachmentEntity } from '#app/user/domain/model/user-attachment';
+import { UserProfileEntity } from '#app/user/domain/model/user-profile';
+import { UserProfileRepositoryPort } from '#app/user/infrastructure/port/user-profile-repository.port';
+import { ProfileImageService } from '../../../../common/profile-images/profile-image.service.js';
 
 @QueryHandler(GetUserProfileQuery)
-export class GetUserProfileHandler implements IQueryHandler<GetUserProfileQuery, {
-  profile : UserProfileEntity,
-  profileImages : UserAttachmentEntity[]
-}> {
-  
-  constructor(
-    private readonly userProfileRepository: UserProfileRepositoryPort,
-    private readonly userAttachmentRepository: UserAttachmentRepositoryPort,
-    private readonly userStoragePort: UserStoragePort
-  ) {}
-
-  async execute(query: GetUserProfileQuery): Promise<{
-    profile : UserProfileEntity,
-    profileImages : UserAttachmentEntity[]
-  }> {
-    const profile = await this.userProfileRepository.selectUserProfileFromId(query.userId);
-    const attachments = await this.userAttachmentRepository.selectUserAttachments(query.userId);
-    const profileImages = (await Promise.all(
-      attachments.map(async (profileImage) => {
-        const hasMetadata = await this.userStoragePort.hasMetadata(
-          query.userId,
-          profileImage.id.no,
-        );
-        if (!hasMetadata) {
-          // TODO: slack 알림 전송
-          return null;
-        }
-        return profileImage;
-      }),
-    )).filter(Boolean) as UserAttachmentEntity[];
-    return {
-      profile,
-      profileImages
-    };
+export class GetUserProfileHandler implements IQueryHandler<GetUserProfileQuery> {
+  constructor(private readonly users: UserProfileRepositoryPort, private readonly images: ProfileImageService) {}
+  async execute(query: GetUserProfileQuery): Promise<{ profile: UserProfileEntity | null; profileImages: UserAttachmentEntity[] }> {
+    const profile = await this.users.selectUserProfileFromId(query.userId);
+    if (!profile) return { profile: null, profileImages: [] };
+    const urls = await this.images.approvedUrls('USER', query.userId);
+    return { profile, profileImages: urls.map((path, no) => UserAttachmentEntity.of({ path, active: true }, { userId: query.userId, no })) };
   }
 }

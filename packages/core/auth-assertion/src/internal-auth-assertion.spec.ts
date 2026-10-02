@@ -14,6 +14,22 @@ describe('internal auth assertion', () => {
     scopes: ['openid', 'profile'],
   };
 
+  test('preserves signed tenant roles for downstream admin checks', () => {
+    const options = { secret, issuer: 'gaegaeting-gateway', audience: 'account', now: () => now };
+    const assertion = createInternalAuthAssertion({ ...principal, roles: ['ADMIN'] }, options);
+    expect(verifyInternalAuthAssertion(assertion, options).roles).toEqual(['ADMIN']);
+    const [payload, signature] = createInternalAuthAssertion(principal, options).split('.');
+    const forged = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    forged.roles = ['ADMIN'];
+    expect(() => verifyInternalAuthAssertion(`${Buffer.from(JSON.stringify(forged)).toString('base64url')}.${signature}`, options)).toThrow();
+  });
+
+  test.each([[''], [7], Array(65).fill('ADMIN')])('refuses malformed role lists', roles => {
+    expect(() => createInternalAuthAssertion({ ...principal, roles: roles as string[] }, {
+      secret, issuer: 'gaegaeting-gateway', audience: 'account', now: () => now,
+    })).toThrow();
+  });
+
   test('round trips a valid audience-bound principal', () => {
     const assertion = createInternalAuthAssertion(principal, {
       secret,

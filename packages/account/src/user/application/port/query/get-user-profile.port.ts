@@ -3,7 +3,7 @@ import { UserProfileEntity } from "#app/user/domain/model/user-profile";
 import { Query } from "@nestjs/cqrs";
 
 export class GetUserProfileQuery extends Query<{
-  profile : UserProfileEntity,
+  profile : UserProfileEntity | null,
   profileImages : UserAttachmentEntity[]
 }> {
   constructor(public readonly userId: string) {

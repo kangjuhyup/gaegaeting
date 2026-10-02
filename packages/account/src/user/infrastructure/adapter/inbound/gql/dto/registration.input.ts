@@ -5,7 +5,12 @@ import {
   IsNotEmpty,
   IsString,
   MinLength,
+  IsEnum,
+  IsOptional,
+  Matches,
+  MaxLength,
 } from "class-validator";
+import { UserGenderGql } from './user.enum.js';
 
 @InputType()
 export class CompleteMockIdentityVerificationInput {
@@ -25,4 +30,7 @@ export class RegisterAccountInput extends CompleteMockIdentityVerificationInput 
   @Field() @IsString() @MinLength(8) password!: string;
   @Field() @IsEmail() email!: string;
   @Field() @IsString() @IsNotEmpty() phone!: string;
+  @Field({ nullable: true }) @IsOptional() @IsString() @IsNotEmpty() @MaxLength(50) name?: string;
+  @Field({ nullable: true }) @IsOptional() @Matches(/^\d{4}-\d{2}-\d{2}$/) birthDate?: string;
+  @Field(() => UserGenderGql, { nullable: true }) @IsOptional() @IsEnum(UserGenderGql) gender?: UserGenderGql;
 }

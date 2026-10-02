@@ -11,6 +11,14 @@ const principal = {
 };
 
 describe('edge authentication assertion', () => {
+  test('preserves authenticated roles and rejects an unsigned role change', () => {
+    const assertion = createEdgeAssertion({ ...principal, roles: ['ADMIN'] }, 'opaque-token', secret, 100);
+    expect(verifyEdgeAssertion(assertion, 'opaque-token', secret, 110).roles).toEqual(['ADMIN']);
+    const [payload, signature] = createEdgeAssertion(principal, 'opaque-token', secret, 100).split('.');
+    const changed = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    changed.roles = ['ADMIN'];
+    expect(() => verifyEdgeAssertion(`${Buffer.from(JSON.stringify(changed)).toString('base64url')}.${signature}`, 'opaque-token', secret, 110)).toThrow();
+  });
   test('accepts only the matching bearer token and returns Auth identity, not Account identity', () => {
     const assertion = createEdgeAssertion(principal, 'opaque-token', secret, 100);
     expect(verifyEdgeAssertion(assertion, 'opaque-token', secret, 110)).toEqual({

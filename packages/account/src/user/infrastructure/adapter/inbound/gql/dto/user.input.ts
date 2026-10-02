@@ -5,26 +5,29 @@ import { Type } from 'class-transformer';
 
 @InputType()
 export class CreateUserProfileInput {
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100)
-  name: string;
+  @MaxLength(50)
+  name?: string;
 
   @Field(() => String)
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100)
+  @MaxLength(50)
   nickname: string;
 
-  @Field(() => UserGenderGql)
+  @Field(() => UserGenderGql, { nullable: true })
+  @IsOptional()
   @IsEnum(UserGenderGql)
-  gender: UserGenderGql;
+  gender?: UserGenderGql;
 
-  @Field(() => GraphQLISODateTime)
+  @Field(() => GraphQLISODateTime, { nullable: true })
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
-  birthDate: Date;
+  birthDate?: Date;
 
   @Field(() => UserRegionGql)
   @IsEnum(UserRegionGql)
@@ -57,5 +60,4 @@ export class UpdateUserProfileInput {
   @MaxLength(500)
   bio?: string;
 }
-
 

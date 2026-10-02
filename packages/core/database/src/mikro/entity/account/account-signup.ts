@@ -13,4 +13,8 @@ export class AccountSignupOrmEntity extends BaseEntity {
   @Property({ fieldName: 'auth_issuer', columnType: 'varchar(255)' }) authIssuer!: string;
   @Property({ fieldName: 'auth_subject', columnType: 'varchar(255)', nullable: true }) authSubject?: string;
   @Property({ columnType: 'varchar(16)' }) status!: 'PENDING' | 'COMPLETED';
+  @Property({ columnType: 'varchar(50)', nullable: true }) name?: string;
+  @Property({ fieldName: 'birth_date', columnType: 'timestamptz', nullable: true }) birthDate?: Date;
+  @Property({ columnType: 'varchar(6)', nullable: true }) gender?: 'MALE' | 'FEMALE';
+  @Property({ columnType: 'varchar(32)', nullable: true }) phone?: string;
 }
