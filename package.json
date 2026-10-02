@@ -18,7 +18,8 @@
     "dev:ui": "pnpm --filter @gaegaeting/integration-ui dev",
     "dev:account:share-db": "sh scripts/migrate-account-to-shared-postgres.sh",
     "test:local-dev": "node --test scripts/dev.test.mjs",
-    "dev:admin": "pnpm --filter @gaegaeting/admin-ui dev"
+    "dev:admin": "pnpm --filter @gaegaeting/admin-ui dev",
+    "test:ui": "node --test --test-concurrency=1 packages/integration-ui/test/*.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

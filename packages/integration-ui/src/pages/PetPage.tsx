@@ -1,36 +1,16 @@
-import { ProfileImages } from '../components/ProfileImages.js';
+import { ProfileImages } from "../components/ProfileImages.js";
 import { useEffect, useState, type FormEvent } from "react";
-import { Alert, Button, Field, PageTitle, Spinner } from "@gaegaeting/ui-common";
+import {
+  Alert,
+  Button,
+  Field,
+  PageTitle,
+  Spinner,
+} from "@gaegaeting/ui-common";
 import { errorMessage, graphql } from "@gaegaeting/ui-common";
 import type { AppConfig, Pet } from "../types.js";
 
-const breeds = [
-  ["MALTESE", "말티즈"],
-  ["POODLE", "푸들"],
-  ["CHIHUAHUA", "치와와"],
-  ["POMERANIAN", "포메라니안"],
-  ["SHIH_TZU", "시츄"],
-  ["YORKSHIRE", "요크셔테리어"],
-  ["BEAGLE", "비글"],
-  ["GOLDEN_RETRIEVER", "골든리트리버"],
-  ["LABRADOR", "래브라도"],
-  ["HUSKY", "허스키"],
-  ["SAMOYED", "사모예드"],
-  ["WELSH_CORGI", "웰시코기"],
-  ["JINDO", "진돗개"],
-  ["MIXED", "믹스"],
-  ["OTHER", "기타"],
-];
-const traits = [
-  ["FRIENDLY", "사교적"],
-  ["SHY", "수줍음"],
-  ["ACTIVE", "활발함"],
-  ["CALM", "차분함"],
-  ["PLAYFUL", "장난꾸러기"],
-  ["PROTECTIVE", "든든함"],
-  ["CURIOUS", "호기심"],
-  ["INDEPENDENT", "독립적"],
-];
+import { breeds, traits } from "../lib/pet-options.js";
 
 export function PetPage({
   config,
@@ -264,7 +244,16 @@ export function PetPage({
           )}
         </div>
       </form>
-      {pets.map(pet => <div className="card pet-photos" key={pet.id}><ProfileImages config={config} token={token} petId={pet.id} title={`${pet.name}의 프로필 사진`} /></div>)}
+      {pets.map((pet) => (
+        <div className="card pet-photos" key={pet.id}>
+          <ProfileImages
+            config={config}
+            token={token}
+            petId={pet.id}
+            title={`${pet.name}의 프로필 사진`}
+          />
+        </div>
+      ))}
     </section>
   );
 }
