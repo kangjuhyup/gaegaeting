@@ -29,6 +29,7 @@ export function InteractionPage({ admin = false }: { admin?: boolean }) {
   const [details, setDetails] = useState<InteractionDetails>();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [code, setCode] = useState("");
   const [methods, setMethods] = useState<string[]>([]);
@@ -91,6 +92,7 @@ export function InteractionPage({ admin = false }: { admin?: boolean }) {
     onDone: (result: InteractionResult) => void,
   ) {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError("");
     try {
@@ -167,7 +169,9 @@ export function InteractionPage({ admin = false }: { admin?: boolean }) {
   return (
     <main className="interaction-screen">
       <div className="interaction-brand">
-        <span className="brand__mark">♥</span>
+        <span className="brand__mark" aria-hidden="true">
+          ♥
+        </span>
         <strong>{admin ? "개개팅 관리자" : "개개팅"}</strong>
       </div>
       <section className="card form-card interaction-card" aria-busy={busy}>
@@ -199,24 +203,56 @@ export function InteractionPage({ admin = false }: { admin?: boolean }) {
               <Field label="아이디">
                 <input
                   required
+                  name="username"
                   autoComplete="username"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  enterKeyHint="next"
+                  readOnly={busy}
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
                 />
               </Field>
-              <Field label="비밀번호">
-                <input
-                  required
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                />
-              </Field>
+              <div className="field">
+                <label className="field__label" htmlFor="interaction-password">
+                  비밀번호
+                </label>
+                <div className="interaction-password">
+                  <input
+                    required
+                    id="interaction-password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    enterKeyHint="go"
+                    readOnly={busy}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="interaction-password-toggle"
+                    aria-label={
+                      showPassword ? "비밀번호 숨기기" : "비밀번호 보기"
+                    }
+                    aria-pressed={showPassword}
+                    disabled={busy}
+                    onClick={() => setShowPassword((visible) => !visible)}
+                  >
+                    {showPassword ? "숨기기" : "보기"}
+                  </button>
+                </div>
+              </div>
               {error && <Alert type="error">{error}</Alert>}
               <Button type="submit" disabled={busy}>
-                {busy && <Spinner />} 로그인
+                {busy && <Spinner />} {busy ? "로그인 중…" : "로그인"}
               </Button>
+              {busy && (
+                <p className="interaction-progress" role="status">
+                  로그인 중이에요. 잠시만 기다려 주세요.
+                </p>
+              )}
             </form>
             {details?.idpList.map((idp) => (
               <Button
