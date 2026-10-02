@@ -91,6 +91,6 @@ test('main requires squash without disabling merge-based dev synchronization', (
   assert.equal(integration.rules.find(rule => rule.type === 'pull_request').parameters.allowed_merge_methods, undefined);
   for (const ruleset of [main, integration]) assert.deepEqual(ruleset.bypass_actors, []);
   const check = integration.rules.find(rule => rule.type === 'required_status_checks').parameters;
-  assert.deepEqual(check.required_status_checks, ['branch-policy', 'service-verification', 'image-account', 'image-match', 'image-gateway', 'image-edge-authz', 'image-integration-ui'].map(context => ({ context, integration_id: 15368 })));
+  assert.deepEqual(check.required_status_checks, ['branch-policy', 'service-verification', 'image-account', 'image-match', 'image-gateway', 'image-edge-authz', 'image-integration-ui', 'image-admin-ui'].map(context => ({ context, integration_id: 15368 })));
   assert.equal(check.strict_required_status_checks_policy, true);
 });

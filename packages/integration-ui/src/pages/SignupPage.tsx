@@ -1,8 +1,8 @@
-import { publicConfig } from '../runtime-config.js';
+import { publicConfig } from "@gaegaeting/ui-common";
 import { useState, type FormEvent } from "react";
-import { graphql, errorMessage } from "../lib/api.js";
+import { graphql, errorMessage } from "@gaegaeting/ui-common";
 import type { AppConfig, SignupDraft } from "../types.js";
-import { Alert, Button, Field, PageTitle, Spinner } from "../components/Ui.js";
+import { Alert, Button, Field, PageTitle, Spinner } from "@gaegaeting/ui-common";
 
 export function SignupPage({
   config,

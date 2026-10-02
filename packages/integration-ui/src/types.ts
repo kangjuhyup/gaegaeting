@@ -1,10 +1,4 @@
-export type AppConfig = {
-  issuer: string;
-  clientId: string;
-  gatewayUrl: string;
-  accountUrl: string;
-  redirectUri: string;
-};
+export type { AppConfig } from "@gaegaeting/ui-common";
 
 export type SignupDraft = {
   username: string;
@@ -14,8 +8,6 @@ export type SignupDraft = {
   gender: "FEMALE" | "MALE";
   phoneNumber: string;
 };
-
-export type ApiResult<T> = { data?: T; errors?: Array<{ message: string }> };
 
 export type UserProfile = {
   id: string;

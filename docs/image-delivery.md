@@ -11,6 +11,7 @@
 | `ghcr.io/kangjuhyup/gaegaeting/gateway` | 4000 | `/gateway/health` | `node dist/src/main.js` |
 | `ghcr.io/kangjuhyup/gaegaeting/edge-authz` | 4010 | `/health` | `node dist/src/edge-authz/main.js` |
 | `ghcr.io/kangjuhyup/gaegaeting/integration-ui` | 8080 | `/health` | `node server.mjs` |
+| `ghcr.io/kangjuhyup/gaegaeting/admin-ui` | 8080 | `/admin/health` | `node server.mjs` |
 
 태그는 `sha-<main의 전체 커밋 SHA>`입니다. amd64/arm64 멀티 플랫폼 manifest digest를 Actions artifact `image-<서비스>-<SHA>`와 작업 요약에서 확인합니다. k3s에서는 `이미지:sha-<SHA>@sha256:<digest>`로 고정합니다. `latest`를 배포 기준으로 사용하지 않습니다. 이미지 게시와 클러스터 배포는 각각 검증하며, 이미지 게시만으로 클러스터가 변경되지는 않습니다.
 
@@ -69,12 +70,12 @@ UI 컨테이너는 다음 **공개 설정만** `/config.js`로 제공합니다. 
 
 `UPLOADING → PENDING → APPROVED / REJECTED` 순서로 처리합니다. 업로드 완료 후 서버가 최대 5MiB의 전체 파일을 읽어 응답 ETag·길이·PNG 헤더·치수를 확인하고, 검증한 동일 바이트를 새 검토용 경로에 PUT합니다. 실제 스토리지가 CopySourceIfMatch를 무시하므로 사진 제출은 CopyObject에 의존하지 않습니다. GET 조건이 무시돼도 응답 ETag가 HEAD와 다르면 제출을 거부하며, 실제 스트림 크기와 선언 길이도 검증합니다. 검토용 경로에는 PUT URL을 발급하지 않으므로 기존 업로드 URL을 재사용해도 승인된 사진을 바꿀 수 없습니다. `PENDING` 사진은 소유자와 관리자 검토 목록에만 나타나며 공개 프로필에는 `APPROVED`이면서 활성인 사진만 포함합니다. 사진 조회 URL은 300초 후 만료됩니다. 이미 발급된 GET URL이나 다운로드된 파일은 승인 취소·삭제 시 즉시 회수되지 않을 수 있습니다.
 
-관리자는 **관리자로 로그인** 후 **사진 검토**(`/image-review`)에서 사용자·반려견 사진을 승인 또는 거절합니다. 사진을 실제로 불러오기 전에는 UI 승인 버튼이 비활성입니다. API는 Auth가 `tenant_roles` scope와 함께 제공한 `tenant_roles: [{id, code}]`의 `ADMIN` 역할 및 `account:read`/`account:write` scope를 검사합니다. Gateway와 Edge는 검증된 역할만 서명하여 Account로 전달합니다. 일반 로그인은 `tenant_roles`를 요청하지 않습니다. 관리자 로그인 버튼이나 scope 요청 자체는 관리자 역할을 부여하지 않습니다.
+관리자는 독립 관리자 UI **`/admin`**에서 로그인한 후 사진 검토 화면에서 사용자·반려견 사진을 승인 또는 거절합니다. 사진을 실제로 불러오기 전에는 UI 승인 버튼이 비활성입니다. API는 Auth가 `tenant_roles` scope와 함께 제공한 `tenant_roles: [{id, code}]`의 `ADMIN` 역할 및 `account:read`/`account:write` scope를 검사합니다. Gateway와 Edge는 검증된 역할만 서명하여 Account로 전달합니다. 일반 로그인은 `tenant_roles`를 요청하지 않습니다. 관리자 로그인 버튼이나 scope 요청 자체는 관리자 역할을 부여하지 않습니다.
 
 배포 전 다음 계약을 적용합니다.
 
 1. Account `ProfileImageReview1790899200000` 마이그레이션을 적용합니다. 기존 활성 사진은 `APPROVED`로 보존하고 비활성 사진은 자동 승인하지 않습니다.
-2. 기존 `gaegaeting-web` Auth client의 허용 scope에 `tenant_roles`를 추가하고 지정된 검토자에게 해당 tenant의 `ADMIN` 역할을 별도로 부여합니다. bootstrap 스크립트는 기존 client와 설정이 다르면 충돌로 중단하며 자동 수정하거나 관리자 역할을 부여하지 않습니다.
+2. 별도 `gaegaeting-admin-web` Auth public client에 `openid profile email tenant_roles account:read account:write`를 허용하고 지정된 검토자에게 해당 tenant의 `ADMIN` 역할을 별도로 부여합니다. 사용자 `gaegaeting-web` client에는 `tenant_roles`를 허용하지 않습니다. bootstrap 스크립트는 기존 client와 설정이 다르면 충돌로 중단하며 자동 수정하거나 관리자 역할을 부여하지 않습니다.
 3. USER/PET 버킷을 비공개로 유지합니다. Account storage credential에 해당 버킷·prefix의 PUT/GET/HEAD/DELETE 권한을 확인합니다. 정확한 UI origin의 CORS에 PUT·GET·HEAD와 Content-Type을 허용합니다. UI의 `UI_IMAGE_STORAGE_ORIGIN`과 Account `STORAGE_HOST` origin을 맞춥니다. 로컬 Vite는 `VITE_IMAGE_STORAGE_ORIGIN`을 사용합니다.
 4. dev 자동 sync를 Git에서 잠시 보류하고 Account를 0 replica로 내려 구 Pod 종료를 확인합니다. 두 Account 마이그레이션 성공 후 새 Account → Edge-authz → Gateway → UI 순서로 새 이미지를 전환하고 실제 관리자 토큰과 브라우저에서 양쪽 업로드·검토·승인 후 프로필 조회를 확인합니다. Account 중단 구간에는 가입·프로필 API 요청이 일시 실패할 수 있습니다. 새 Account Ready 전에는 새 UI를 노출하지 않습니다.
 
@@ -93,3 +94,13 @@ UI 컨테이너는 다음 **공개 설정만** `/config.js`로 제공합니다. 
 실제 dev 가입 검증에는 dev namespace에만 `NODE_ENV=development`, `REGISTRATION_MOCK_ENABLED=true`를 주입합니다. 운영 승격 시 mock을 금지하고 실제 본인인증 공급자를 준비합니다. 현재 k3s는 ARM64 한 노드이며, 신규 DB/pg_hba/CA 접근, Kafka, Secret, namespace, DNS/TLS/Ingress 및 Auth 클라이언트가 준비돼야 최초 rollout을 시작할 수 있습니다. PostgreSQL `verify-full` 사용 시 CNPG CA를 파일로 mount하고 `NODE_EXTRA_CA_CERTS`로 신뢰를 공급합니다. 스토리지·외부 API 자격증명의 실효성도 별도 확인합니다.
 
 공용 Kafka를 사용할 때 Match에 `KAFKA_TOPIC_PREFIX=dev.gaegaeting`을 설정합니다. Feed/Like/Pair의 모든 Kafka 발행은 `${KAFKA_TOPIC_PREFIX}.${topic}`으로 전송하므로 `dev.gaegaeting.notification.fcm.send.v1`, `dev.gaegaeting.chat.room.created.v1`, `dev.gaegaeting.match.pair.reported.v1` 등을 별도로 준비합니다. Nest 로컬 EventEmitter 이벤트 이름과 페이로드는 변경하지 않습니다. 다른 환경에는 별도 prefix를 설정합니다. prefix 생략/빈 값은 기존 토픽을 유지하는 호환 모드이며, 공유 broker의 환경 격리에는 사용하지 않습니다. prefix는 영숫자로 시작하는 영숫자·점·밑줄·하이픈 최대 200자이며 잘못된 설정은 앱 부팅 시 거부합니다. 토픽 prefix는 이름 격리이며 보안 접근 제어를 대신하지 않습니다.
+
+## 독립 관리자 UI
+
+`packages/admin-ui`는 독립 Vite 앱과 `admin-ui` 컨테이너로 배포합니다. dev 주소는 `https://test-ggt-ui.rvkang.app/admin`입니다. Ingress의 exact `/admin` 및 prefix `/admin/`를 `admin-ui:8080`으로 연결하고 rewrite하지 않습니다. 사용자 UI의 `/image-review`는 404이며 로그인 화면에 관리자 버튼이 없습니다.
+
+관리자 이미지에는 `UI_APP=admin`이 기본으로 설정돼 있으며, runtime config는 `/admin/config.js`, health는 `/admin/health`, 정적 파일은 `/admin/assets/`입니다. `UI_OIDC_CLIENT_ID=gaegaeting-admin-web`을 명시해야 하며 사용자 client를 지정하면 기동을 거부합니다. 나머지 공개 UI 환경변수와 스토리지 origin은 기존 UI와 같습니다. Auth client의 exact redirect/post-logout URI는 `${UI_ORIGIN}/admin/login`, external interaction URI는 `${UI_ORIGIN}/admin/interaction`입니다. 기존 UI origin이 같으므로 별도 DNS·TLS·CORS origin을 추가하지 않습니다.
+
+관리자 앱은 로그인·사진 검토만 제공합니다. `prompt=login`으로 계정 입력을 요구하며 API의 `canReviewProfileImages` 권한 확인에 통과한 계정만 검토 목록을 조회합니다. 관리자 client 로그인 자체는 역할을 부여하지 않습니다. access token과 interaction credentials는 메모리에만 유지합니다. 같은 origin에서 두 앱의 PKCE state·nonce·verifier는 client ID별 sessionStorage key를 사용합니다. `packages/ui-common`의 브라우저용 인증·API·인증 화면·UI 기본 컴포넌트를 재사용하며 두 앱은 서로의 소스에 의존하지 않습니다. 이 private 패키지는 Vite가 함께 컴파일하도록 TS source exports를 제공합니다.
+
+로컬 관리자는 `pnpm dev:admin`으로 `/admin/`에서 실행합니다. 이 UI 분리 릴리스에는 DB 또는 API 계약 변경이 없으므로 기존 Account/Match/Gateway/Edge image와 migration은 유지하고 두 UI의 exact digest만 변경합니다. 새 관리자 client/서비스 준비 → 두 UI 전환 → 관리자 및 일반 사용자 권한 검증 → 사용자 client의 `tenant_roles` 허용 제거 순서로 진행합니다. GitOps 배포 상태·집계 E2E 증거는 k3s 저장소에서 추적합니다.
