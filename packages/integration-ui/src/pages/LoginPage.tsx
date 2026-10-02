@@ -7,10 +7,12 @@ import { Alert, Button, PageTitle, Spinner } from "@gaegaeting/ui-common";
 export function LoginPage({
   config,
   connected,
+  loggingOut,
   onNext,
 }: {
   config: AppConfig;
   connected: boolean;
+  loggingOut: boolean;
   onNext: () => void;
 }) {
   const [loading, setLoading] = useState(false);
@@ -65,7 +67,7 @@ export function LoginPage({
           <Button onClick={onNext}>내 프로필 등록하기 →</Button>
         ) : (
           <>
-            <Button onClick={() => login()} disabled={loading}>
+            <Button onClick={() => login()} disabled={loading || loggingOut}>
               {loading && <Spinner />} 로그인
             </Button>
           </>

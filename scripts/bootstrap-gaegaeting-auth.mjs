@@ -55,7 +55,7 @@ export function desiredClients(env) {
   const audience = validUrl(env.OIDC_API_AUDIENCE ?? 'https://api.gaegaeting.app', { production }).replace(/\/$/, '');
   const common = { redirectUris: [], responseTypes: [], postLogoutRedirectUris: [], applicationType: 'web', skipConsent: false, allowedResources: [], introspectionResources: [] };
   return [
-    { ...common, clientId: 'gaegaeting-web', name: 'Gaegaeting Web', type: 'public', redirectUris: [redirect], grantTypes: ['authorization_code'], responseTypes: ['code'], tokenEndpointAuthMethod: 'none', scope: USER_SCOPES, skipConsent: true, allowedResources: [audience], externalInteractionUiUrl: interaction },
+    { ...common, clientId: 'gaegaeting-web', name: 'Gaegaeting Web', type: 'public', redirectUris: [redirect], postLogoutRedirectUris: [new URL(redirect).origin + '/'], grantTypes: ['authorization_code'], responseTypes: ['code'], tokenEndpointAuthMethod: 'none', scope: USER_SCOPES, skipConsent: true, allowedResources: [audience], externalInteractionUiUrl: interaction },
     { ...common, clientId: 'gaegaeting-api', name: 'Gaegaeting API introspection', type: 'service', secret: serviceSecret(env, 'GAEGAETING_INTROSPECTION_CLIENT_SECRET'), grantTypes: ['client_credentials'], tokenEndpointAuthMethod: 'client_secret_basic', scope: 'openid', introspectionResources: [audience] },
     { ...common, clientId: 'gaegaeting-account-provisioner', name: 'Gaegaeting Account provisioning', type: 'service', secret: serviceSecret(env, 'GAEGAETING_PROVISIONING_CLIENT_SECRET'), grantTypes: ['client_credentials'], tokenEndpointAuthMethod: 'client_secret_basic', scope: 'auth.user.provision' },
   ];

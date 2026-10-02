@@ -6,6 +6,8 @@ type Discovery = {
   authorization_endpoint: string;
   token_endpoint: string;
   jwks_uri: string;
+  end_session_endpoint?: string;
+  revocation_endpoint?: string;
 };
 
 type TokenResponse = {
@@ -168,7 +170,7 @@ export async function beginLogin(
 
 export async function completeLogin(
   config: AppConfig,
-): Promise<{ accessToken: string; expiresIn?: number }> {
+): Promise<{ accessToken: string; idToken: string; expiresIn?: number }> {
   const params = new URLSearchParams(window.location.search);
   const oauthError = params.get("error");
   if (oauthError)
@@ -210,5 +212,45 @@ export async function completeLogin(
   ["verifier", "state", "nonce"].forEach((part) =>
     sessionStorage.removeItem(storageKey(config, part)),
   );
-  return { accessToken: body.access_token, expiresIn: body.expires_in };
+  return { accessToken: body.access_token, idToken: body.id_token, expiresIn: body.expires_in };
+}
+
+export async function beginLogout(
+  config: AppConfig,
+  session: { accessToken: string; idToken: string },
+) {
+  ["verifier", "state", "nonce"].forEach((part) =>
+    sessionStorage.removeItem(storageKey(config, part)),
+  );
+
+  const discovery = await discover(config.issuer);
+  if (!discovery.end_session_endpoint) {
+    throw new Error("인증 서버가 로그아웃 주소를 제공하지 않습니다.");
+  }
+  const endpoint = new URL(discovery.end_session_endpoint);
+  if (endpoint.origin !== new URL(discovery.issuer).origin) {
+    throw new Error("인증 서버 로그아웃 주소가 올바르지 않습니다.");
+  }
+  if (discovery.revocation_endpoint) {
+    const revocation = new URL(discovery.revocation_endpoint);
+    if (revocation.origin !== endpoint.origin) {
+      throw new Error("인증 서버 토큰 폐기 주소가 올바르지 않습니다.");
+    }
+    const response = await fetch(browserApiUrl(revocation.href), {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        token: session.accessToken,
+        token_type_hint: "access_token",
+        client_id: config.clientId,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`토큰 폐기 실패 (HTTP ${response.status})`);
+    }
+  }
+  endpoint.searchParams.set("id_token_hint", session.idToken);
+  endpoint.searchParams.set("client_id", config.clientId);
+  endpoint.searchParams.set("post_logout_redirect_uri", config.postLogoutRedirectUri ?? config.redirectUri);
+  window.location.assign(endpoint.href);
 }
