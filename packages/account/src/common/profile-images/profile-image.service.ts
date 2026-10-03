@@ -1,10 +1,11 @@
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, Logger, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { StorageService } from '@core/storage';
 import { UserProfileRepositoryPort } from '../../user/infrastructure/port/user-profile-repository.port.js';
 import { PetProfileRepositoryPort } from '../../pet/infrastructure/port/pet-profile-repository.port.js';
 import { ProfileImageRepositoryPort, type ImageKind, type ProfileImageRecord } from './profile-image-repository.port.js';
 import { PresignedUrl } from '../vo/presigned-url.js';
+import { ProfileImageNotificationPort } from './profile-image-notification.port.js';
 
 export const USER_IMAGE_STORAGE = 'USER_IMAGE_STORAGE';
 export const PET_IMAGE_STORAGE = 'PET_IMAGE_STORAGE';
@@ -14,12 +15,14 @@ export type ProfileImageView = ProfileImageRecord & { url?: string };
 
 @Injectable()
 export class ProfileImageService {
+  private readonly logger = new Logger(ProfileImageService.name);
   constructor(
     private readonly images: ProfileImageRepositoryPort,
     private readonly users: UserProfileRepositoryPort,
     private readonly pets: PetProfileRepositoryPort,
     @Inject(USER_IMAGE_STORAGE) private readonly userStorage: StorageService,
     @Inject(PET_IMAGE_STORAGE) private readonly petStorage: StorageService,
+    private readonly notifications: ProfileImageNotificationPort,
   ) {}
   private storage(kind: ImageKind): StorageService { return kind === 'USER' ? this.userStorage : this.petStorage; }
   private key(image: ProfileImageRecord): string { return image.uploadKey ? image.key : `${image.targetId}-${image.imageNo}`; }
@@ -82,6 +85,9 @@ export class ProfileImageService {
       if (current.status === 'PENDING' && current.uploadKey === image.uploadKey) return this.view(current);
       throw new ConflictException('사진 상태가 변경되었습니다. 새로고침해 주세요.');
     }
+    // Only the winning transition sends an alert. Notification failure must not undo submission.
+    try { await this.notifications.notifySubmitted({ kind, targetId, imageNo, userId }); }
+    catch { this.logger.warn('사진 등록 요청 알림 전송에 실패했습니다. 관리자 승인 대기 목록에서 확인해 주세요.'); }
     // Cleanup is best effort: the old PUT URL can only recreate an unreferenced staging object.
     await storage.deleteObject({ key: this.key(image) }).catch(() => undefined);
     return this.view(await this.required(kind, targetId, imageNo));
