@@ -555,6 +555,9 @@ importers:
 
   packages/core/http:
     dependencies:
+      '@core/util':
+        specifier: workspace:*
+        version: link:../util
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
@@ -736,6 +739,9 @@ importers:
 
   packages/core/logger:
     dependencies:
+      '@core/util':
+        specifier: workspace:*
+        version: link:../util
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
@@ -1247,6 +1253,9 @@ importers:
       '@core/auth-assertion':
         specifier: workspace:*
         version: link:../core/auth-assertion
+      '@core/util':
+        specifier: workspace:*
+        version: link:../core/util
       body-parser:
         specifier: ^2.2.1
         version: 2.2.1

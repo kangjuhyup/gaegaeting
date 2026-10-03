@@ -11,6 +11,7 @@ import { createAuthenticationMiddleware } from './auth/authentication-middleware
 import { createEdgeAuthenticationMiddleware } from './auth/edge-authentication-middleware.js';
 import { resolveApiAudience, resolveOidcRuntimeConfig } from './auth/oidc-runtime-config.js';
 import { pathToFileURL } from 'node:url';
+import { createGatewayContext, gatewayRequestMiddleware } from './request-context.js';
 
 const { json } = bodyParser;
 
@@ -32,6 +33,8 @@ export async function bootstrap(): Promise<{
   shutdown: () => Promise<void>;
 }> {
   const app = express();
+  // Assign the ID before CORS, body parsing and authentication (including errors).
+  app.use(gatewayRequestMiddleware);
 
   // CORS 설정
   app.use((req, res, next) => {
@@ -40,7 +43,8 @@ export async function bootstrap(): Promise<{
       'Access-Control-Allow-Methods',
       'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     );
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Trace-Id');
+    res.header('Access-Control-Expose-Headers', 'X-Trace-Id');
     res.header('Access-Control-Allow-Credentials', 'true');
 
     if (req.method === 'OPTIONS') {
@@ -97,9 +101,7 @@ export async function bootstrap(): Promise<{
   // 모든 HTTP 메서드에 대해 GraphQL 엔드포인트 등록
   // json() 미들웨어를 먼저 적용하여 req.body를 파싱
   const gqlMiddleware = expressMiddleware(server, {
-    context: async ({ req }) => ({
-      authenticatedPrincipal: (req as any).authenticatedPrincipal,
-    }),
+    context: async ({ req }) => createGatewayContext(req),
   });
 
   // prefixed (prod ingress)
