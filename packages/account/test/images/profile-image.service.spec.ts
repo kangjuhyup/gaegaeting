@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { ProfileImageService } from '../../src/common/profile-images/profile-image.service.js';
 import type { ImageKind, ProfileImageRecord } from '../../src/common/profile-images/profile-image-repository.port.js';
+import { Logger } from '@nestjs/common';
 
 function fixture() {
   const rows = new Map<string, ProfileImageRecord>();
@@ -31,8 +32,9 @@ function fixture() {
   const userStorage = storage(), petStorage = storage();
   const users = { selectUserProfileFromId: jest.fn(async () => ({ id: 'owner' })) };
   const pets = { selectPetFromId: jest.fn(async () => ({ userId: 'owner' })) };
-  const service = new ProfileImageService(repository as any, users as any, pets as any, userStorage as any, petStorage as any);
-  return { rows, repository, userStorage, petStorage, users, pets, service };
+  const notifications = { notifySubmitted: jest.fn(async () => undefined) };
+  const service = new ProfileImageService(repository as any, users as any, pets as any, userStorage as any, petStorage as any, notifications);
+  return { rows, repository, userStorage, petStorage, users, pets, notifications, service };
 }
 
 describe.each(['USER', 'PET'] as const)('%s photos reviewed by an administrator', kind => {
@@ -66,6 +68,49 @@ describe.each(['USER', 'PET'] as const)('%s photos reviewed by an administrator'
     await expect(f.service.complete(kind, targetId, 0, 'owner')).rejects.toThrow('업로드 중인');
     expect(await f.service.approvedUrls(kind, targetId)).toHaveLength(1);
   });
+  test('a new photo request notifies administrators only after it enters the review queue', async () => {
+    const f = fixture();
+    f.notifications.notifySubmitted.mockImplementationOnce(async () => {
+      expect(await f.service.pending()).toHaveLength(1);
+    });
+    await f.service.begin(kind, targetId, 0, 'owner');
+    expect(f.notifications.notifySubmitted).not.toHaveBeenCalled();
+    await f.service.complete(kind, targetId, 0, 'owner');
+    await f.service.complete(kind, targetId, 0, 'owner');
+    expect(f.notifications.notifySubmitted).toHaveBeenCalledTimes(1);
+    expect(f.notifications.notifySubmitted).toHaveBeenCalledWith({ kind, targetId, imageNo: 0, userId: 'owner' });
+  });
+  test('concurrent completion requests produce one pending photo and one notification', async () => {
+    const f = fixture();
+    await f.service.begin(kind, targetId, 0, 'owner');
+    const results = await Promise.all([
+      f.service.complete(kind, targetId, 0, 'owner'),
+      f.service.complete(kind, targetId, 0, 'owner'),
+    ]);
+    expect(results.map(image => image.status)).toEqual(['PENDING', 'PENDING']);
+    expect(await f.service.pending()).toHaveLength(1);
+    expect(f.notifications.notifySubmitted).toHaveBeenCalledTimes(1);
+  });
+  test('notification failure preserves a successful photo request without leaking provider secrets', async () => {
+    const f = fixture();
+    f.notifications.notifySubmitted.mockRejectedValueOnce(new Error('secret-webhook-url'));
+    const warning = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    try {
+      expect((await pending(f)).status).toBe('PENDING');
+      expect(await f.service.pending()).toHaveLength(1);
+      expect(warning).toHaveBeenCalledTimes(1);
+      expect(JSON.stringify(warning.mock.calls)).not.toContain('secret-webhook-url');
+      await f.service.complete(kind, targetId, 0, 'owner');
+      expect(f.notifications.notifySubmitted).toHaveBeenCalledTimes(1);
+    } finally { warning.mockRestore(); }
+  });
+  test('a photo whose pending state could not be saved sends no notification', async () => {
+    const f = fixture();
+    await f.service.begin(kind, targetId, 0, 'owner');
+    f.repository.transition.mockResolvedValueOnce(false);
+    await expect(f.service.complete(kind, targetId, 0, 'owner')).rejects.toThrow('사진 상태가 변경');
+    expect(f.notifications.notifySubmitted).not.toHaveBeenCalled();
+  });
   test('rejection never activates a photo, removes the private file and records the reviewer', async () => {
     const f = fixture(); await pending(f);
     await f.service.review(kind, targetId, 0, false, 'admin');
@@ -91,6 +136,7 @@ describe.each(['USER', 'PET'] as const)('%s photos reviewed by an administrator'
     expect(f.repository.reserve).not.toHaveBeenCalled();
     expect(storageFor(f).generateUploadPresignedUrl).not.toHaveBeenCalled();
     expect(storageFor(f).generateDownloadPresignedUrl).not.toHaveBeenCalled();
+    expect(f.notifications.notifySubmitted).not.toHaveBeenCalled();
   });
   test('missing or oversized files cannot enter the admin review queue', async () => {
     const f = fixture(); await f.service.begin(kind, targetId, 0, 'owner');
@@ -98,12 +144,14 @@ describe.each(['USER', 'PET'] as const)('%s photos reviewed by an administrator'
     await expect(f.service.complete(kind, targetId, 0, 'owner')).rejects.toThrow('5MB');
     expect(storageFor(f).writeImageSnapshot).not.toHaveBeenCalled();
     expect(await f.service.pending()).toEqual([]);
+    expect(f.notifications.notifySubmitted).not.toHaveBeenCalled();
   });
   test('non-PNG bytes cannot be submitted or activated', async () => {
     const f = fixture(); await f.service.begin(kind, targetId, 0, 'owner');
     storageFor(f).readImageSnapshot.mockResolvedValueOnce(Buffer.from('<svg>not a PNG</svg>'));
     await expect(f.service.complete(kind, targetId, 0, 'owner')).rejects.toThrow('지원하지 않는');
     expect(await f.service.pending()).toEqual([]);
+    expect(f.notifications.notifySubmitted).not.toHaveBeenCalled();
   });
   test('a failed review-object PUT leaves the photo retryable and out of the queue', async () => {
     const f = fixture(); await f.service.begin(kind, targetId, 0, 'owner');
@@ -112,6 +160,7 @@ describe.each(['USER', 'PET'] as const)('%s photos reviewed by an administrator'
     expect(f.repository.transition).not.toHaveBeenCalled();
     expect(storageFor(f).deleteObject).not.toHaveBeenCalled();
     expect(await f.service.pending()).toEqual([]);
+    expect(f.notifications.notifySubmitted).not.toHaveBeenCalled();
     expect((await f.service.complete(kind, targetId, 0, 'owner')).status).toBe('PENDING');
   });
   test('missing frozen files cannot be approved', async () => {

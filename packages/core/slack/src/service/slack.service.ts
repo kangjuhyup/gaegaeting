@@ -41,8 +41,9 @@ export class SlackService {
       } else {
         this.logger.warn(`Slack API returned status: ${response.status}`);
       }
-    } catch (error) {
-      this.logger.error('Failed to send Slack message', error.stack);
+    } catch {
+      // HTTP errors may contain the secret webhook URL; log no provider error details.
+      this.logger.error('Failed to send Slack message');
       throw new Error('Failed to send Slack message');
     }
   }
