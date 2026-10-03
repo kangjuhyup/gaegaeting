@@ -71,6 +71,9 @@ importers:
       '@core/redis':
         specifier: workspace:*
         version: link:../core/redis
+      '@core/slack':
+        specifier: workspace:*
+        version: link:../core/slack
       '@core/storage':
         specifier: workspace:*
         version: link:../core/storage
