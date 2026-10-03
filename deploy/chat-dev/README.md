@@ -50,7 +50,7 @@ Gateway는 브라우저의 `connection_init` opaque bearer를 Auth에서 검증�
 
 1. **Secret/RBAC**: 이미지 식별자를 먼저 확정한다. Chat의 두 DopplerSecret, 필요한 Role resourceNames와 Gateway/DB 생성용 키 참조를 반영한다. Operator reconcile 성공과 필요한 Secret의 key 존재를 확인한다. 값은 출력하지 않는다.
 2. **DB 접근 및 생성**: `gaegaeting-chat-db-identity`가 준비된 뒤에만 CNPG `cluster-patch.yaml`의 projected volume/HBA를 적용한다. 기존 reject 규칙과 다른 DB 규칙을 유지한다. Chat 전용 `gaegaeting-chat-db-provision-v1`만 Git에서 suspend를 해제하고 성공을 확인한다. 기존 Account/Match DB 생성 Job은 재실행하지 않는다.
-3. **Chat migration 및 서버**: 확정한 Chat 이미지로 신규 migration Job을 실행하고 두 migration의 완료를 확인한다. 이후 Chat replica를 1로 설정한다. `/chat/health/ready`가 DB query를 통과하는지 확인한다. Match/Kafka ingress를 이 단계까지 준비한다.
+3. **Chat migration 및 서버**: 확정한 Chat 이미지로 신규 migration Job을 실행하고 두 migration의 완료를 확인한다. Kafka에 설정된 prefix의 `chat.room.created.v1` 토픽이 준비됐는지 확인한다. 자동 토픽 생성이 제한된 broker라면 Kafka 관리 절차의 선언된 Job으로 먼저 준비하고 완료를 확인한다. 이후 Chat replica를 1로 설정한다. `/chat/health/ready`가 DB query를 통과하는지 확인한다. Match/Kafka ingress를 이 단계까지 준비한다.
 4. **연동 rollout**: Match의 새 GraphQL 계약을 먼저 배포한다. 준비된 Chat을 Gateway의 `CHAT_SERVICE_URL`로 연결하고 Gateway 이미지를 갱신한다. Envoy WebSocket 경로와 checksum annotation을 함께 반영해 설정이 실제 로드되도록 한다. 마지막으로 사용자 UI 이미지를 갱신한다.
 5. **릴리즈 검증**: 확정된 `release-images.json`과 실제 운영 상태에 대해 K3s의 `scripts/gaegaeting_validate.py --release` 및 저장소 release 검증 절차를 실행한다. placeholder가 남은 준비본은 release gate 통과 상태가 아니다.
 

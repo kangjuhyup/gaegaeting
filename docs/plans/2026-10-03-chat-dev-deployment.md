@@ -37,3 +37,4 @@ K3s 패치 기준은 `b04027fb2f7ebed10b170b515a36621032e07e31`이다. 작업 �
 - `scripts/gaegaeting_validate.py`의 구문을 확인했다. GHCR 식별자와 Doppler 실제 값이 아직 준비본에 확정되지 않아 원격 release gate는 실행하지 않는다.
 - 테스트용 PostgreSQL 컨테이너 두 개를 종료했다. 기존 다른 서비스 컨테이너와 데이터는 유지한다.
 - PR 검증에서 지적된 CI의 테스트용 고정 비밀번호를 제거하고 임시 DB의 trust 인증을 사용한다. Chat sync와 WS 초기 연결 처리를 분리한 뒤 대상 서비스/UI 빌드와 비밀번호 없는 PG18.4/Kafka/WS 테스트 21개, UI20개, Node84개를 다시 확인했다.
+- 사용자 요청으로 UI와 Account/Match/Chat/Gateway를 로컬 실행했다. 개발용 Doppler를 프로세스에 주입하고 기존 로컬 Account/Match DB를 유지하며 새 Chat DB와 필요한 Kafka 토픽만 준비했다. 모든 health/readiness와 UI는 200, 인증 없는 GraphQL은 401, 인증 없는 WS는 4401을 확인했다. 로컬 실행 설정·로그는 ignored `.tmp/local-runtime-20261003`에 두며 secret 값은 설정 파일에 기록하지 않는다.
