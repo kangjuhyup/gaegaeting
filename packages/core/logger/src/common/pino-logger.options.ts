@@ -1,6 +1,4 @@
-import { LoggerModule } from 'nestjs-pino';
-import type { Params } from 'nestjs-pino';
-import { type DynamicModule } from '@nestjs/common';
+import { resolveTraceId, TRACE_ID_HEADER } from '@core/util/trace';
 
 /**
  * Pino 로거 옵션 생성 함수
@@ -22,6 +20,13 @@ export const createPinoLoggerOptions = (
   const pinoHttp: any = {
     name,
     level,
+    genReqId: (req, res) => {
+      const traceId = resolveTraceId(req.headers[TRACE_ID_HEADER]);
+      req.headers[TRACE_ID_HEADER] = traceId;
+      res.setHeader(TRACE_ID_HEADER, traceId);
+      return traceId;
+    },
+    customProps: (req) => ({ traceId: req.id }),
     redact: {
       paths: [
         'req.headers.authorization',
