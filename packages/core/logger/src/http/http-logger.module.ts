@@ -1,4 +1,5 @@
-import { type DynamicModule, Module } from '@nestjs/common';
+import { type DynamicModule, type MiddlewareConsumer, Module, type NestModule, RequestMethod } from '@nestjs/common';
+import { requestTraceMiddleware } from '@core/util/trace';
 import { LoggerModule } from 'nestjs-pino';
 import { createPinoLoggerOptions } from '../common/pino-logger.options.js';
 
@@ -32,7 +33,11 @@ export interface HttpLoggerModuleOptions {
  * HTTP 요청/응답 로깅을 위한 모듈
  */
 @Module({})
-export class HttpLoggerModule {
+export class HttpLoggerModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(requestTraceMiddleware).forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+
   /**
    * HTTP 로거 모듈 등록 - 모든 HTTP 요청/응답을 자동으로 로깅합니다
    * 

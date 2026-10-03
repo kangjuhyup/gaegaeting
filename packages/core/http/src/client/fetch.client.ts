@@ -1,5 +1,6 @@
 import { Injectable, Optional } from "@nestjs/common";
 import { type HttpRequestOptions, type HttpResponse, HttpError, type Logger, type ExceptionNotifier } from "./client.opt.js";
+import { getTraceId, TRACE_ID_HEADER } from '@core/util/trace';
 
 /**
  * Fetch를 이용한 HTTP 클라이언트
@@ -127,11 +128,14 @@ export class FetchHttpClient {
     
     // URL에 쿼리 파라미터 추가
     const fullUrl = this.appendQueryParams(url, params);
+    const requestHeaders = new Headers({ ...this.defaultHeaders, ...headers });
+    const traceId = getTraceId();
+    if (traceId) requestHeaders.set(TRACE_ID_HEADER, traceId);
     
     // 요청 옵션 구성
     const requestOptions: RequestInit = {
       method,
-      headers: { ...this.defaultHeaders, ...headers },
+      headers: requestHeaders,
       ...(data && { body: JSON.stringify(data) }),
     };
 

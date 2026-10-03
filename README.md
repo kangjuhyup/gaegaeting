@@ -74,6 +74,7 @@ import { DatabaseModule } from '@core/database';
 
 - [API 문서](https://kangjuhyup.github.io/gaegaeting/docs/#/)
 - [중앙 인증 클라이언트 계약](./docs/central-auth-client-integration.md)
+- [HTTP 요청 trace ID 계약](./docs/request-tracing.md)
 - [로컬 Envoy 인증 경로](./ops/local-envoy/README.md)
 - [Gaegaeting Auth 및 자체 Hosted UI 연결](./ops/local-auth/README.md)
 - [보안 취약점 신고](./SECURITY.md)
