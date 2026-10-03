@@ -2,7 +2,7 @@ import { FeedEntity } from "#app/feed/domain/model/feed";
 import { type IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { GetMyFeedQuery } from '../../port/query/get-my-feed.port.js';
 import { FeedRepositoryPort } from "#app/feed/domain/port/feed.repository.port";
-import { YYYYMMDD } from "@core/util";
+import { getDailyFeedDate } from "#app/feed/domain/daily-feed-policy";
 import { PetApiPort } from "#app/feed/domain/port/pet-api.port";
 import { UserApiPort } from "#app/feed/domain/port/user-api.port";
 import { ItemDetail } from "#app/feed/domain/model/vo/item-detail";
@@ -17,7 +17,7 @@ export class GetMyFeedHandler implements IQueryHandler<GetMyFeedQuery,FeedEntity
     ) {}
     
     async execute(query: GetMyFeedQuery): Promise<FeedEntity[]> {
-        const date = YYYYMMDD.today()
+        const date = getDailyFeedDate(new Date())
         const feedList = await this.feedRepository.getMyFeedWithItems(query.user.userId,date)    
         const feedWithUserPetList = await Promise.all(feedList.map(async feed => {
             if (feed.items) {

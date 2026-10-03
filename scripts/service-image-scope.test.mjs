@@ -9,6 +9,7 @@ import { affectedServices, pendingPullRequestFiles, planImages, services } from 
 const packages = [
   { dir: 'packages/account', name: 'account', dependencies: ['@core/auth', '@core/storage'] },
   { dir: 'packages/match', name: 'match', dependencies: ['@core/auth'] },
+  { dir: 'packages/chat', name: 'chat', dependencies: ['@core/auth'] },
   { dir: 'packages/gateway', name: 'gateway', dependencies: ['@core/assertion'] },
   { dir: 'packages/core/auth', name: '@core/auth', dependencies: ['@core/assertion'] },
   { dir: 'packages/core/assertion', name: '@core/assertion', dependencies: [] },
@@ -21,6 +22,7 @@ const plan = (files, domain = 'core', verifyService) => planImages({ files, pack
 
 test('Match feature publishes only Match; independent UI and Account changes stay scoped', () => {
   assert.deepEqual(plan(['packages/match/src/feed/status.ts'], 'match').publishServices, ['match']);
+  assert.deepEqual(plan(['packages/chat/src/message/domain/model/message.ts']).publishServices, ['chat']);
   assert.deepEqual(plan(['packages/account/src/user/model.ts'], 'account').services, ['account']);
   assert.deepEqual(plan(['packages/integration-ui/src/App.tsx']).publishServices, ['integration-ui']);
 });
@@ -33,7 +35,7 @@ test('shared UI and server changes select both UI images; gateway selects its tw
 });
 
 test('workspace dependencies select transitive consumers, including removed dependency edges', () => {
-  assert.deepEqual(affectedServices(['packages/core/assertion/src/key.ts'], packages), ['account', 'match', 'gateway', 'edge-authz']);
+  assert.deepEqual(affectedServices(['packages/core/assertion/src/key.ts'], packages), ['account', 'match', 'chat', 'gateway', 'edge-authz']);
   assert.deepEqual(affectedServices(['packages/core/storage/src/client.ts'], packages), ['account']);
   const changed = [...packages, { dir: 'packages/account', name: 'account', dependencies: [] }];
   assert.deepEqual(affectedServices(['packages/core/storage/src/client.ts'], changed), ['account']);

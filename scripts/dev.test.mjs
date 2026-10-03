@@ -20,9 +20,9 @@ test('injected connection and auth settings are preserved', () => {
 });
 
 test('unknown services fail before build or infrastructure access', () => {
-  const result = spawnSync(process.execPath, ['scripts/dev.mjs', 'account', 'chat'], { encoding: 'utf8' });
+  const result = spawnSync(process.execPath, ['scripts/dev.mjs', 'account', 'unknown'], { encoding: 'utf8' });
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /지원하지 않는 서비스: chat/);
+  assert.match(result.stderr, /지원하지 않는 서비스: unknown/);
 });
 
 for (const failure of [false, true]) {

@@ -26,20 +26,21 @@ export class SaveLikeHandler implements ICommandHandler<SaveLikeCommand,LikeEnti
             active : true
         })
         const savedLike = await this.likeRepository.saveLike(like)
-        const likeIn = await this.likeRepository.selectLikeInFromUserId(command.likeeId)
+        const reciprocalLikes = await this.likeRepository.selectLikeOutFromUserId(command.likeeId)
+        const reciprocal = reciprocalLikes.find(l => l.active && l.likeeId === command.likerId)
         // 상대방이 나를 LIKE 했던 적이 있을 경우 Pair 생성 이벤트 발생
-        if(likeIn.some(l => l.likerId === command.likerId)) {
+        if(reciprocal) {
             await this.eventPublisher.publish(Topics.MATCH_PAIR_CREATED_V1, new MatchPairCreatedV1Payload(
                 command.likerId,
                 command.likeeId,
-                like.id,
-                likeIn.find(l => l.likerId === command.likerId)!.id
+                savedLike.id,
+                reciprocal.id
             ));
         } else { // 없을 경우 FCM 메세지 발송
             await this.kafkaProducer.produce(Topics.NOTIFICATION_FCM_SEND_V1, new NotificationFcmSendV1Payload(
                 'like',
                 command.likeeId,
-                like.id
+                savedLike.id
             ));
         }
         return savedLike

@@ -31,6 +31,9 @@ export const createPinoLoggerOptions = (
       paths: [
         'req.headers.authorization',
         'req.headers.cookie',
+        'req.headers["x-gaegaeting-principal"]',
+        'req.body.body',
+        'req.body.variables.input.body',
         'req.body.ci',
         'req.body.di',
         'req.body.handoffId',
