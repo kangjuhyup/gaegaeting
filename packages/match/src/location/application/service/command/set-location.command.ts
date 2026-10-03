@@ -14,13 +14,11 @@ export class SetLocationHandler implements ICommandHandler<SetLocationCommand,Lo
     @Transactional()
     async execute(command: SetLocationCommand): Promise<LocationEntity> {
         const userLocation = await this.locationRepositoryPort.selectLocationFromUserId(command.user.userId);
-        if(userLocation) {
-            return userLocation;
-        }
-        const location = LocationEntity.of({
+        const location = userLocation ?? LocationEntity.of({
             latitude: command.location.latitude,
             longitude: command.location.longitude,
         },command.user.userId);
+        location.updateCoordinates(command.location.latitude, command.location.longitude);
         return await this.locationRepositoryPort.saveLocation(location)
     }
 }

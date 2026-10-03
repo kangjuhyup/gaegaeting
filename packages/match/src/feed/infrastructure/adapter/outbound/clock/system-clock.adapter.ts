@@ -1,15 +1,13 @@
 import { ClockPort } from '#app/feed/application/port/clock.port';
-import { KrDateClass } from '@core/util';
 import { Injectable } from '@nestjs/common';
 
 /**
- * 기본 Clock 구현: 한국 시간(KST) 기준 now() 제공
- * - YYYYMMDD.today()가 내부적으로 KrDateClass.now()를 쓰는 것과 동일한 기준
+ * 실제 현재 시각을 제공한다. 한국 시간대 계산은 일일 추천 정책에서 처리한다.
  */
 @Injectable()
 export class SystemClockAdapter implements ClockPort {
   now(): Date {
-    return KrDateClass.now();
+    return new Date();
   }
 }
 

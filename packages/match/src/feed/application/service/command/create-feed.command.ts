@@ -4,10 +4,10 @@ import { FeedEntity } from "#app/feed/domain/model/feed";
 import { FeedRepositoryPort } from "#app/feed/domain/port/feed.repository.port";
 import { FeedItemRepositoryPort } from "#app/feed/domain/port/feed-item.repository.port";
 import { LocationRepositoryPort } from "#app/location/domain/port/location.repostiory.port";
-import { YYYYMMDD } from "@core/util";
 import { Transactional } from "@core/database";
 import { FeedItemEntity } from "#app/feed/domain/model/feed-item";
 import { ClockPort } from "#app/feed/application/port/clock.port";
+import { getDailyFeedDate, getDailyFeedExpiresAt, getDailyFeedSlot } from "#app/feed/domain/daily-feed-policy";
 
 @CommandHandler(CreateFeedCommand)
 export class CreateFeedCommandHandler implements ICommandHandler<CreateFeedCommand,FeedEntity> {
@@ -22,9 +22,9 @@ export class CreateFeedCommandHandler implements ICommandHandler<CreateFeedComma
     @Transactional()
     async execute(command: CreateFeedCommand): Promise<FeedEntity> {
         const now = this.clock.now();
-        const today = new YYYYMMDD(now);
-        const currentSlot = this.getCurrentSlot(now);
-        const expiresAt = this.getSlotExpiresAt(now, currentSlot);
+        const today = getDailyFeedDate(now);
+        const currentSlot = getDailyFeedSlot(now);
+        const expiresAt = getDailyFeedExpiresAt(today);
         
         // 1. Feed 생성
         const feed = FeedEntity.of({
@@ -72,31 +72,4 @@ export class CreateFeedCommandHandler implements ICommandHandler<CreateFeedComma
         return savedFeed;
     }
     
-    private getCurrentSlot(now: Date): 1 | 2 | 3 {
-        const hour = now.getHours();
-        if (hour < 8) return 1;
-        if (hour < 16) return 2;
-        return 3;
-    }
-    
-    private getSlotExpiresAt(now: Date, slot: 1 | 2 | 3): Date {
-        const tomorrow = new Date(now.getTime());
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-        
-        switch (slot) {
-            case 1:
-                tomorrow.setHours(8, 0, 0, 0);
-                break;
-            case 2:
-                tomorrow.setHours(16, 0, 0, 0);
-                break;
-            case 3:
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                tomorrow.setHours(0, 0, 0, 0);
-                break;
-        }
-        
-        return tomorrow;
-    }
 }
