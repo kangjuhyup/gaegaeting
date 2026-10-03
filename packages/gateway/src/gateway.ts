@@ -5,12 +5,15 @@ import {
 } from '@apollo/gateway';
 import { ApolloServer, type BaseContext } from '@apollo/server';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
-import { randomUUID } from 'crypto';
+import { resolveTraceId, TRACE_ID_HEADER } from '@core/util/trace';
 import { createInternalAuthAssertion } from '@core/auth-assertion';
 import type { GatewayPrincipal } from './auth/authentication-middleware.js';
 
 type Subgraph = { name: string; url: string };
-type GatewayContext = BaseContext & { authenticatedPrincipal?: GatewayPrincipal };
+export type GatewayContext = BaseContext & {
+  traceId: string;
+  authenticatedPrincipal?: GatewayPrincipal;
+};
 
 class Logger {
   private name: string;
@@ -121,6 +124,7 @@ export class Gateway {
     const res = await fetch(url, {
       method: 'POST',
       headers: {
+        [TRACE_ID_HEADER]: resolveTraceId(),
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         // Apollo Server CSRF prevention 우회 (gateway 내부 호출은 브라우저 preflight가 없음)
@@ -162,16 +166,16 @@ export class Gateway {
         pollIntervalInMs: 10_000,
       }),
       buildService: ({ name, url }) =>
-        new RemoteGraphQLDataSource({
+        new RemoteGraphQLDataSource<GatewayContext>({
           url,
           willSendRequest: ({ request, context }) => {
-            this.logger.debug(`Sending request to ${name} at ${url}`);
-
             if (!request.http?.headers) return;
 
-            // trace-id 생성 및 전달
-            const traceId = (context?.headers?.['x-trace-id'] as string) || randomUUID();
-            request.http.headers.set('x-trace-id', traceId);
+            // Client operations share their context across all subgraph fetches.
+            // Schema polling has no inbound request and receives its own ID.
+            const traceId = context.traceId ??= resolveTraceId();
+            request.http.headers.set(TRACE_ID_HEADER, traceId);
+            this.logger.debug(`Sending request to ${name} at ${url} traceId=${traceId}`);
 
             // CSRF 우회용
             request.http.headers.set('X-Requested-With', 'XMLHttpRequest');

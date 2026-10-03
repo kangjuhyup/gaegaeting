@@ -15,6 +15,7 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src/'],
   moduleNameMapper: {
+    '^@core/util/trace$': '<rootDir>/../core/util/src/trace.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1',
     '^#app/(.*)$': '<rootDir>/src/$1',
     '^@core/database/mikro$': '<rootDir>/../core/database/src/mikro/index.ts',
