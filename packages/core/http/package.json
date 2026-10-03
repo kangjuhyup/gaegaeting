@@ -69,5 +69,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "@core/util": "workspace:*"
+  }
 }
