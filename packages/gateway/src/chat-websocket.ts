@@ -23,7 +23,7 @@ export function startChatWebsocket(server: Server, options: {
   const wss = new WebSocketServer({ noServer: true, maxPayload: 16 * 1024,
     handleProtocols: protocols => protocols.has('graphql-transport-ws') ? 'graphql-transport-ws' : false });
   const upgrade = (request: IncomingMessage, socket: import('node:stream').Duplex, head: Buffer) => {
-    const path = new URL(request.url ?? '/', 'http://gateway').pathname;
+    const path = new URL(request.url ?? '/', 'https://gateway.invalid').pathname;
     if (!['/gateway/graphql', '/graphql'].includes(path)) { socket.destroy(); return; }
     const origin = request.headers.origin;
     if (origin && !options.allowedOrigins.includes(origin)) {
