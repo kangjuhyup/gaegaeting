@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import branchPolicy from '../.github/scripts/branch-policy.cjs';
 
 export const serviceRoots = {
-  account: 'packages/account', match: 'packages/match',
+  account: 'packages/account', match: 'packages/match', chat: 'packages/chat',
   gateway: 'packages/gateway', 'edge-authz': 'packages/gateway',
   'integration-ui': 'packages/integration-ui', 'admin-ui': 'packages/admin-ui',
 };

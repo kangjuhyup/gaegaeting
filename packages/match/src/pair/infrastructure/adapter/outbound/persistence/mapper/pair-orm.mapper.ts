@@ -1,13 +1,14 @@
 import { PairEntity } from "#app/pair/domain/model/pair";
-import { PairOrmEntity } from "@core/database/mikro";
+import { ref, LikeOrmEntity, PairOrmEntity } from "@core/database/mikro";
 
 export class PairOrmMapper {
 
     static toDomain(orm : PairOrmEntity) : PairEntity {
+        if (!orm) return null;
         return PairEntity.of({
             leftUserId: orm.leftUserId,
             rightUserId: orm.rightUserId,
-            active: orm.active
+            active: orm.active, unmatchedAt: orm.unmatchedAt, likeAId: orm.likeAId, likeBId: orm.likeBId
         }).setPersistence(orm.id,orm.createdAt,orm.updatedAt)
     }
 
@@ -17,6 +18,9 @@ export class PairOrmMapper {
         orm.leftUserId = domain.leftUserId
         orm.rightUserId = domain.rightUserId
         orm.active = domain.active
+        orm.unmatchedAt = domain.unmatchedAt
+        orm.likeA = domain.likeAId ? ref(LikeOrmEntity, domain.likeAId) : null
+        orm.likeB = domain.likeBId ? ref(LikeOrmEntity, domain.likeBId) : null
         orm.createdAt = domain.createdAt
         orm.updatedAt = domain.updatedAt
         return orm

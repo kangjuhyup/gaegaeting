@@ -6,7 +6,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const available = ['account', 'match', 'gateway'];
+const available = ['account', 'match', 'chat', 'gateway'];
+const defaults = ['account', 'match', 'gateway'];
 
 export function serviceEnvironment(service, environment = process.env) {
   let local = {};
@@ -20,10 +21,10 @@ export function serviceEnvironment(service, environment = process.env) {
 
 export async function main(args = process.argv.slice(2)) {
   if (args.includes('--help')) {
-    console.log('사용법: pnpm dev [account match gateway] — 서비스별 .env 또는 주입된 환경변수로 앱 빌드 후 병렬 실행');
+    console.log('사용법: pnpm dev [account match chat gateway] — 서비스별 .env 또는 주입된 환경변수로 앱 빌드 후 병렬 실행');
     return;
   }
-  const services = [...new Set(args.length ? args : available)];
+  const services = [...new Set(args.length ? args : defaults)];
   const invalid = services.filter(service => !available.includes(service));
   if (invalid.length) throw new Error(`지원하지 않는 서비스: ${invalid.join(', ')} (가능: ${available.join(', ')})`);
   if (!process.env.npm_execpath) throw new Error('pnpm dev 명령으로 실행하세요.');

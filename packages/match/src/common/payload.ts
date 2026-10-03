@@ -98,4 +98,8 @@ export class ChatRoomCreatedV1Payload {
     get pairId() : number {
         return this._pairId;
     }
+
+    toJSON() {
+        return { leftUserId: this.leftUserId, rightUserId: this.rightUserId, pairId: this.pairId };
+    }
 }

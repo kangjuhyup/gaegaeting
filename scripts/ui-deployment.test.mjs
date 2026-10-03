@@ -78,6 +78,8 @@ test('photo storage is a single explicit HTTPS origin and never reveals credenti
     const res = await fetch(`http://127.0.0.1:${server.address().port}/profile`);
     assert.equal(res.status, 200);
     const csp = res.headers.get('content-security-policy');
+    assert.match(csp, /connect-src [^;]*wss:\/\/api.example.test(?: |;)/);
+    assert.doesNotMatch(csp, /wss:\/\/auth.example.test|wss:\/\/storage.example.test/);
     assert.match(csp, /img-src 'self' data: blob: https:\/\/storage.example.test;/);
     assert.match(csp, /connect-src [^;]*https:\/\/storage.example.test;/);
     assert.doesNotMatch(csp, /\*/);
@@ -104,6 +106,7 @@ test('independent admin app serves only its /admin routes and assets using its o
       assert.equal((await fetch(base + route)).status, 200, route);
     }
     const runtime = await (await fetch(base + '/admin/config.js')).text();
+    assert.doesNotMatch((await fetch(base + '/admin')).headers.get('content-security-policy'), /wss:/);
     assert.match(runtime, /"basePath":"\/admin"/);
     assert.match(runtime, /"clientId":"gaegaeting-admin-web"/);
     assert.equal(await (await fetch(base + '/admin/entry.js')).text(), 'admin asset');

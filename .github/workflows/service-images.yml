@@ -10,7 +10,7 @@ on:
         description: 'Also validate this image without publishing an unchanged artifact'
         type: choice
         default: affected
-        options: [affected, account, match, gateway, edge-authz, integration-ui, admin-ui]
+        options: [affected, account, match, chat, gateway, edge-authz, integration-ui, admin-ui]
 
 permissions:
   contents: read
@@ -27,6 +27,19 @@ jobs:
       pull-requests: read
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres-chat:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: chat_qa
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: ggt_chat_qa
+        ports: [5433:5432]
+        options: >-
+          --health-cmd "pg_isready -U chat_qa -d ggt_chat_qa"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CHAT_TEST_DATABASE_URL: postgresql://chat_qa@127.0.0.1:5433/ggt_chat_qa
     outputs:
       services: ${{ steps.scope.outputs.services }}
       publishServices: ${{ steps.scope.outputs.publishServices }}
@@ -62,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [account, match, gateway, edge-authz, integration-ui, admin-ui]
+        service: [account, match, chat, gateway, edge-authz, integration-ui, admin-ui]
     env:
       BUILD_IMAGE: ${{ contains(fromJSON(needs.verify.outputs.services), matrix.service) }}
       PUBLISH_IMAGE: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && contains(fromJSON(needs.verify.outputs.publishServices), matrix.service) }}

@@ -20,8 +20,13 @@ const serviceEntries = [
   'packages/gateway/dist/src/main.js',
   'packages/account/dist/src/main.js',
   'packages/match/dist/src/main.js',
+  'packages/chat/dist/src/main.js',
 ];
 const migrationEntries = [
+  {
+    entry: 'packages/chat/dist/src/migrations/migrate.js',
+    exportName: 'runChatMigrations',
+  },
   {
     entry: 'packages/account/dist/src/migrations/migrate.js',
     exportName: 'runAccountMigrations',
@@ -65,6 +70,8 @@ Object.assign(process.env, {
   STORAGE_SECRET_ACCESS_KEY: 'esm_smoke',
   ACCOUNT_SERVICE_HOST: 'http://127.0.0.1:3000',
   KAFKA_BROKERS: '127.0.0.1:9092',
+  CHAT_KAFKA_ENABLED: 'false',
+  MATCH_SERVICE_HOST: 'http://127.0.0.1:2801',
   NAVER_CLOUD_ACCESS_KEY: 'esm_smoke',
   NAVER_CLOUD_SECRET_KEY: 'esm_smoke',
   NAVER_CLOUD_SMS_SERVICE_ID: 'esm_smoke',

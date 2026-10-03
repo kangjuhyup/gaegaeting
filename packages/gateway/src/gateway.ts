@@ -59,7 +59,7 @@ export class Gateway {
     const services: Subgraph[] = [
       { name: 'account', url: accountServiceUrl },
       { name: 'match', url: matchServiceUrl },
-      // { name: 'chat', url: process.env.CHAT_SERVICE_URL },
+      ...(process.env.CHAT_SERVICE_URL ? [{ name: 'chat', url: process.env.CHAT_SERVICE_URL }] : []),
     ];
 
     return services.filter((s) => !!s.url);
