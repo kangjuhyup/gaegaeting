@@ -42,7 +42,14 @@ export class LocationOrmRepository implements LocationRepositoryPort {
         if (limit === 0) return [];
 
         const rows = await this.entityManager.getConnection().execute<Array<{ targetId: string }>>(
-          `SELECT location.user_id AS "targetId"
+          `SELECT nearby."targetId"
+             FROM (
+               SELECT location.user_id AS "targetId",
+                      6371000 * acos(least(1, greatest(-1,
+                        cos(radians(?)) * cos(radians(location.latitude))
+                        * cos(radians(location.longitude) - radians(?))
+                        + sin(radians(?)) * sin(radians(location.latitude))
+                      ))) AS distance
              FROM location
             WHERE location.user_id <> ?
               AND location.latitude BETWEEN ? AND ?
@@ -62,13 +69,14 @@ export class LocationOrmRepository implements LocationRepositoryPort {
                        AND f.date >= ?
                        AND fi.target_user_id = location.user_id
                   )
-            ORDER BY 6371000 * acos(least(1, greatest(-1,
-                       cos(radians(?)) * cos(radians(location.latitude))
-                       * cos(radians(location.longitude) - radians(?))
-                       + sin(radians(?)) * sin(radians(location.latitude))
-                     ))) ASC
+             ) nearby
+            WHERE nearby.distance <= ?
+            ORDER BY nearby.distance ASC, nearby."targetId" ASC
             LIMIT ${limit}`,
           [
+            latitude,
+            longitude,
+            latitude,
             userId,
             latitude - degLat,
             latitude + degLat,
@@ -78,9 +86,7 @@ export class LocationOrmRepository implements LocationRepositoryPort {
             userId,
             userId,
             d7,
-            latitude,
-            longitude,
-            latitude,
+            radius,
           ],
         );
 
