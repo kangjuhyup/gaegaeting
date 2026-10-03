@@ -32,6 +32,7 @@
     "@core/logger": "workspace:*",
     "@core/model": "workspace:*",
     "@core/redis": "workspace:*",
+    "@core/slack": "workspace:*",
     "@core/storage": "workspace:*",
     "@core/util": "workspace:*",
     "@nestjs/apollo": "^13.2.1",
