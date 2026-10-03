@@ -34,6 +34,11 @@ export class LocationEntity extends PersistenceEntity<string, ILocation> {
         return this.etc.longitude;
     }
 
+    updateCoordinates(latitude: number, longitude: number): void {
+        this.etc.latitude = latitude;
+        this.etc.longitude = longitude;
+    }
+
     /**
      * 도시명 반환
      */
