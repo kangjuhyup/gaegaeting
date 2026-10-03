@@ -8,6 +8,7 @@ export const envSpec = {
       .default("development"),
   },
   ACCOUNT_SERVICE_API_PORT: { joi: Joi.number().required() },
+  SLACK_WEBHOOK_URL: { joi: Joi.string().uri({ scheme: ['https'] }).allow('').optional() },
   INTERNAL_AUTH_ASSERTION_SECRET: { joi: Joi.string().min(32).required() },
   REGISTRATION_DI_HMAC_SECRET: {
     joi: Joi.string()
