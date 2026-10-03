@@ -1,5 +1,6 @@
 import type { FetchLike } from './oidc-discovery.js';
 import { AuthServiceUnavailableError } from './introspection-client.js';
+import { getTraceId, TRACE_ID_HEADER } from '@core/util/trace';
 
 export class AccountSubjectNotLinkedError extends Error {}
 
@@ -16,10 +17,14 @@ export class AccountSubjectClient {
   }): Promise<{ userId: string }> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+    const traceId = getTraceId();
     try {
       const response = await this.fetchImpl(this.endpoint, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: {
+          'content-type': 'application/json',
+          ...(traceId ? { [TRACE_ID_HEADER]: traceId } : {}),
+        },
         body: JSON.stringify({ tenant_id: input.tenantId, sub: input.subject }),
         signal: controller.signal,
       });
