@@ -1,5 +1,5 @@
 import { Module, type DynamicModule } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
+import { HttpModule, HttpService } from '@nestjs/axios';
 import { SlackService, type SlackConfig } from './service/slack.service.js';
 
 @Module({})
@@ -15,10 +15,10 @@ export class SlackModule {
         },
         {
           provide: SlackService,
-          useFactory: (httpService: any) => {
+          useFactory: (httpService: HttpService) => {
             return new SlackService(httpService, config);
           },
-          inject: [HttpModule],
+          inject: [HttpService],
         },
       ],
       exports: [SlackService],
@@ -42,10 +42,10 @@ export class SlackModule {
         },
         {
           provide: SlackService,
-          useFactory: (httpService: any, config: SlackConfig) => {
+          useFactory: (httpService: HttpService, config: SlackConfig) => {
             return new SlackService(httpService, config);
           },
-          inject: [HttpModule, 'SLACK_CONFIG'],
+          inject: [HttpService, 'SLACK_CONFIG'],
         },
       ],
       exports: [SlackService],
