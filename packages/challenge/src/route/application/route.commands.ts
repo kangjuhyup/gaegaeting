@@ -43,7 +43,7 @@ function details(input: RouteDetails): RouteDetails {
     description: textField(input.description, 2000),
     startPlace: textField(input.startPlace, 100, true),
     endPlace: textField(input.endPlace, 100, true),
-    tags: [...input.tags].sort(),
+    tags: [...input.tags].sort((left, right) => left.localeCompare(right, "en")),
   };
 }
 @Injectable()
