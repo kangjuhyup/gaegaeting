@@ -10,7 +10,7 @@ on:
         description: 'Also validate this image without publishing an unchanged artifact'
         type: choice
         default: affected
-        options: [affected, account, match, gateway, edge-authz, integration-ui, admin-ui]
+        options: [affected, account, match, payment, gateway, edge-authz, integration-ui, admin-ui]
 
 permissions:
   contents: read
@@ -62,7 +62,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [account, match, gateway, edge-authz, integration-ui, admin-ui]
+        service: [account, match, payment, gateway, edge-authz, integration-ui, admin-ui]
     env:
       BUILD_IMAGE: ${{ contains(fromJSON(needs.verify.outputs.services), matrix.service) }}
       PUBLISH_IMAGE: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && contains(fromJSON(needs.verify.outputs.publishServices), matrix.service) }}

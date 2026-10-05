@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import test from 'node:test';
-import { serviceEnvironment } from './dev.mjs';
+import { serviceEnvironment, gatewayEnvironment, subgraphEndpoints } from './dev.mjs';
 
 test('injected connection and auth settings are preserved', () => {
   const config = {
@@ -13,10 +13,22 @@ test('injected connection and auth settings are preserved', () => {
     DATABASE_NAME: 'account_local', OIDC_ISSUER: 'https://auth.example.test',
     OIDC_ALLOW_INSECURE_HTTP: 'false', NODE_ENV: 'test',
   };
-  for (const service of ['account', 'match', 'gateway']) {
+  for (const service of ['account', 'match', 'payment', 'gateway']) {
     const environment = serviceEnvironment(service, config);
     for (const [key, value] of Object.entries(config)) assert.equal(environment[key], value);
   }
+});
+
+test('selecting Payment connects Gateway and waits for Payment without changing unconfigured installations', () => {
+  const env = { PAYMENT_SERVICE_API_PORT: '12802', PAYMENT_SERVICE_URL: '' };
+  assert.equal(gatewayEnvironment(['account', 'match', 'gateway'], env).PAYMENT_SERVICE_URL, '');
+  assert.equal(subgraphEndpoints(gatewayEnvironment(['gateway'], env)).length, 2);
+  const enabled = gatewayEnvironment(['payment', 'gateway'], env);
+  assert.equal(enabled.PAYMENT_SERVICE_URL, 'http://127.0.0.1:12802/payment/graphql');
+  assert.deepEqual(subgraphEndpoints(enabled).at(-1), ['payment', enabled.PAYMENT_SERVICE_URL]);
+  const external = gatewayEnvironment(['payment', 'gateway'], { PAYMENT_SERVICE_URL: 'http://payment.example.test/payment/graphql' });
+  assert.equal(external.PAYMENT_SERVICE_URL, 'http://payment.example.test/payment/graphql');
+  assert.deepEqual(subgraphEndpoints(external).at(-1), ['payment', external.PAYMENT_SERVICE_URL]);
 });
 
 test('unknown services fail before build or infrastructure access', () => {
@@ -41,7 +53,7 @@ for (const failure of [false, true]) {
         setInterval(() => {}, 1000);
       }
     `);
-    const child = spawn(process.execPath, [path.join(root, 'scripts/dev.mjs'), 'account', 'match'], { stdio: 'pipe', env: { ...process.env, npm_execpath: path.join(root, 'pnpm.cjs') } });
+    const child = spawn(process.execPath, [path.join(root, 'scripts/dev.mjs'), 'account', 'match', 'payment'], { stdio: 'pipe', env: { ...process.env, npm_execpath: path.join(root, 'pnpm.cjs') } });
     const exited = new Promise(resolve => child.once('exit', code => resolve(code)));
     let output = '';
     child.stderr.on('data', data => { output += data; });
@@ -54,15 +66,15 @@ for (const failure of [false, true]) {
         let lines = [];
         for (let attempt = 0; attempt < 100; attempt++) {
           try { lines = readFileSync(events, 'utf8').trim().split('\n'); } catch {}
-          if (lines.filter(line => line.startsWith('pid:')).length === 2) break;
+          if (lines.filter(line => line.startsWith('pid:')).length === 3) break;
           await delay(50);
         }
         const pids = lines.filter(line => line.startsWith('pid:')).map(line => Number(line.slice(4)));
-        assert.equal(pids.length, 2, output);
+        assert.equal(pids.length, 3, output);
         const commands = lines.filter(line => line.startsWith('[')).map(JSON.parse);
         assert.deepEqual(commands[0], ['build:workspaces']);
         assert.equal(commands.slice(1).every(args => args[2] === 'start:prod'), true);
-        assert.equal(commands.length, 3, 'starting apps must not provision or migrate infrastructure');
+        assert.equal(commands.length, 4, 'starting apps must not provision or migrate infrastructure');
         child.kill('SIGTERM');
         assert.equal(await exited, 143);
         for (const pid of pids) assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' });

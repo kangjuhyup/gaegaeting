@@ -1,0 +1,70 @@
+{
+  "name": "payment",
+  "version": "0.0.1",
+  "description": "인앱결제 및 간식 지갑",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "packageManager": "pnpm@10.34.5",
+  "scripts": {
+    "build": "nest build",
+    "start:prod": "node dist/src/main.js",
+    "migration:run": "node dist/src/migrations/migrate.js",
+    "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest"
+  },
+  "dependencies": {
+    "@apollo/server": "^5.2.0",
+    "@apollo/subgraph": "^2.12.1",
+    "@apple/app-store-server-library": "3.1.0",
+    "@as-integrations/express5": "^1.1.2",
+    "@core/auth": "workspace:*",
+    "@core/database": "workspace:*",
+    "@core/util": "workspace:*",
+    "@nestjs/apollo": "^13.2.1",
+    "@nestjs/common": "^11.2.3",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.2.3",
+    "@nestjs/graphql": "^13.2.0",
+    "@nestjs/platform-express": "^11.2.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1",
+    "google-auth-library": "11.1.0",
+    "graphql": "^16.12.0",
+    "node-fetch": "2.7.0",
+    "pg": "^8.23.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "tslib": "^2.7.0",
+    "ulid": "^3.0.1"
+  },
+  "devDependencies": {
+    "@core/auth-assertion": "workspace:*",
+    "@jest/globals": "29.7.0",
+    "@nestjs/cli": "^11.0.24",
+    "@nestjs/schematics": "^11.1.0",
+    "@nestjs/testing": "^11.2.3",
+    "@types/express": "^4.17.17",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^20.3.1",
+    "@types/node-fetch": "2.6.13",
+    "@types/pg": "^8.23.1",
+    "jest": "^29.5.0",
+    "jest-util": "^30.0.5",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.1.0",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.8.3"
+  },
+  "imports": {
+    "#app/*": {
+      "types": "./src/*.ts",
+      "default": "./dist/src/*.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

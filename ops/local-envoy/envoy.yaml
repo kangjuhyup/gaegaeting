@@ -16,6 +16,18 @@ static_resources:
                     - name: gaegaeting
                       domains: ["*"]
                       routes:
+                        - match: { path: /payment/notifications/apple }
+                          route: { cluster: payment, timeout: 30s }
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
+                        - match: { path: /payment/notifications/google }
+                          route: { cluster: payment, timeout: 30s }
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
                         - match: { prefix: /gateway/graphql }
                           route: { cluster: gateway, timeout: 30s }
                         - match: { path: /health }
@@ -48,6 +60,17 @@ static_resources:
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
+    - name: payment
+      type: STRICT_DNS
+      connect_timeout: 1s
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: payment
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address: { address: host.docker.internal, port_value: 2802 }
     - name: gateway
       type: STRICT_DNS
       connect_timeout: 1s

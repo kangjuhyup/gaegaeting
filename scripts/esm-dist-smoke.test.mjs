@@ -20,8 +20,13 @@ const serviceEntries = [
   'packages/gateway/dist/src/main.js',
   'packages/account/dist/src/main.js',
   'packages/match/dist/src/main.js',
+  'packages/payment/dist/src/main.js',
 ];
 const migrationEntries = [
+  {
+    entry: 'packages/payment/dist/src/migrations/migrate.js',
+    exportName: 'runPaymentMigrations',
+  },
   {
     entry: 'packages/account/dist/src/migrations/migrate.js',
     exportName: 'runAccountMigrations',
@@ -46,6 +51,7 @@ Object.assign(process.env, {
   ACCOUNT_SERVICE_API_PORT: '0',
   AUTH_SERVICE_API_PORT: '0',
   MATCH_SERVICE_API_PORT: '0',
+  PAYMENT_SERVICE_API_PORT: '0',
   INTERNAL_AUTH_ASSERTION_SECRET: 'esm-smoke-secret-at-least-32-characters',
   DATABASE_HOST: '127.0.0.1',
   DATABASE_PORT: '5433',
