@@ -14,7 +14,7 @@ export class PaymentWorker implements OnModuleInit, OnModuleDestroy {
   onModuleInit() {
     if (!this.enabled) return;
     this.timer = setInterval(() => {
-      if (this.running) return;
+      if (this.running !== undefined) return;
       this.running = this.tick().finally(() => {
         this.running = undefined;
       });
