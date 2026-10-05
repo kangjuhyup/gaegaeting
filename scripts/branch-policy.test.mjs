@@ -4,6 +4,7 @@ import { mkdtempSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import policy from '../.github/scripts/branch-policy.cjs';
 
 function result(head, base, headRepo = 'kangjuhyup/gaegaeting') {
@@ -73,7 +74,7 @@ test('workflow command fails for rejected PRs and succeeds for permitted PRs', (
         head: { ref: head, repo: { full_name: 'kangjuhyup/gaegaeting' } },
         base: { ref: 'main', repo: { full_name: 'kangjuhyup/gaegaeting' } },
       } }));
-      const run = spawnSync(process.execPath, [new URL('../.github/scripts/branch-policy.cjs', import.meta.url).pathname], {
+      const run = spawnSync(process.execPath, [fileURLToPath(new URL('../.github/scripts/branch-policy.cjs', import.meta.url))], {
         env: { ...process.env, GITHUB_EVENT_PATH: eventPath }, encoding: 'utf8',
       });
       assert.equal(run.status, expectedExit, run.stderr);
@@ -91,6 +92,6 @@ test('main requires squash without disabling merge-based dev synchronization', (
   assert.equal(integration.rules.find(rule => rule.type === 'pull_request').parameters.allowed_merge_methods, undefined);
   for (const ruleset of [main, integration]) assert.deepEqual(ruleset.bypass_actors, []);
   const check = integration.rules.find(rule => rule.type === 'required_status_checks').parameters;
-  assert.deepEqual(check.required_status_checks, ['branch-policy', 'service-verification', 'image-account', 'image-match', 'image-gateway', 'image-edge-authz', 'image-integration-ui', 'image-admin-ui'].map(context => ({ context, integration_id: 15368 })));
+  assert.deepEqual(check.required_status_checks, ['branch-policy', 'service-verification', 'image-account', 'image-match', 'image-payment', 'image-gateway', 'image-edge-authz', 'image-integration-ui', 'image-admin-ui'].map(context => ({ context, integration_id: 15368 })));
   assert.equal(check.strict_required_status_checks_policy, true);
 });

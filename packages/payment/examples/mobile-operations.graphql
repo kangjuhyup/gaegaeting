@@ -1,0 +1,63 @@
+# 모바일 앱은 Gateway에 사용자 bearer token으로 요청한다.
+# provider: APPLE 또는 GOOGLE. 가격 표시는 스토어가 반환한 현지 가격을 사용한다.
+query SnackProducts($provider: PaymentProvider!) {
+  snackProducts(provider: $provider) {
+    id
+    productId
+    snackQuantity
+    priceKrw
+    provider
+    storeProductId
+    storeOfferId
+    eventName
+  }
+}
+
+# input 예: {"provider":"APPLE","offerId":"apple-snacks-10"}
+# 응답 id를 로컬에 보존한다. accountToken을 스토어 구매자 식별자로 전달한다.
+mutation PrepareSnackPurchase($input: PrepareSnackPurchaseInput!) {
+  prepareSnackPurchase(input: $input) {
+    id
+    provider
+    accountToken
+    offer {
+      id
+      snackQuantity
+      storeProductId
+      storeOfferId
+    }
+  }
+}
+
+# input: {"preparedId":"구매 준비 응답 id","proof":"스토어 구매 증거"}
+# Apple: 서명된 거래 JWS 또는 transaction ID. Google: purchase token.
+# 동일 거래 재시도 시 같은 preparedId를 사용한다.
+mutation ConfirmSnackPurchase($input: ConfirmSnackPurchaseInput!) {
+  confirmSnackPurchase(input: $input) {
+    id
+    state
+    snackQuantity
+  }
+}
+
+query MySnackWallet {
+  mySnackWallet {
+    balance
+    availableBalance
+    frozen
+  }
+}
+
+# after: 첫 페이지는 null, 다음 페이지는 직전 목록 마지막 id.
+query MySnackTransactions($after: String) {
+  mySnackTransactions(after: $after) {
+    id
+    provider
+    state
+    snackQuantity
+    priceKrw
+    amountMinor
+    currency
+    refundReview
+  }
+}

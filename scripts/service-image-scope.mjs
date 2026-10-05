@@ -4,12 +4,12 @@ import { pathToFileURL } from 'node:url';
 import branchPolicy from '../.github/scripts/branch-policy.cjs';
 
 export const serviceRoots = {
-  account: 'packages/account', match: 'packages/match',
+  account: 'packages/account', match: 'packages/match', payment: 'packages/payment',
   gateway: 'packages/gateway', 'edge-authz': 'packages/gateway',
   'integration-ui': 'packages/integration-ui', 'admin-ui': 'packages/admin-ui',
 };
 export const services = Object.keys(serviceRoots);
-const domainServices = { core: services, account: ['account'], match: ['match'], gateway: ['gateway', 'edge-authz'] };
+const domainServices = { core: services, account: ['account'], match: ['match'], payment: ['payment'], gateway: ['gateway', 'edge-authz'] };
 const sharedRuntime = new Set(['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.npmrc', '.nvmrc', '.dockerignore', 'tsconfig.json', 'scripts/build.mjs', 'deploy/docker/Dockerfile']);
 const git = (cwd, args) => execFileSync('/usr/bin/git', args, { cwd, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
 const diff = (cwd, range) => git(cwd, ['diff', '--name-only', '--no-renames', '-z', ...range]).split('\0').filter(Boolean);
