@@ -16,6 +16,7 @@ pnpm install --frozen-lockfile
 
 - account·match: 서비스별 `DATABASE_*`, Redis/Kafka 설정과 `INTERNAL_AUTH_ASSERTION_SECRET`을 구성합니다. account의 외부 API·스토리지 기능에는 해당 자격증명이 필요합니다.
 - gateway: OIDC issuer·introspection 자격증명, 내부 assertion secret과 account·match 주소를 구성합니다. [인증 연동 계약](./docs/central-auth-client-integration.md)을 참고하세요.
+- payment: `packages/payment/.env` 또는 프로세스 환경에 `DATABASE_*`, `INTERNAL_AUTH_ASSERTION_SECRET`, Apple·Google 구매 검증 설정을 구성합니다. 설정과 상품 연결은 [결제 서비스](./packages/payment/README.md)를 참고하세요.
 - 변수 이름과 필수 여부는 각 서비스의 환경 설정 코드가 기준입니다. 실제 비밀은 커밋하지 않습니다. [비밀정보 보안 지침](./docs/security/environment-and-secrets.md)을 따릅니다.
 
 ### 데이터베이스 마이그레이션
@@ -28,6 +29,8 @@ pnpm build:workspaces
 pnpm --filter account migration:run
 # match DB 환경변수가 주입된 셸에서
 pnpm --filter match migration:run
+# payment DB 환경변수가 주입된 셸에서
+pnpm --filter payment migration:run
 ```
 
 ### 로컬 서비스 실행
@@ -36,14 +39,18 @@ pnpm --filter match migration:run
 pnpm dev                # 빌드 → account·match 병렬 실행 → gateway 시작
 pnpm dev account match  # 선택한 서비스만 실행
 pnpm dev gateway        # 이미 실행 중인 account·match에 연결
+pnpm dev account match payment gateway # 결제 서비스를 함께 실행
 ```
 
 Gateway는 `ACCOUNT_SERVICE_URL`, `MATCH_SERVICE_URL`의 GraphQL 준비 상태를 기다립니다. 기본 주소는 아래와 같습니다.
+
+`payment`를 선택하면 Gateway의 `PAYMENT_SERVICE_URL`을 로컬 결제 주소로 연결하고 준비 상태를 기다립니다. 별도로 지정한 주소는 유지합니다. `PAYMENT_SERVICE_URL`을 주입하면 이미 실행 중인 결제 서비스에도 연결합니다. 기본 `pnpm dev` 구성에는 결제 서비스가 포함되지 않습니다.
 
 | 서비스 | GraphQL 주소 |
 | --- | --- |
 | account | `http://localhost:2800/account/graphql` |
 | match | `http://localhost:2801/match/graphql` |
+| payment | `http://localhost:2802/payment/graphql` |
 | gateway | `http://localhost:4000/gateway/graphql` |
 
 현재 소스를 빌드한 결과로 실행하므로 소스를 수정한 뒤에는 Ctrl+C 후 다시 실행합니다. Ctrl+C 또는 자식 서비스 종료 시 함께 시작한 로컬 프로세스도 종료합니다.
