@@ -10,7 +10,7 @@ on:
         description: 'Also validate this image without publishing an unchanged artifact'
         type: choice
         default: affected
-        options: [affected, account, match, payment, gateway, edge-authz, integration-ui, admin-ui]
+        options: [affected, account, match, payment, challenge, gateway, edge-authz, integration-ui, admin-ui]
 
 permissions:
   contents: read
@@ -27,6 +27,17 @@ jobs:
       pull-requests: read
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      challenge-db:
+        image: postgres:16-alpine@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
+        env:
+          POSTGRES_USER: challenge_test
+          POSTGRES_PASSWORD: challenge_test
+          POSTGRES_DB: challenge_test_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U challenge_test -d challenge_test_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     outputs:
       services: ${{ steps.scope.outputs.services }}
       publishServices: ${{ steps.scope.outputs.publishServices }}
@@ -50,6 +61,15 @@ jobs:
       - run: node --test scripts/*.test.mjs
       - run: pnpm test:ui
       - run: pnpm test:workspaces
+      - name: Verify challenge persistence and API authorization
+        env:
+          CHALLENGE_INTEGRATION_TESTS: '1'
+          DATABASE_HOST: '127.0.0.1'
+          DATABASE_PORT: '5432'
+          DATABASE_USERNAME: challenge_test
+          DATABASE_PASSWORD: challenge_test
+          DATABASE_NAME: challenge_test_ci
+        run: pnpm --filter challenge test --runInBand --runTestsByPath test/challenge-api.integration.spec.ts test/walking-api.integration.spec.ts
 
   images:
     name: image-${{ matrix.service }}
@@ -62,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [account, match, payment, gateway, edge-authz, integration-ui, admin-ui]
+        service: [account, match, payment, challenge, gateway, edge-authz, integration-ui, admin-ui]
     env:
       BUILD_IMAGE: ${{ contains(fromJSON(needs.verify.outputs.services), matrix.service) }}
       PUBLISH_IMAGE: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && contains(fromJSON(needs.verify.outputs.publishServices), matrix.service) }}

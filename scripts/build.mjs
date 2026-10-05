@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const projectRoot = fileURLToPath(new URL('..', import.meta.url));
 
 // 사용 가능한 서비스 목록
-const availableServices = ['account', 'match', 'chat'];
+const availableServices = ['account', 'match', 'challenge', 'chat'];
 
 // 명령행 인수에서 서비스 목록 추출
 const args = process.argv.slice(2);

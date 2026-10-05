@@ -2,11 +2,12 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 
 const [service, image] = process.argv.slice(2);
-const services = new Set(['account', 'match', 'payment', 'gateway', 'edge-authz', 'integration-ui', 'admin-ui']);
+const services = new Set(['account', 'match', 'payment', 'challenge', 'gateway', 'edge-authz', 'integration-ui', 'admin-ui']);
 if (!services.has(service) || !image || image.startsWith('-')) throw new Error('Usage: node scripts/smoke-service-image.mjs <service> <image>');
 const env = {
   NODE_ENV: 'test', ACCOUNT_SERVICE_API_PORT: '2800', MATCH_SERVICE_API_PORT: '2801', PAYMENT_SERVICE_API_PORT: '2802',
   INTERNAL_AUTH_ASSERTION_SECRET: 'image-test-secret-at-least-32-characters',
+  CHALLENGE_SERVICE_API_PORT: '2803', CHALLENGE_ACTIVITY_SECRET: 'image-test-activity-secret-at-least-32-characters',
   AUTH_BASE_URL: 'http://127.0.0.1:3010', AUTH_ISSUER: 'http://127.0.0.1:3010/t/gaegaeting/oidc',
   AUTH_TENANT_CODE: 'gaegaeting', AUTH_PROVISIONING_CLIENT_ID: 'image-test-client',
   AUTH_PROVISIONING_CLIENT_SECRET: 'image-test-secret-at-least-32-characters',
@@ -38,8 +39,8 @@ if (service === 'integration-ui' || service === 'admin-ui') {
   const entry = service === 'edge-authz' ? './dist/src/edge-authz/main.js' : './dist/src/main.js';
   const exported = service === 'edge-authz' ? 'startEdgeAuthz' : 'bootstrap';
   code = `const entry = await import(${JSON.stringify(entry)}); if (typeof entry[${JSON.stringify(exported)}] !== 'function') throw new Error('Missing runtime entry');`;
-  if (['account', 'match', 'payment'].includes(service)) {
-    const migrationExport = { account: 'runAccountMigrations', match: 'runMatchMigrations', payment: 'runPaymentMigrations' }[service];
+  if (['account', 'match', 'payment', 'challenge'].includes(service)) {
+    const migrationExport = { account: 'runAccountMigrations', match: 'runMatchMigrations', payment: 'runPaymentMigrations', challenge: 'runChallengeMigrations' }[service];
     code += `const migration = await import('./dist/src/migrations/migrate.js'); if (typeof migration.${migrationExport} !== 'function') throw new Error('Missing migration entry');`;
   }
 }

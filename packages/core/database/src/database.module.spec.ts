@@ -62,4 +62,8 @@ describe('DatabaseModule', () => {
       'At least one database schema is required',
     );
   });
+
+  it('rejects an empty service-owned entity set before connecting', () => {
+    expect(() => DatabaseModule.forEntitiesAsync(options, [])).toThrow('At least one database entity is required');
+  });
 });
