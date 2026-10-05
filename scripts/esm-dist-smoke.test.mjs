@@ -21,8 +21,10 @@ const serviceEntries = [
   'packages/account/dist/src/main.js',
   'packages/match/dist/src/main.js',
   'packages/payment/dist/src/main.js',
+  'packages/challenge/dist/src/main.js',
 ];
 const migrationEntries = [
+  { entry: 'packages/challenge/dist/src/migrations/migrate.js', exportName: 'runChallengeMigrations' },
   {
     entry: 'packages/payment/dist/src/migrations/migrate.js',
     exportName: 'runPaymentMigrations',
@@ -52,6 +54,7 @@ Object.assign(process.env, {
   AUTH_SERVICE_API_PORT: '0',
   MATCH_SERVICE_API_PORT: '0',
   PAYMENT_SERVICE_API_PORT: '0',
+  CHALLENGE_ACTIVITY_SECRET: 'esm-smoke-activity-secret-at-least-32-characters',
   INTERNAL_AUTH_ASSERTION_SECRET: 'esm-smoke-secret-at-least-32-characters',
   DATABASE_HOST: '127.0.0.1',
   DATABASE_PORT: '5433',

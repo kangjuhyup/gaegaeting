@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url';
 
-const USER_SCOPES = 'openid profile email account:read account:write match:read match:write tenant_roles';
+const USER_SCOPES = 'openid profile email account:read account:write match:read match:write challenge:read challenge:write tenant_roles';
 
 function required(env, name) {
   const value = env[name]?.trim();
@@ -78,7 +78,7 @@ export async function bootstrapGaegaetingAuth({ env = process.env, fetchImpl = f
   }
   const prefix = `/t/${tenantCode}/admin`;
   const scopes = await list(base, `${prefix}/scopes`, cookie, fetchImpl);
-  for (const name of ['offline_access', 'account:read', 'account:write', 'match:read', 'match:write', 'auth.user.provision', 'tenant_roles']) {
+  for (const name of ['offline_access', 'account:read', 'account:write', 'match:read', 'match:write', 'challenge:read', 'challenge:write', 'auth.user.provision', 'tenant_roles']) {
     const found = scopes.find(item => item.name === name);
     if (found && !found.enabled) throw new Error(`Disabled Auth scope: ${name}`);
     if (!found) await checked(await fetchImpl(`${base}${prefix}/scopes`, {

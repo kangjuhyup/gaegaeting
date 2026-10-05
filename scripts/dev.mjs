@@ -7,13 +7,17 @@ import { setTimeout as delay } from 'node:timers/promises';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const defaults = ['account', 'match', 'gateway'];
-const available = ['account', 'match', 'payment', 'gateway'];
+const available = ['account', 'match', 'payment', 'challenge', 'gateway'];
 
 export function gatewayEnvironment(services, environment = process.env) {
   const config = serviceEnvironment('gateway', environment);
   if (services.includes('payment') && !config.PAYMENT_SERVICE_URL) {
     const payment = serviceEnvironment('payment', environment);
     config.PAYMENT_SERVICE_URL = `http://127.0.0.1:${payment.PAYMENT_SERVICE_API_PORT || '2802'}/payment/graphql`;
+  }
+  if (services.includes('challenge') && !config.CHALLENGE_SERVICE_URL) {
+    const challenge = serviceEnvironment('challenge', environment);
+    config.CHALLENGE_SERVICE_URL = `http://127.0.0.1:${challenge.CHALLENGE_SERVICE_API_PORT || '2803'}/challenge/graphql`;
   }
   return config;
 }
@@ -24,6 +28,7 @@ export function subgraphEndpoints(environment) {
     ['match', environment.MATCH_SERVICE_URL || 'http://127.0.0.1:2801/match/graphql'],
   ];
   if (environment.PAYMENT_SERVICE_URL?.trim()) endpoints.push(['payment', environment.PAYMENT_SERVICE_URL]);
+  if (environment.CHALLENGE_SERVICE_URL?.trim()) endpoints.push(['challenge', environment.CHALLENGE_SERVICE_URL]);
   return endpoints;
 }
 
@@ -39,7 +44,7 @@ export function serviceEnvironment(service, environment = process.env) {
 
 export async function main(args = process.argv.slice(2)) {
   if (args.includes('--help')) {
-    console.log('사용법: pnpm dev [account match payment gateway] — 기본 account·match·gateway; 서비스별 .env 또는 주입된 환경변수로 앱 빌드 후 병렬 실행');
+    console.log('사용법: pnpm dev [account match payment challenge gateway] — 기본 account·match·gateway; 서비스별 .env 또는 주입된 환경변수로 앱 빌드 후 병렬 실행');
     return;
   }
   const services = [...new Set(args.length ? args : defaults)];

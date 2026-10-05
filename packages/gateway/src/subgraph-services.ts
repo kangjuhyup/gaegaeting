@@ -8,5 +8,8 @@ export function getSubgraphServices(environment = process.env): Subgraph[] {
   if (environment.PAYMENT_SERVICE_URL?.trim()) {
     services.push({ name: 'payment', url: environment.PAYMENT_SERVICE_URL });
   }
+  if (environment.CHALLENGE_SERVICE_URL?.trim()) {
+    services.push({ name: 'challenge', url: environment.CHALLENGE_SERVICE_URL });
+  }
   return services.filter(service => !!service.url);
 }

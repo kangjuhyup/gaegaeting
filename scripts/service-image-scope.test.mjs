@@ -10,6 +10,7 @@ const packages = [
   { dir: 'packages/account', name: 'account', dependencies: ['@core/auth', '@core/storage'] },
   { dir: 'packages/match', name: 'match', dependencies: ['@core/auth'] },
   { dir: 'packages/payment', name: 'payment', dependencies: ['@core/auth'] },
+  { dir: 'packages/challenge', name: 'challenge', dependencies: ['@core/auth'] },
   { dir: 'packages/gateway', name: 'gateway', dependencies: ['@core/assertion'] },
   { dir: 'packages/core/auth', name: '@core/auth', dependencies: ['@core/assertion'] },
   { dir: 'packages/core/assertion', name: '@core/assertion', dependencies: [] },
@@ -24,6 +25,7 @@ test('Match feature publishes only Match; independent UI and Account changes sta
   assert.deepEqual(plan(['packages/match/src/feed/status.ts'], 'match').publishServices, ['match']);
   assert.deepEqual(plan(['packages/account/src/user/model.ts'], 'account').services, ['account']);
   assert.deepEqual(plan(['packages/integration-ui/src/App.tsx']).publishServices, ['integration-ui']);
+  assert.deepEqual(plan(['packages/challenge/src/main.ts']).publishServices, ['challenge']);
 });
 
 test('shared UI and server changes select both UI images; gateway selects its two runtimes', () => {
@@ -34,7 +36,7 @@ test('shared UI and server changes select both UI images; gateway selects its tw
 });
 
 test('workspace dependencies select transitive consumers, including removed dependency edges', () => {
-  assert.deepEqual(affectedServices(['packages/core/assertion/src/key.ts'], packages), ['account', 'match', 'payment', 'gateway', 'edge-authz']);
+  assert.deepEqual(affectedServices(['packages/core/assertion/src/key.ts'], packages), ['account', 'match', 'payment', 'challenge', 'gateway', 'edge-authz']);
   assert.deepEqual(affectedServices(['packages/core/storage/src/client.ts'], packages), ['account']);
   const changed = [...packages, { dir: 'packages/account', name: 'account', dependencies: [] }];
   assert.deepEqual(affectedServices(['packages/core/storage/src/client.ts'], changed), ['account']);

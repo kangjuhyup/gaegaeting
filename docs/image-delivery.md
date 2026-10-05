@@ -4,7 +4,7 @@
 
 `Service images` GitHub Actions는 전체 workspace 빌드, Node·UI 계약 테스트와 Jest 테스트를 수행한 뒤 **해당 기능이 바꾼 서비스만** Docker 빌드·런타임·멀티 플랫폼 검증을 수행합니다. 검증을 통과한 main push와 main 수동 실행은 선택된 서비스만 GHCR에 게시합니다. PR 코드는 이미지를 게시하지 않습니다.
 
-`scripts/service-image-scope.mjs`는 브랜치 도메인, 변경 파일과 production workspace 의존성으로 대상을 선택합니다. main push는 병합된 release PR의 브랜치에서 도메인을 확인합니다. Match 소스는 Match만, Account는 Account만, Gateway는 gateway/edge-authz를 선택합니다. 공통 UI와 UI HTTP 서버는 두 UI를 선택하고, core 라이브러리는 직접·간접 소비 서비스만 선택합니다. 공통 lockfile·런타임·빌드 설정은 전체 서비스에 영향을 주므로 core 릴리즈에서 처리합니다. 다른 도메인 런타임 변경을 섞으면 CI가 거부합니다.
+`scripts/service-image-scope.mjs`는 브랜치 도메인, 변경 파일과 production workspace 의존성으로 대상을 선택합니다. main push는 병합된 release PR의 브랜치에서 도메인을 확인합니다. Match 소스는 Match만, Account는 Account만, Challenge는 Challenge만, Gateway는 gateway/edge-authz를 선택합니다. 공통 UI와 UI HTTP 서버는 두 UI를 선택하고, core 라이브러리는 직접·간접 소비 서비스만 선택합니다. Challenge는 독립 서비스이며 현재 브랜치 정책에서는 core 릴리즈로 전달합니다. 공통 lockfile·런타임·빌드 설정은 전체 서비스에 영향을 주므로 core 릴리즈에서 처리합니다. 다른 도메인 런타임 변경을 섞으면 CI가 거부합니다.
 
 PR은 해당 PR의 변경 중 아직 main과 다른 변경만 검사하며, main에서 가져온 기존 릴리즈와 뒤처진 도메인 브랜치의 역방향 차이는 제외합니다. 문서·테스트·CI 설정만 바꾸거나 main을 dev에 동기화하면 이미지를 만들거나 게시하지 않습니다. 기존 `image-*` 필수 검사 이름은 유지되며 대상이 아닌 항목은 Docker 작업 없이 완료됩니다. 전체 workspace 검증은 유지됩니다. 수동 실행의 `verify-service`는 변경 없는 이미지 한 개를 추가 검증할 수 있으며, 추가 검증만으로 그 이미지를 게시하지 않습니다.
 
@@ -12,6 +12,7 @@ PR은 해당 PR의 변경 중 아직 main과 다른 변경만 검사하며, main
 | --- | --- | --- | --- |
 | `ghcr.io/kangjuhyup/gaegaeting/account` | 2800 | `/account/health` | `node dist/src/main.js` |
 | `ghcr.io/kangjuhyup/gaegaeting/match` | 2801 | `/match/health` | `node dist/src/main.js` |
+| `ghcr.io/kangjuhyup/gaegaeting/challenge` | 2802 | `/challenge/health` | `node dist/src/main.js` |
 | `ghcr.io/kangjuhyup/gaegaeting/gateway` | 4000 | `/gateway/health` | `node dist/src/main.js` |
 | `ghcr.io/kangjuhyup/gaegaeting/edge-authz` | 4010 | `/health` | `node dist/src/edge-authz/main.js` |
 | `ghcr.io/kangjuhyup/gaegaeting/integration-ui` | 8080 | `/health` | `node server.mjs` |
@@ -32,14 +33,15 @@ docker buildx build --load --target account \
 1. [브랜치 규칙](branch-policy.md)에 따라 작업을 dev에 통합하고 release 브랜치를 생성합니다. release → main은 squash합니다. 공통 자동화와 최초 통합 릴리즈는 `feat/core/image-delivery → dev/core → release/core/1.0.0 → main`을 사용합니다.
 2. 해당 기능의 선택된 이미지와 검증 작업 성공을 확인합니다. GHCR가 private이면 k3s에 최소 read:packages 권한의 pull secret을 별도로 공급합니다.
 3. k3s 저장소에서 **해당 기능의 서비스 digest만** 바꿉니다. 다른 서비스는 기존 검증된 소스·digest를 유지합니다. 환경별 ConfigMap·Doppler Secret·Service·NetworkPolicy·Ingress 변경도 실제 필요한 범위로 제한합니다. 비밀 값은 이 저장소에 기록하지 않습니다.
-4. 마이그레이션 파일이 바뀌면 대상 Account/Match DB 연결 환경변수로 이미지의 `/app`에서 `node dist/src/migrations/migrate.js`를 별도 Job으로 실행합니다. 성공 전에 API를 rollout하지 않습니다. 파일 변경이 없으면 기존 완료된 Job과 schema artifact를 유지하며, k3s의 `migrationImages`에서 serving image와 구분해 검증합니다. 마이그레이션은 Pod 시작에서 자동 실행하지 않습니다.
-5. account/match를 먼저 준비한 후 gateway를 rollout합니다. Gateway는 두 subgraph의 schema composition이 성공해야 포트를 엽니다. Edge 모드에서는 ext_authz가 정상 작동한 다음 외부 ingress를 연결합니다.
+4. 마이그레이션 파일이 바뀌면 대상 Account/Match/Challenge 전용 DB 연결 환경변수로 해당 이미지의 `/app`에서 `node dist/src/migrations/migrate.js`를 별도 Job으로 실행합니다. 성공 전에 API를 rollout하지 않습니다. 파일 변경이 없으면 기존 완료된 Job과 schema artifact를 유지하며, k3s의 `migrationImages`에서 serving image와 구분해 검증합니다. 마이그레이션은 Pod 시작에서 자동 실행하지 않습니다.
+5. account/match와 연결할 challenge를 먼저 준비한 후 gateway를 rollout합니다. Gateway는 설정한 subgraph 전체의 schema composition이 성공해야 포트를 엽니다. Edge 모드에서는 ext_authz가 정상 작동한 다음 외부 ingress를 연결합니다.
 6. 상태 검사, 인증 실패의 401/403, 인증 의존성 장애의 503, 등록 사용자 토큰의 GraphQL 호출, 본인인증·가입·로그인과 redirect/CORS/cookie를 실제 환경에서 검증합니다. 실패 시 이전 digest를 복구하며, DB의 역마이그레이션은 별도 판단합니다.
 
 ## 서비스 간 계약
 
-- account/match는 같은 `INTERNAL_AUTH_ASSERTION_SECRET`을 gateway와 공유합니다. 서비스 audience는 각각 `account`, `match`, issuer는 `gaegaeting-gateway`입니다. subgraph와 내부 subject-resolution endpoint는 외부에 공개하지 않습니다.
+- account/match/challenge는 같은 `INTERNAL_AUTH_ASSERTION_SECRET`을 gateway와 공유합니다. 서비스 audience는 각각 `account`, `match`, `challenge`, issuer는 `gaegaeting-gateway`입니다. subgraph와 내부 subject-resolution endpoint는 외부에 공개하지 않습니다.
 - Gateway에 `ACCOUNT_SERVICE_URL`, `MATCH_SERVICE_URL`, `ACCOUNT_SUBJECT_RESOLUTION_URL`을 namespace에 맞는 DNS로 명시합니다. `GATEWAY_AUTH_MODE=direct`면 OIDC introspection을 Gateway가 수행하고, `edge`면 검증된 `EDGE_AUTH_ASSERTION_SECRET` assertion을 요구합니다. Edge 모드의 public GraphQL은 반드시 ext_authz를 통과해야 합니다.
+- Challenge를 연결할 때는 `CHALLENGE_SERVICE_URL`을 추가합니다. Challenge 전용 DB와 별도 서버 간 비밀 `CHALLENGE_ACTIVITY_SECRET`, Auth의 `challenge:read`·`challenge:write` 허용 scope를 준비합니다. `/challenge/internal/v1`은 내부 서버에서만 접근하게 하며, 원본 산책·일기는 Challenge 안에서 실적과 같은 트랜잭션으로 반영합니다. `ACCOUNT_SERVICE_URL`과 전용 비공개 사진 버킷의 `STORAGE_*`도 준비합니다. 탈퇴 전달 작업은 [Challenge 연동 계약](../packages/challenge/README.md)에 맞춰 Account에서 연결합니다.
 - Edge-authz의 OIDC issuer/client secret, Gateway/Edge의 API audience `OIDC_API_AUDIENCE` (기본 `https://api.gaegaeting.app`), 실제 Auth tenant/client/scope/resource 등록을 일치시킵니다. 운영은 명시적 HTTPS issuer가 필요합니다.
 - account에는 `AUTH_BASE_URL`, `AUTH_ISSUER`, `AUTH_TENANT_CODE`, 전용 provisioning client/secret, 등록 DI HMAC/service token 및 envSpec에 정의된 DB·Redis·스토리지·외부 API 값을 주입합니다. `AUTH_ISSUER`는 Gateway의 OIDC issuer와 동일해야 합니다. Match에는 DB·Account 주소·Kafka broker를 주입합니다.
 - Account의 기존 subject-resolution은 등록된 사용자만 허용합니다. 임의 Auth 사용자 로그인만으로 Account 사용자가 자동 생성되지 않습니다.

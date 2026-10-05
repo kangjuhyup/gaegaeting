@@ -1,0 +1,361 @@
+# Generated from the running Challenge federation subgraph.
+schema
+  @link(url: "https://specs.apollo.dev/link/v1.0")
+{
+  query: Query
+  mutation: Mutation
+}
+
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@composeDirective", "@extends", "@external", "@inaccessible", "@interfaceObject", "@key", "@override", "@provides", "@requires", "@shareable", "@tag"])
+
+directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+directive @key(fields: federation__FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
+
+directive @requires(fields: federation__FieldSet!) on FIELD_DEFINITION
+
+directive @provides(fields: federation__FieldSet!) on FIELD_DEFINITION
+
+directive @external(reason: String) on OBJECT | FIELD_DEFINITION
+
+directive @tag(name: String!) repeatable on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION | SCHEMA
+
+directive @extends on OBJECT | INTERFACE
+
+directive @shareable repeatable on OBJECT | FIELD_DEFINITION
+
+directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+
+directive @override(from: String!) on FIELD_DEFINITION
+
+directive @composeDirective(name: String) repeatable on SCHEMA
+
+directive @interfaceObject on OBJECT
+
+type WalkingPhoto {
+  id: ID!
+  status: String!
+  url: String
+  expiresIn: Int!
+}
+
+type WalkingPhotoUpload {
+  id: ID!
+  uploadUrl: String!
+  expiresIn: Int!
+  maxBytes: Int!
+  maxDimension: Int!
+}
+
+type WalkingRouteDiaryReview {
+  id: ID!
+  authorName: String!
+  content: String!
+  mood: String
+  walkDate: String!
+  photos: [WalkingPhoto!]!
+}
+
+type MyWalkingDiary {
+  id: ID!
+  authorName: String!
+  content: String!
+  mood: String
+  walkDate: String!
+  photos: [WalkingPhoto!]!
+  walkId: ID!
+  routeId: ID
+  visibility: String!
+  revision: Int!
+  savedAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type WalkingCoordinate {
+  latitude: Float!
+  longitude: Float!
+}
+
+type WalkingTrackPoint {
+  latitude: Float!
+  longitude: Float!
+  recordedAt: String!
+  accuracyMeters: Float!
+  segment: Int!
+}
+
+type WalkingSegment {
+  startedAt: String!
+  endedAt: String
+}
+
+type WalkingPet {
+  id: Int!
+  name: String!
+}
+
+type WalkingRouteSnapshot {
+  id: ID!
+  title: String!
+  path: [WalkingCoordinate!]!
+}
+
+type WalkingRecord {
+  id: ID!
+  requestId: String!
+  state: String!
+  pets: [WalkingPet!]!
+  route: WalkingRouteSnapshot
+  points: [WalkingTrackPoint!]!
+  segments: [WalkingSegment!]!
+  startedAt: DateTime!
+  endedAt: DateTime
+  finishedAt: DateTime
+  distanceMeters: Int!
+  coverage: Float!
+  completed: Boolean!
+  revision: Int!
+  policyVersion: Int!
+}
+
+type WalkingPassportStamp {
+  routeId: ID!
+  title: String!
+  completedCount: Int!
+}
+
+type WalkingRoute {
+  id: ID!
+  title: String!
+  description: String!
+  startPlace: String!
+  endPlace: String!
+  authorName: String!
+  petNames: [String!]!
+  path: [WalkingCoordinate!]!
+  tags: [String!]!
+  distanceMeters: Int!
+  durationSeconds: Int!
+  isLoop: Boolean!
+  nearbyMeters: Int
+  isMine: Boolean!
+  bookmarked: Boolean!
+  walkerCount: Int!
+}
+
+type MyWalkingRoute {
+  id: ID!
+  title: String!
+  description: String!
+  startPlace: String!
+  endPlace: String!
+  authorName: String!
+  petNames: [String!]!
+  path: [WalkingCoordinate!]!
+  tags: [String!]!
+  distanceMeters: Int!
+  durationSeconds: Int!
+  isLoop: Boolean!
+  nearbyMeters: Int
+  isMine: Boolean!
+  bookmarked: Boolean!
+  walkerCount: Int!
+  sourceWalkId: ID!
+  status: String!
+  reviewReason: String
+  revision: Int!
+}
+
+type WalkingRouteReviewItem {
+  id: ID!
+  title: String!
+  description: String!
+  startPlace: String!
+  endPlace: String!
+  tags: [String!]!
+  path: [WalkingCoordinate!]!
+  status: String!
+  revision: Int!
+}
+
+type WalkingRouteReport {
+  id: ID!
+  routeId: ID!
+  reason: String!
+  detail: String!
+}
+
+type ChallengeDefinition {
+  kind: ChallengeKind!
+  title: String!
+  description: String!
+  durationDays: Int!
+  targetCount: Int!
+  rewardCode: String!
+  policyVersion: Int!
+}
+
+enum ChallengeKind {
+  NEIGHBORHOOD_EXPLORER
+  WALK_DIARY
+}
+
+type ChallengeParticipation {
+  id: ID!
+  kind: ChallengeKind!
+  title: String!
+  targetCount: Int!
+  progressCount: Int!
+  status: ChallengeStatus!
+  joinedAt: DateTime!
+  endsAt: DateTime!
+  settlesAt: DateTime!
+  cancelledAt: DateTime
+  earnedRewardCode: String
+  policyVersion: Int!
+}
+
+enum ChallengeStatus {
+  ACTIVE
+  VERIFYING
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+type Query {
+  myWalk(id: ID!): WalkingRecord!
+  myCurrentWalk: WalkingRecord
+  myWalks(limit: Int! = 20, offset: Int! = 0): [WalkingRecord!]!
+  myWalkingPassport: [WalkingPassportStamp!]!
+  myWalkingDiary(id: ID!): MyWalkingDiary!
+  myWalkDiary(walkId: ID!): MyWalkingDiary
+  myWalkingDiaries(limit: Int! = 20, offset: Int! = 0): [MyWalkingDiary!]!
+  walkingRouteReviews(routeId: ID!, limit: Int! = 20, offset: Int! = 0): [WalkingRouteDiaryReview!]!
+  myWalkingPhotos(walkId: ID!): [WalkingPhoto!]!
+  walkingRoute(id: ID!): WalkingRoute!
+  walkingRoutes(input: WalkingRouteSearchInput!): [WalkingRoute!]!
+  myWalkingRoute(id: ID!): MyWalkingRoute!
+  myWalkingRoutes(limit: Int! = 20, offset: Int! = 0): [MyWalkingRoute!]!
+  myBookmarkedWalkingRoutes(limit: Int! = 20, offset: Int! = 0): [WalkingRoute!]!
+  pendingWalkingRoutes(limit: Int! = 20, offset: Int! = 0): [WalkingRouteReviewItem!]!
+  walkingRouteReviewItem(id: ID!): WalkingRouteReviewItem!
+  walkingRouteReports(limit: Int! = 20, offset: Int! = 0): [WalkingRouteReport!]!
+  challenges: [ChallengeDefinition!]!
+  myChallenges(limit: Int! = 20): [ChallengeParticipation!]!
+  myChallenge(id: ID!): ChallengeParticipation!
+  _service: _Service!
+}
+
+input WalkingRouteSearchInput {
+  latitude: Float!
+  longitude: Float!
+  radiusMeters: Int! = 3000
+  tags: [String!]! = []
+  isLoop: Boolean
+  minDistanceMeters: Int
+  maxDistanceMeters: Int
+  limit: Int! = 20
+  offset: Int! = 0
+}
+
+type Mutation {
+  startWalk(input: StartWalkInput!): WalkingRecord!
+  appendWalkPoints(input: AppendWalkPointsInput!): WalkingRecord!
+  setWalkPaused(id: ID!, paused: Boolean!): WalkingRecord!
+  finishWalk(id: ID!, endedAt: DateTime!): WalkingRecord!
+  deleteWalk(id: ID!): Boolean!
+  saveWalkingDiary(input: SaveWalkingDiaryInput!): MyWalkingDiary!
+  deleteWalkingDiary(id: ID!): Boolean!
+  beginWalkingPhotoUpload(walkId: ID!): WalkingPhotoUpload!
+  completeWalkingPhotoUpload(id: ID!): WalkingPhoto!
+  deleteWalkingPhoto(id: ID!): Boolean!
+  createWalkingRoute(input: CreateWalkingRouteInput!): MyWalkingRoute!
+  updateWalkingRoute(id: ID!, revision: Int!, input: WalkingRouteDetailsInput!): MyWalkingRoute!
+  submitWalkingRoute(id: ID!): MyWalkingRoute!
+  withdrawWalkingRoute(id: ID!): MyWalkingRoute!
+  bookmarkWalkingRoute(id: ID!, saved: Boolean!): Boolean!
+  reportWalkingRoute(id: ID!, reason: String!, detail: String! = ""): Boolean!
+  reviewWalkingRoute(id: ID!, revision: Int!, decision: String!, reason: String! = ""): Boolean!
+  resolveWalkingRouteReports(id: ID!): Boolean!
+  joinChallenge(input: JoinChallengeInput!): ChallengeParticipation!
+  cancelChallenge(id: ID!): Boolean!
+}
+
+input StartWalkInput {
+  requestId: String!
+  petIds: [Int!]!
+  routeId: ID
+}
+
+input AppendWalkPointsInput {
+  walkId: ID!
+  fromIndex: Int!
+  points: [WalkingTrackPointInput!]!
+}
+
+input WalkingTrackPointInput {
+  latitude: Float!
+  longitude: Float!
+  recordedAt: String!
+  accuracyMeters: Float!
+  segment: Int!
+}
+
+input SaveWalkingDiaryInput {
+  walkId: ID!
+  expectedRevision: Int!
+  content: String! = ""
+  mood: String
+  photoIds: [ID!]! = []
+  visibility: String! = "PRIVATE"
+}
+
+input CreateWalkingRouteInput {
+  requestId: String!
+  walkId: ID!
+  fromIndex: Int!
+  toIndex: Int!
+  details: WalkingRouteDetailsInput!
+}
+
+input WalkingRouteDetailsInput {
+  title: String!
+  description: String!
+  startPlace: String!
+  endPlace: String!
+  tags: [String!]! = []
+}
+
+input JoinChallengeInput {
+  kind: ChallengeKind!
+  requestId: String!
+}
+
+enum link__Purpose {
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+
+  """
+  `EXECUTION` features provide metadata necessary for operation execution.
+  """
+  EXECUTION
+}
+
+scalar link__Import
+
+scalar federation__FieldSet
+
+scalar _Any
+
+type _Service {
+  sdl: String
+}

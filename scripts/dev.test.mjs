@@ -13,7 +13,7 @@ test('injected connection and auth settings are preserved', () => {
     DATABASE_NAME: 'account_local', OIDC_ISSUER: 'https://auth.example.test',
     OIDC_ALLOW_INSECURE_HTTP: 'false', NODE_ENV: 'test',
   };
-  for (const service of ['account', 'match', 'payment', 'gateway']) {
+  for (const service of ['account', 'match', 'payment', 'challenge', 'gateway']) {
     const environment = serviceEnvironment(service, config);
     for (const [key, value] of Object.entries(config)) assert.equal(environment[key], value);
   }
@@ -53,7 +53,7 @@ for (const failure of [false, true]) {
         setInterval(() => {}, 1000);
       }
     `);
-    const child = spawn(process.execPath, [path.join(root, 'scripts/dev.mjs'), 'account', 'match', 'payment'], { stdio: 'pipe', env: { ...process.env, npm_execpath: path.join(root, 'pnpm.cjs') } });
+    const child = spawn(process.execPath, [path.join(root, 'scripts/dev.mjs'), 'account', 'match', 'payment', 'challenge'], { stdio: 'pipe', env: { ...process.env, npm_execpath: path.join(root, 'pnpm.cjs') } });
     const exited = new Promise(resolve => child.once('exit', code => resolve(code)));
     let output = '';
     child.stderr.on('data', data => { output += data; });
@@ -66,15 +66,15 @@ for (const failure of [false, true]) {
         let lines = [];
         for (let attempt = 0; attempt < 100; attempt++) {
           try { lines = readFileSync(events, 'utf8').trim().split('\n'); } catch {}
-          if (lines.filter(line => line.startsWith('pid:')).length === 3) break;
+          if (lines.filter(line => line.startsWith('pid:')).length === 4) break;
           await delay(50);
         }
         const pids = lines.filter(line => line.startsWith('pid:')).map(line => Number(line.slice(4)));
-        assert.equal(pids.length, 3, output);
+        assert.equal(pids.length, 4, output);
         const commands = lines.filter(line => line.startsWith('[')).map(JSON.parse);
         assert.deepEqual(commands[0], ['build:workspaces']);
         assert.equal(commands.slice(1).every(args => args[2] === 'start:prod'), true);
-        assert.equal(commands.length, 4, 'starting apps must not provision or migrate infrastructure');
+        assert.equal(commands.length, 5, 'starting apps must not provision or migrate infrastructure');
         child.kill('SIGTERM');
         assert.equal(await exited, 143);
         for (const pid of pids) assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' });
@@ -85,3 +85,11 @@ for (const failure of [false, true]) {
     }
   });
 }
+
+
+test('Challenge and Payment use separate local ports and join the configured gateway', () => {
+  const config = gatewayEnvironment(['account', 'match', 'payment', 'challenge', 'gateway'], {});
+  assert.equal(config.PAYMENT_SERVICE_URL, 'http://127.0.0.1:2802/payment/graphql');
+  assert.equal(config.CHALLENGE_SERVICE_URL, 'http://127.0.0.1:2803/challenge/graphql');
+  assert.deepEqual(subgraphEndpoints(config).map(([name]) => name), ['account', 'match', 'payment', 'challenge']);
+});
