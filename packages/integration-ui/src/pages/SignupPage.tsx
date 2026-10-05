@@ -1,8 +1,13 @@
-import { publicConfig } from "@gaegaeting/ui-common";
 import { useState, type FormEvent } from "react";
 import { graphql, errorMessage } from "@gaegaeting/ui-common";
 import type { AppConfig, SignupDraft } from "../types.js";
-import { Alert, Button, Field, PageTitle, Spinner } from "@gaegaeting/ui-common";
+import {
+  Alert,
+  Button,
+  Field,
+  PageTitle,
+  Spinner,
+} from "@gaegaeting/ui-common";
 
 export function SignupPage({
   config,
@@ -11,7 +16,6 @@ export function SignupPage({
   config: AppConfig;
   onLogin: () => void;
 }) {
-  const suffix = crypto.randomUUID().slice(0, 8);
   const [form, setForm] = useState<SignupDraft & { password: string }>({
     username: "",
     password: "",
@@ -21,10 +25,7 @@ export function SignupPage({
     gender: "FEMALE",
     phoneNumber: "",
   });
-  const [mockValues, setMockValues] = useState({
-    providerTransactionId: `mock-${suffix}`,
-    ci: `ci-${suffix}`,
-    di: `di-${suffix}`,
+  const [terms, setTerms] = useState({
     termsVersion: "2026-09-01",
     termsAgreed: false,
   });
@@ -60,8 +61,7 @@ export function SignupPage({
         `,
         {
           input: {
-            ...mockValues,
-            adult,
+            ...terms,
             username: form.username,
             password: form.password,
             email: form.email,
@@ -69,8 +69,6 @@ export function SignupPage({
             name: form.name,
             birthDate: form.birthDate,
             gender: form.gender,
-            tenantId: publicConfig.tenantCode,
-            clientId: config.clientId,
           },
         },
       );
@@ -185,9 +183,9 @@ export function SignupPage({
           <input
             type="checkbox"
             required
-            checked={mockValues.termsAgreed}
+            checked={terms.termsAgreed}
             onChange={(e) =>
-              setMockValues({ ...mockValues, termsAgreed: e.target.checked })
+              setTerms({ ...terms, termsAgreed: e.target.checked })
             }
           />
           <span>서비스 이용약관에 동의합니다</span>
