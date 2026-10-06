@@ -1,7 +1,7 @@
 export type SignupIdentity = {
   name: string;
   birthDate: Date;
-  gender: 'MALE' | 'FEMALE';
+  gender: "MALE" | "FEMALE";
   phone: string;
 };
 
@@ -11,6 +11,13 @@ export type AccountSignupReservation = {
   issuer: string;
   termsVersion: string;
   identity?: SignupIdentity;
+  verification: SignupVerification;
+};
+
+export type SignupVerification = {
+  provider: string;
+  providerTransactionId: string;
+  verifiedAt: Date;
 };
 
 export type AccountSignupRecord = {
@@ -21,7 +28,12 @@ export type AccountSignupRecord = {
 };
 
 export abstract class AccountSignupRepositoryPort {
-  abstract reserve(input: AccountSignupReservation): Promise<AccountSignupRecord>;
-  abstract complete(input: { diDigest: string; subject: string }): Promise<AccountSignupRecord>;
+  abstract reserve(
+    input: AccountSignupReservation,
+  ): Promise<AccountSignupRecord>;
+  abstract complete(input: {
+    diDigest: string;
+    subject: string;
+  }): Promise<AccountSignupRecord>;
   abstract findIdentity(userId: string): Promise<SignupIdentity | null>;
 }

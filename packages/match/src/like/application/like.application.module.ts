@@ -5,20 +5,21 @@ import { GetLikeOutHandler } from "./service/query/get-like-out.query.js";
 import { SaveLikeHandler } from "./service/command/save-like.command.js";
 import { CancelLikeHandler } from "./service/command/cancel-like.command.js";
 
-const providers : Provider[] = [
-    // Query
-    GetLikeInHandler,
-    GetLikeOutHandler,
+import { AcceptLikeHandler } from "./service/command/accept-like.command.js";
 
-    //Command
-    SaveLikeHandler,
-    CancelLikeHandler
-]
+const providers: Provider[] = [
+  // Query
+  GetLikeInHandler,
+  GetLikeOutHandler,
+
+  //Command
+  SaveLikeHandler,
+  AcceptLikeHandler,
+  CancelLikeHandler,
+];
 
 @Module({
-    imports : [
-        LikeInfrastructureModule
-    ],
-    providers
+  imports: [LikeInfrastructureModule],
+  providers,
 })
-export class LikeApplicationModule{}
+export class LikeApplicationModule {}
