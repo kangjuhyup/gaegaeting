@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -100,4 +100,11 @@ test('main carryover, newer main changes, squash-equivalent files and dev sync a
     const main = git('rev-parse', 'main');
     assert.deepEqual(pendingPullRequestFiles(cwd, base, main, 'main'), []);
   } finally { await rm(cwd, { recursive: true, force: true }); }
+});
+
+test('every configured serving image retains a Docker target and packaged runtime source', async () => {
+  const docker = await readFile(new URL('../deploy/docker/Dockerfile', import.meta.url), 'utf8');
+  for (const service of services) {
+    assert.ok(docker.includes(`AS ${service}\n`), `Missing Docker target: ${service}`);
+  }
 });

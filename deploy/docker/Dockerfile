@@ -46,6 +46,22 @@ COPY --from=gateway-package --chown=node:node /out/gateway /app
 EXPOSE 4000
 CMD ["node", "dist/src/main.js"]
 
+FROM build AS payment-package
+RUN pnpm --filter payment deploy --legacy --prod /out/payment
+
+FROM runtime AS payment
+COPY --from=payment-package --chown=node:node /out/payment /app
+EXPOSE 2802
+CMD ["node", "dist/src/main.js"]
+
+FROM build AS challenge-package
+RUN pnpm --filter challenge deploy --legacy --prod /out/challenge
+
+FROM runtime AS challenge
+COPY --from=challenge-package --chown=node:node /out/challenge /app
+EXPOSE 2803
+CMD ["node", "dist/src/main.js"]
+
 FROM gateway AS edge-authz
 ENV EDGE_AUTHZ_HOST=0.0.0.0
 EXPOSE 4010
