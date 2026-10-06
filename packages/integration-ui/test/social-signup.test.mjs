@@ -22,7 +22,7 @@ after(async () => {
 });
 const { SignupPage } = await server.ssrLoadModule("/src/pages/SignupPage.tsx");
 const { LoginPage } = await server.ssrLoadModule("/src/pages/LoginPage.tsx");
-const { registerSocialSignup, socialSignupError } = await server.ssrLoadModule("/src/lib/social-signup.ts");
+const { registerSocialSignup, socialSignupError, recoverSocialSignup } = await server.ssrLoadModule("/src/lib/social-signup.ts");
 const { continueKakaoLink, validateKakaoAuthorizationUrl } = await server.ssrLoadModule("/src/lib/kakao-link.ts");
 const config = { accountUrl: "/account/graphql" };
 const signup = { provider: "kakao", ticket: "opaque-ticket-not-a-subject-123456789", attemptId: "opaque-attempt-123456789", expiresAt: new Date(Date.now() + 60_000).toISOString() };
@@ -114,4 +114,25 @@ test("linking refuses another reauthenticated account before any request; matchi
     globalThis.fetch = async () => new Response(null, { status: 403 });
     await assert.rejects(continueKakaoLink("old-sub", "old-sub", "memory-opaque-token"), /기존 계정.*다시 로그인/);
   } finally { globalThis.fetch = previousFetch; window.location.assign = previousAssign; }
+});
+
+for (const errorCode of ["IDENTITY_ALREADY_REGISTERED", "SOCIAL_SIGNUP_EXPIRED", "SOCIAL_SIGNUP_INVALID"]) {
+  test(`native recovery ${errorCode} returns to its caller without beginning a web login`, async () => {
+    assert.ok(["login", "restart"].includes(socialSignupError(new Error(errorCode)).recovery));
+    let aborts = 0, webLogins = 0;
+    const native = { ...signup, clientId: "gaegaeting-mobile" };
+    await recoverSocialSignup(native, async () => { aborts += 1; }, () => { webLogins += 1; });
+    assert.equal(aborts, 1);
+    assert.equal(webLogins, 0);
+    await assert.rejects(recoverSocialSignup(native, undefined, () => { webLogins += 1; }), /앱에서/);
+    await assert.rejects(recoverSocialSignup(native, async () => { throw new Error("expired interaction"); }, () => { webLogins += 1; }), /expired interaction/);
+    assert.equal(webLogins, 0);
+  });
+}
+
+test("web social signup recovery keeps the existing web restart/login action", async () => {
+  let webLogins = 0;
+  await recoverSocialSignup({ ...signup, clientId: "gaegaeting-web" }, async () => { throw new Error("must not abort web recovery"); }, () => { webLogins += 1; });
+  await recoverSocialSignup(undefined, undefined, () => { webLogins += 1; });
+  assert.equal(webLogins, 2);
 });

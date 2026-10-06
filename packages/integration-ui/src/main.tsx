@@ -14,8 +14,8 @@ const interactionConfig = {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    {window.location.pathname === "/interaction" ? <InteractionPage renderExternalSignup={(social, resume) => (
-      <SignupPage config={interactionConfig} social={social} onSocialComplete={resume}
+    {window.location.pathname === "/interaction" ? <InteractionPage renderExternalSignup={(social, resume, returnToCaller) => (
+      <SignupPage config={interactionConfig} social={social} onSocialComplete={resume} onReturnToCaller={returnToCaller}
         onLogin={() => beginLogin(interactionConfig, { prompt: "login" })} />
     )} /> : <App />}
   </React.StrictMode>,

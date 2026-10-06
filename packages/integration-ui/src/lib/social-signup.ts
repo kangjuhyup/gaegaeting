@@ -30,3 +30,17 @@ export function socialSignupError(error: unknown): { message: string; recovery: 
   }
   return { message, recovery: "retry" };
 }
+
+/** A verified native interaction must resume its original caller, never the web client. */
+export async function recoverSocialSignup(
+  signup: ExternalSignup | undefined,
+  returnToCaller: (() => Promise<void>) | undefined,
+  webRecovery: () => void | Promise<void>,
+): Promise<void> {
+  if (signup?.clientId === "gaegaeting-mobile") {
+    if (!returnToCaller) throw new Error("앱에서 로그인을 다시 시작해 주세요.");
+    await returnToCaller();
+    return;
+  }
+  await webRecovery();
+}

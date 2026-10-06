@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import { Alert, Button, Field, Spinner } from "./components/Ui.js";
 import {
   goToAuth,
+  abortInteraction,
   goToIdp,
   interactionAvailable,
   InteractionExpiredError,
@@ -30,7 +31,7 @@ type Step =
 
 export function InteractionPage({ admin = false, renderExternalSignup }: {
   admin?: boolean;
-  renderExternalSignup?: (signup: ExternalSignup, resume: () => Promise<void>) => ReactNode;
+  renderExternalSignup?: (signup: ExternalSignup, resume: () => Promise<void>, returnToCaller: () => Promise<void>) => ReactNode;
 }) {
   const [step, setStep] = useState<Step>("loading");
   const [details, setDetails] = useState<InteractionDetails>();
@@ -150,11 +151,14 @@ export function InteractionPage({ admin = false, renderExternalSignup }: {
     }
   }
 
+  async function returnToCaller() {
+    await abortInteraction();
+  }
+
   async function cancel() {
     setBusy(true);
     try {
-      const result = await interactionRequest<InteractionResult>("abort", {});
-      if (result.redirectTo) goToAuth(result.redirectTo);
+      await returnToCaller();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "취소할 수 없어요.");
       if (cause instanceof InteractionExpiredError) setStep("error");
@@ -218,7 +222,7 @@ export function InteractionPage({ admin = false, renderExternalSignup }: {
         <strong>{admin ? "개개팅 관리자" : "개개팅"}</strong>
       </div>
       <section className={`card form-card interaction-card${step === "external-signup" ? " interaction-signup" : ""}`} aria-busy={busy}>
-        {step === "external-signup" && details?.externalSignup && renderExternalSignup?.(details.externalSignup, resumeExternalSignup)}
+        {step === "external-signup" && details?.externalSignup && renderExternalSignup?.(details.externalSignup, resumeExternalSignup, returnToCaller)}
         {step === "loading" && (
           <p role="status">
             <Spinner /> 로그인 정보를 불러오는 중이에요.
@@ -228,7 +232,14 @@ export function InteractionPage({ admin = false, renderExternalSignup }: {
           <>
             <h1>다시 시작해 주세요</h1>
             <Alert type="error">{error}</Alert>
-            <a href={`${publicConfig.basePath}/login`}>로그인으로 돌아가기</a>
+            {admin || details?.clientId === publicConfig.clientId ? (
+              <a href={`${publicConfig.basePath}/login`}>로그인으로 돌아가기</a>
+            ) : (
+              <>
+                <p>{details?.clientId === "gaegaeting-mobile" ? "앱으로 돌아가 로그인을 다시 시작해 주세요." : "로그인을 시작했던 화면에서 다시 시도해 주세요."}</p>
+                {interactionAvailable() && <Button onClick={() => void cancel()} disabled={busy}>{details?.clientId === "gaegaeting-mobile" ? "앱으로 돌아가기" : "로그인 요청 취소"}</Button>}
+              </>
+            )}
           </>
         )}
         {step === "login" && (

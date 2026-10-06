@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { graphql, errorMessage, beginLogin } from "@gaegaeting/ui-common";
 import type { ExternalSignup } from "@gaegaeting/ui-common/interaction";
-import { registerSocialSignup, socialSignupError } from "../lib/social-signup.js";
+import { registerSocialSignup, socialSignupError, recoverSocialSignup } from "../lib/social-signup.js";
 import type { AppConfig, SignupDraft } from "../types.js";
 import {
   Alert,
@@ -16,11 +16,13 @@ export function SignupPage({
   onLogin,
   social,
   onSocialComplete,
+  onReturnToCaller,
 }: {
   config: AppConfig;
   onLogin: () => void | Promise<void>;
   social?: ExternalSignup;
   onSocialComplete?: () => Promise<void>;
+  onReturnToCaller?: () => Promise<void>;
 }) {
   const [form, setForm] = useState<SignupDraft & { password: string }>({
     username: "",
@@ -45,14 +47,14 @@ export function SignupPage({
   async function startKakao() {
     setLoading(true);
     setError("");
-    try { await beginLogin(config, { provider: "kakao", intent: "signup", prompt: "login" }); }
+    try { await recoverSocialSignup(social, onReturnToCaller, () => beginLogin(config, { provider: "kakao", intent: "signup", prompt: "login" })); }
     catch (cause) { setError(errorMessage(cause)); setLoading(false); }
   }
 
   async function loginExisting() {
     setLoading(true);
     setError("");
-    try { await onLogin(); }
+    try { await recoverSocialSignup(social, onReturnToCaller, onLogin); }
     catch (cause) { setError(errorMessage(cause)); }
     finally { setLoading(false); }
   }
@@ -243,9 +245,9 @@ export function SignupPage({
           </Alert>
         )}
         {social && recovery === "restart" ? (
-          <Button type="button" onClick={() => void startKakao()} disabled={loading}>카카오 회원가입 다시 시작</Button>
+          <Button type="button" onClick={() => void startKakao()} disabled={loading}>{social.clientId === "gaegaeting-mobile" ? "앱에서 회원가입 다시 시작" : "카카오 회원가입 다시 시작"}</Button>
         ) : social && recovery === "login" ? (
-          <Button type="button" onClick={() => void loginExisting()} disabled={loading}>기존 계정으로 로그인</Button>
+          <Button type="button" onClick={() => void loginExisting()} disabled={loading}>{social.clientId === "gaegaeting-mobile" ? "앱에서 기존 계정으로 로그인" : "기존 계정으로 로그인"}</Button>
         ) : result && social ? (
           <Button type="button" onClick={() => void continueSocial()} disabled={loading}>{loading && <Spinner />} 로그인 계속</Button>
         ) : result ? (

@@ -223,3 +223,10 @@ export function goToIdp(provider: string, intent: "login" | "signup" = "login"):
     throw new Error("잘못된 로그인 제공자입니다.");
   window.location.assign(`${apiBase()}/idp/${encodeURIComponent(provider)}${intent === "signup" ? "?intent=signup" : ""}`);
 }
+
+/** Abort the current guarded interaction; Auth resumes the original RP callback. */
+export async function abortInteraction(): Promise<void> {
+  const result = await interactionRequest<InteractionResult>("abort", {});
+  if (!result.redirectTo) throw new Error("로그인을 시작했던 화면에서 다시 시도해 주세요.");
+  goToAuth(result.redirectTo);
+}
