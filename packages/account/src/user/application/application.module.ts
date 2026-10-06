@@ -9,6 +9,7 @@ import { ReviewUserImageHandler } from "./service/command/review-user-image.comm
 import { DeleteProfileImageHandler } from "./service/command/delete-profile-image.command.js";
 import { RegistrationService } from './service/registration.service.js';
 import { AccountSignupService } from './service/account-signup.service.js';
+import { SocialAccountSignupService } from './service/social-account-signup.service.js';
 
 
 const providers : Provider[] = [
@@ -24,6 +25,7 @@ const providers : Provider[] = [
     DeleteProfileImageHandler,
     RegistrationService,
     AccountSignupService,
+    SocialAccountSignupService,
 ]
 
 @Module({

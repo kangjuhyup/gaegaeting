@@ -62,7 +62,7 @@ async function verifyIdToken(
   discovery: Discovery,
   clientId: string,
   nonce: string,
-): Promise<void> {
+): Promise<string> {
   const parts = token.split(".");
   if (parts.length !== 3) throw new Error("ID token 형식이 올바르지 않습니다.");
   const header = decodeJsonPart(parts[0]);
@@ -125,6 +125,7 @@ async function verifyIdToken(
   ) {
     throw new Error("ID token 검증에 실패했습니다. 다시 로그인해 주세요.");
   }
+  return claims.sub;
 }
 
 function browserApiUrl(url: string): string {
@@ -136,8 +137,9 @@ function browserApiUrl(url: string): string {
 
 export async function beginLogin(
   config: AppConfig,
-  options: { scopes?: string; prompt?: "login" } = {},
+  options: { scopes?: string; prompt?: "login"; provider?: "kakao"; intent?: "signup"; action?: "link-kakao"; intendedSubject?: string } = {},
 ) {
+  if (options.action === "link-kakao" && !options.intendedSubject) throw new Error("연결할 기존 계정을 확인할 수 없어요. 다시 로그인해 주세요.");
   const discovery = await discover(config.issuer);
   const verifier = randomValue(48);
   const digest = await crypto.subtle.digest(
@@ -150,6 +152,14 @@ export async function beginLogin(
   sessionStorage.setItem(storageKey(config, "verifier"), verifier);
   sessionStorage.setItem(storageKey(config, "state"), state);
   sessionStorage.setItem(storageKey(config, "nonce"), nonce);
+  sessionStorage.removeItem(storageKey(config, "providerIntent"));
+  sessionStorage.removeItem(storageKey(config, "linkAction"));
+  if (options.action === "link-kakao") sessionStorage.setItem(storageKey(config, "linkAction"), JSON.stringify({ subject: options.intendedSubject, createdAt: Date.now() }));
+  if (options.provider) {
+    sessionStorage.setItem(storageKey(config, "providerIntent"), JSON.stringify({
+      provider: options.provider, intent: options.intent ?? "login", createdAt: Date.now(),
+    }));
+  }
 
   const params = new URLSearchParams({
     response_type: "code",
@@ -158,19 +168,46 @@ export async function beginLogin(
     scope:
       options.scopes ??
       "openid profile email account:read account:write match:read match:write",
-    resource: publicConfig.apiAudience,
     code_challenge: toBase64Url(new Uint8Array(digest)),
     code_challenge_method: "S256",
     state,
     nonce,
   });
+  // Auth's own account APIs accept its opaque, resource-less access token.
+  if (options.action !== "link-kakao") params.set("resource", publicConfig.apiAudience);
   if (options.prompt) params.set("prompt", options.prompt);
   window.location.assign(`${discovery.authorization_endpoint}?${params}`);
 }
 
+export function takeLoginAction(clientId: string): { action: "link-kakao"; subject: string } | null {
+  const key = `gaegaeting.oidc.${clientId}.linkAction`;
+  const value = sessionStorage.getItem(key);
+  sessionStorage.removeItem(key);
+  if (!value) return null;
+  try {
+    const { createdAt, subject } = JSON.parse(value);
+    if (typeof subject === "string" && subject && typeof createdAt === "number" && createdAt <= Date.now() && Date.now() - createdAt < 300_000) return { action: "link-kakao", subject };
+  } catch { /* Invalid intent must never treat an Auth-only token as an API token. */ }
+  throw new Error("카카오 연결 요청이 만료됐어요. 기존 계정에서 다시 시작해 주세요.");
+}
+
+// A local UI preference, never an authorization-server policy or credential.
+export function takeLoginProvider(clientId: string): { provider: "kakao"; intent: "signup" | "login" } | null {
+  const key = `gaegaeting.oidc.${clientId}.providerIntent`;
+  const stored = sessionStorage.getItem(key);
+  sessionStorage.removeItem(key);
+  if (!stored) return null;
+  try {
+    const value = JSON.parse(stored);
+    if (value.provider !== "kakao" || !["signup", "login"].includes(value.intent) ||
+      typeof value.createdAt !== "number" || value.createdAt > Date.now() || Date.now() - value.createdAt > 300_000) return null;
+    return { provider: value.provider, intent: value.intent };
+  } catch { return null; }
+}
+
 export async function completeLogin(
   config: AppConfig,
-): Promise<{ accessToken: string; idToken: string; expiresIn?: number }> {
+): Promise<{ accessToken: string; idToken: string; subject: string; expiresIn?: number }> {
   const params = new URLSearchParams(window.location.search);
   const oauthError = params.get("error");
   if (oauthError)
@@ -208,18 +245,18 @@ export async function completeLogin(
   }
   const nonce = sessionStorage.getItem(storageKey(config, "nonce"));
   if (!nonce) throw new Error("OIDC nonce가 없습니다. 새로 로그인해 주세요.");
-  await verifyIdToken(body.id_token, discovery, config.clientId, nonce);
-  ["verifier", "state", "nonce"].forEach((part) =>
+  const subject = await verifyIdToken(body.id_token, discovery, config.clientId, nonce);
+  ["verifier", "state", "nonce", "providerIntent"].forEach((part) =>
     sessionStorage.removeItem(storageKey(config, part)),
   );
-  return { accessToken: body.access_token, idToken: body.id_token, expiresIn: body.expires_in };
+  return { accessToken: body.access_token, idToken: body.id_token, subject, expiresIn: body.expires_in };
 }
 
 export async function beginLogout(
   config: AppConfig,
   session: { accessToken: string; idToken: string },
 ) {
-  ["verifier", "state", "nonce"].forEach((part) =>
+  ["verifier", "state", "nonce", "providerIntent", "linkAction"].forEach((part) =>
     sessionStorage.removeItem(storageKey(config, part)),
   );
 

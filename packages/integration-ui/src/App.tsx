@@ -1,7 +1,8 @@
 import { Alert, Button, Spinner, publicConfig } from "@gaegaeting/ui-common";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Shell, type RouteKey } from "./components/Shell.js";
-import { beginLogout, completeLogin } from "@gaegaeting/ui-common";
+import { beginLogin, beginLogout, completeLogin, takeLoginAction } from "@gaegaeting/ui-common";
+import { continueKakaoLink } from "./lib/kakao-link.js";
 import { errorMessage } from "@gaegaeting/ui-common";
 import { SignupPage } from "./pages/SignupPage.js";
 import { LoginPage } from "./pages/LoginPage.js";
@@ -52,6 +53,7 @@ export default function App() {
   const [session, setSession] = useState<{
     accessToken: string;
     idToken: string;
+    subject: string;
   }>();
   const token = session?.accessToken;
   const [loggingOut, setLoggingOut] = useState(false);
@@ -60,6 +62,10 @@ export default function App() {
   const [onboardingError, setOnboardingError] = useState("");
   const [onboardingAttempt, setOnboardingAttempt] = useState(0);
   const [callbackError, setCallbackError] = useState("");
+  const [linkReturn] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("identityLinked") === "kakao" ? "success" : params.has("identityError") ? "error" : null;
+  });
   const callbackStarted = useRef(false);
   const callbackPending = useMemo(
     () =>
@@ -114,10 +120,15 @@ export default function App() {
     if (!callbackPending || callbackStarted.current) return;
     callbackStarted.current = true;
     void completeLogin(config)
-      .then(({ accessToken, idToken }) => {
-        setSession({ accessToken, idToken });
+      .then(async ({ accessToken, idToken, subject }) => {
         window.history.replaceState({}, "", "/login");
         setRoute("login");
+        const action = takeLoginAction(config.clientId);
+        if (action) {
+          await continueKakaoLink(action.subject, subject, accessToken);
+          return;
+        }
+        setSession({ accessToken, idToken, subject });
       })
       .catch((cause) => setCallbackError(errorMessage(cause)));
   }, [callbackPending, config]);
@@ -170,6 +181,7 @@ export default function App() {
       <ProfilePage
         config={config}
         token={token}
+        authSubject={session?.subject}
         onNext={() => {
           if (onboarding === "ready") {
             navigate("pet");
@@ -217,6 +229,12 @@ export default function App() {
           로그인 처리 실패: {callbackError}
         </div>
       )}
+      {linkReturn && !token && <section className="page card" aria-live="polite">
+        <Alert type={linkReturn === "success" ? "success" : "error"}>
+          {linkReturn === "success" ? "카카오 계정이 연결됐어요. 다시 로그인해 주세요." : "카카오 계정을 연결하지 못했어요. 기존 계정으로 로그인한 뒤 다시 시도해 주세요."}
+        </Alert>
+        <Button onClick={() => void beginLogin(config).catch((cause) => setCallbackError(errorMessage(cause)))}>로그인 계속</Button>
+      </section>}
       {loggingOut && (
         <div className="global-status" role="status">
           로그아웃 처리 중입니다.

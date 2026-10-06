@@ -5,6 +5,7 @@ import { UserApplicationModule } from "./application/application.module.js";
 import { UserInfraStructureModule } from "./infrastructure/infrastructure.module.js";
 import { UserResolver } from "./infrastructure/adapter/inbound/gql/user.resolver.js";
 import { RegistrationResolver } from './infrastructure/adapter/inbound/gql/registration.resolver.js';
+import { SocialRegistrationResolver } from './infrastructure/adapter/inbound/gql/social-registration.resolver.js';
 import { InternalRegistrationEligibilityController } from './infrastructure/adapter/inbound/http/registration/registration.controller.js';
 import { RegistrationServiceGuard } from './infrastructure/adapter/inbound/http/registration/registration-service.guard.js';
 
@@ -25,6 +26,7 @@ export const USER_GRAPHQL_DEFINITIONS_PATH = join(process.cwd(), './src/user/inf
     providers: [
         UserResolver,
         RegistrationResolver,
+        SocialRegistrationResolver,
         RegistrationServiceGuard,
     ],
     controllers: [InternalRegistrationEligibilityController],

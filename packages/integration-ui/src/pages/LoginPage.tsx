@@ -19,11 +19,11 @@ export function LoginPage({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  async function login() {
+  async function login(provider?: "kakao") {
     setLoading(true);
     setError("");
     try {
-      await beginLogin(config);
+      await beginLogin(config, provider ? { provider, prompt: "login" } : {});
     } catch (cause) {
       setError(errorMessage(cause));
       setLoading(false);
@@ -76,6 +76,9 @@ export function LoginPage({
             >
               {loading && <Spinner />}{" "}
               {loading ? "로그인으로 이동 중…" : "로그인"}
+            </Button>
+            <Button variant="secondary" onClick={() => void login("kakao")} disabled={loading || loggingOut}>
+              카카오로 로그인
             </Button>
             <Button
               variant="ghost"

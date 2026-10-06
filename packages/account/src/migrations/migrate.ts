@@ -11,6 +11,7 @@ import { accountSignupConsentMigration } from "./account-signup-consent.migratio
 import { accountSignupIdentityMigration } from "./account-signup-identity.migration.js";
 import { profileImageReviewMigration } from "./profile-image-review.migration.js";
 import { accountSignupVerificationMigration } from "./account-signup-verification.migration.js";
+import { accountSocialSignupMigration } from "./account-social-signup.migration.js";
 
 const environment: DatabaseConfigReader = {
   get<T>(key: string, fallback?: T): T {
@@ -32,6 +33,7 @@ export async function runAccountMigrations(): Promise<void> {
       accountSignupIdentityMigration,
       profileImageReviewMigration,
       accountSignupVerificationMigration,
+      accountSocialSignupMigration,
     ],
   });
 }

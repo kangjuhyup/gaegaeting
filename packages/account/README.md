@@ -35,6 +35,16 @@ ACCOUNT_TEST_DATABASE_URL=postgresql://postgres:account-test-only@127.0.0.1:5432
 
 구현 범위와 검증 항목은 [구현계획](docs/plans/2026-10-03-signup-identity-verification.md)을 참고하세요.
 
+## 카카오 회원가입
+
+카카오 OAuth와 가입 티켓 발급은 Auth가 처리합니다. `registerSocialAccount`는 Auth 티켓·가입 시도 ID, 약관 동의, 본인인증 입력만 받습니다. Account가 티켓을 검증하고 본인인증·성인 확인·기존 가입과 동일한 DI 해시 중복 확인을 마친 뒤 Auth에 비밀번호 없는 사용자 생성을 요청합니다. Account에는 외부 identity의 HMAC과 `(issuer, subject)` 연결을 저장합니다. CI·DI 원문·카카오 사용자 ID 원문은 저장하지 않습니다.
+
+일반 가입과 카카오 가입은 같은 DI unique 제약을 사용합니다. 기존 계정과 DI가 겹치면 신규 가입을 거절하고, 기존 계정 로그인 후 명시적으로 카카오를 연결하도록 안내합니다. Auth 생성 이후 Account 저장 실패는 같은 외부 identity의 새 인증 티켓으로 재시도할 수 있습니다.
+
+`AUTH_SIGNUP_CLIENT_ID`는 가입 티켓을 발급받는 앱 client ID이며 기본값은 `gaegaeting-web`입니다. UI client와 일치시켜야 합니다. 기존 Auth provisioning 전용 service client의 `auth.user.provision` 권한을 사용하며, `AUTH_ISSUER`는 discovery issuer와 정확히 같아야 합니다. 가입 API는 UI의 Account GraphQL 주소로 호출합니다. Gateway의 일반 API는 Account 회원 연결이 완료된 토큰만 허용합니다.
+
+`AccountSocialSignup1791158400000` 마이그레이션을 추가로 적용합니다. 기존 가입 행은 `PASSWORD`로 유지하고 카카오 가입에는 `SOCIAL` 및 nullable username을 사용합니다. Auth에도 가입 완료 기록 마이그레이션이 필요합니다. 콜백·CORS·쿠키 설정과 검증 결과는 [카카오 가입 계약](docs/plans/2026-10-05-kakao-signup.md)을 참고하세요. 현재 임시 본인인증은 개발·테스트 전용입니다.
+
 ## 사진 등록 요청 슬랙 알림
 
 Account 실행 환경 또는 `packages/account/.env`에 `SLACK_WEBHOOK_URL`을 설정하면 사용자·반려견 사진 업로드 완료 후 승인 대기(`PENDING`)로 저장될 때 해당 Incoming Webhook의 채널로 알림을 보냅니다. HTTPS URL을 사용하며, 설정이 없거나 빈 문자열이면 알림을 보내지 않습니다. Webhook URL은 비밀 값이므로 저장소에 커밋하지 않습니다.

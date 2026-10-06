@@ -1,5 +1,5 @@
 import { Int, Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { UnprocessableEntityException, UseGuards } from '@nestjs/common';
+import { ForbiddenException, UnprocessableEntityException, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UserParam, type UserPrincipal, GraphqlAccessGuard, Scopes } from '@core/auth';
 import { CreateUserProfileCommand } from '#app/user/application/port/command/create-user-profile.port';
@@ -63,9 +63,13 @@ export class UserResolver {
   @UseGuards(GraphqlAccessGuard)
   @Scopes('account:write')
   async updateProfile(
+    @UserParam() actor: UserPrincipal,
     @Args('id', { type: () => String }) id: string,
     @Args('input') input: UpdateUserProfileInput,
   ): Promise<UserProfile> {
+    if (id !== actor.userId) {
+      throw new ForbiddenException('본인 프로필만 수정할 수 있습니다.');
+    }
     const updateData = UserGraphQLDto.toUpdateData(input);
     const user = await this.commandBus.execute(new UpdateUserProfileCommand(id, updateData));
     return UserGraphQLDto.fromDomain(user);
