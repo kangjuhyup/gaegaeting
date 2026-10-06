@@ -48,3 +48,12 @@ test('unknown redirect destination is unverified', async () => {
   const { result } = run(new Response(null, { status: 302, headers: { location: 'https://other.example/interaction' } }));
   assert.equal((await result).outcome, 'unverified_redirect');
 });
+
+test('remote error containing control characters never reaches diagnostic output', async () => {
+  const { result } = run(new Response(null, { status: 302, headers: {
+    location: `${client.redirectUris[0]}?error=invalid_client%0Aprivate-marker`,
+  } }));
+  const output = await result;
+  assert.equal(output.outcome, 'authorization_error');
+  assert.ok(!JSON.stringify(output).includes('private-marker'));
+});

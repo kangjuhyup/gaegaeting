@@ -5,8 +5,22 @@ import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
 export const devIssuer = 'https://auth.rvkang.app/t/gaegaeting-dev/oidc';
-const errors = new Set(['invalid_client', 'invalid_scope', 'invalid_request',
-  'invalid_redirect_uri', 'invalid_target', 'access_denied', 'unauthorized_client']);
+const errors = ['invalid_client', 'invalid_scope', 'invalid_request',
+  'invalid_redirect_uri', 'invalid_target', 'access_denied', 'unauthorized_client'];
+
+// Project remote error labels to local constants before returning or logging.
+function classifyError(value) {
+  switch (value) {
+    case 'invalid_client': return 'invalid_client';
+    case 'invalid_scope': return 'invalid_scope';
+    case 'invalid_request': return 'invalid_request';
+    case 'invalid_redirect_uri': return 'invalid_redirect_uri';
+    case 'invalid_target': return 'invalid_target';
+    case 'access_denied': return 'access_denied';
+    case 'unauthorized_client': return 'unauthorized_client';
+    default: return 'authorization_error';
+  }
+}
 
 export function validateDiscovery(metadata, issuer) {
   const expected = new URL(issuer);
@@ -45,7 +59,7 @@ export async function probe({ issuer, client, fetchImpl = fetch }) {
     if (location) {
       const target = new URL(location, endpoint);
       const error = target.searchParams.get('error');
-      if (error) return { ...result, outcome: errors.has(error) ? error : 'authorization_error' };
+      if (error) return { ...result, outcome: classifyError(error) };
       const ui = new URL(client.externalInteractionUiUrl);
       if ([302, 303].includes(response.status) && target.origin === ui.origin
         && (target.pathname === ui.pathname || target.pathname.startsWith(`${ui.pathname}/`))) {
@@ -56,7 +70,7 @@ export async function probe({ issuer, client, fetchImpl = fetch }) {
     const body = await response.text();
     // Provider error pages are classified only; never expose their body/query/uid.
     const error = [...errors].find(value => new RegExp(`\\b${value}\\b`).test(body));
-    return { ...result, outcome: error ?? 'authorization_unclassified' };
+    return { ...result, outcome: error ? classifyError(error) : 'authorization_unclassified' };
   } catch {
     return { ...result, outcome: 'network_or_contract_error' };
   }
