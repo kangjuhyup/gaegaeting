@@ -10,10 +10,12 @@ import { KafkaProducerModule } from "@core/kafka";
 import { ENV_KEY } from "#app/config/env.config";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
+import { ChatPairsResolver } from "./adapter/inbound/gql/chat-pairs.resolver.js";
 import { PariEventHandler } from "./adapter/inbound/event/pair.handler.js";
 
 const providers: Provider[] = [
   PairOrmMapper,
+  ChatPairsResolver,
   PariEventHandler,
   { provide: PairRepositoryPort, useClass: PairOrmRepository },
   { provide: KafkaProducerPort, useClass: KafkaProducerAdapter },
