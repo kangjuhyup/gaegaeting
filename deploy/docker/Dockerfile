@@ -10,6 +10,7 @@ RUN pnpm build:workspaces
 RUN pnpm --filter account deploy --legacy --prod /out/account \
  && pnpm --filter match deploy --legacy --prod /out/match \
  && pnpm --filter payment deploy --legacy --prod /out/payment \
+ && pnpm --filter challenge deploy --legacy --prod /out/challenge \
  && pnpm --filter gateway deploy --legacy --prod /out/gateway
 
 FROM node:24.13.1-bookworm-slim@sha256:a81a03dd965b4052269a57fac857004022b522a4bf06e7a739e25e18bce45af2 AS runtime
@@ -35,6 +36,11 @@ CMD ["node", "dist/src/main.js"]
 FROM runtime AS payment
 COPY --from=build --chown=node:node /out/payment /app
 EXPOSE 2802
+CMD ["node", "dist/src/main.js"]
+
+FROM runtime AS challenge
+COPY --from=build --chown=node:node /out/challenge /app
+EXPOSE 2803
 CMD ["node", "dist/src/main.js"]
 
 FROM gateway AS edge-authz

@@ -19,6 +19,8 @@ describe("createPinoLoggerOptions", () => {
       handoffId: "sensitive-handoff",
       ticket: "sensitive-ticket",
       attemptId: "sensitive-attempt",
+      providerSub: "sensitive-provider", name: "sensitive-name", birthDate: "sensitive-birthdate",
+      phone: "sensitive-phone", username: "sensitive-username", password: "sensitive-password", email: "sensitive-email",
     };
     logger.info(
       {
@@ -27,6 +29,7 @@ describe("createPinoLoggerOptions", () => {
           headers: {
             authorization: "sensitive-bearer",
             cookie: "sensitive-cookie",
+            "x-gaegaeting-principal": "sensitive-internal-assertion",
           },
           body: {
             ...sensitive,
