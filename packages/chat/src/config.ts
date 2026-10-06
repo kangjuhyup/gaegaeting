@@ -1,7 +1,7 @@
 import Joi from 'joi';
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
-  CHAT_SERVICE_API_PORT: Joi.number().integer().min(1).max(65535).default(2802),
+  CHAT_SERVICE_API_PORT: Joi.number().integer().min(1).max(65535).default(2804),
   INTERNAL_AUTH_ASSERTION_SECRET: Joi.string().min(32).required(),
   DATABASE_HOST: Joi.string().required(), DATABASE_PORT: Joi.number().default(5432),
   DATABASE_USERNAME: Joi.string().required(), DATABASE_PASSWORD: Joi.string().required(),

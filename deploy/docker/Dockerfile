@@ -19,7 +19,7 @@ RUN pnpm --filter chat deploy --legacy --prod /out/chat
 
 FROM runtime AS chat
 COPY --from=chat-package --chown=node:node /out/chat /app
-EXPOSE 2802
+EXPOSE 2804
 CMD ["node", "dist/src/main.js"]
 
 FROM build AS account-package

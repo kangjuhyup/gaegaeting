@@ -10,6 +10,8 @@ const packages = [
   { dir: 'packages/account', name: 'account', dependencies: ['@core/auth', '@core/storage'] },
   { dir: 'packages/match', name: 'match', dependencies: ['@core/auth'] },
   { dir: 'packages/chat', name: 'chat', dependencies: ['@core/auth'] },
+  { dir: 'packages/payment', name: 'payment', dependencies: ['@core/auth'] },
+  { dir: 'packages/challenge', name: 'challenge', dependencies: ['@core/auth'] },
   { dir: 'packages/gateway', name: 'gateway', dependencies: ['@core/assertion'] },
   { dir: 'packages/core/auth', name: '@core/auth', dependencies: ['@core/assertion'] },
   { dir: 'packages/core/assertion', name: '@core/assertion', dependencies: [] },
@@ -22,9 +24,10 @@ const plan = (files, domain = 'core', verifyService) => planImages({ files, pack
 
 test('Match feature publishes only Match; independent UI and Account changes stay scoped', () => {
   assert.deepEqual(plan(['packages/match/src/feed/status.ts'], 'match').publishServices, ['match']);
-  assert.deepEqual(plan(['packages/chat/src/message/domain/model/message.ts']).publishServices, ['chat']);
   assert.deepEqual(plan(['packages/account/src/user/model.ts'], 'account').services, ['account']);
   assert.deepEqual(plan(['packages/integration-ui/src/App.tsx']).publishServices, ['integration-ui']);
+  assert.deepEqual(plan(['packages/chat/src/message/domain/model/message.ts']).publishServices, ['chat']);
+  assert.deepEqual(plan(['packages/challenge/src/main.ts']).publishServices, ['challenge']);
 });
 
 test('shared UI and server changes select both UI images; gateway selects its two runtimes', () => {
@@ -35,10 +38,17 @@ test('shared UI and server changes select both UI images; gateway selects its tw
 });
 
 test('workspace dependencies select transitive consumers, including removed dependency edges', () => {
-  assert.deepEqual(affectedServices(['packages/core/assertion/src/key.ts'], packages), ['account', 'match', 'chat', 'gateway', 'edge-authz']);
+  assert.deepEqual(affectedServices(['packages/core/assertion/src/key.ts'], packages), ['account', 'match', 'chat', 'payment', 'challenge', 'gateway', 'edge-authz']);
   assert.deepEqual(affectedServices(['packages/core/storage/src/client.ts'], packages), ['account']);
   const changed = [...packages, { dir: 'packages/account', name: 'account', dependencies: [] }];
   assert.deepEqual(affectedServices(['packages/core/storage/src/client.ts'], changed), ['account']);
+});
+
+test('Payment changes select its image and cannot publish another branch domain', () => {
+  assert.deepEqual(plan(['packages/payment/src/main.ts'], 'payment').publishServices, ['payment']);
+  assert.deepEqual(plan([], 'payment', 'payment').services, ['payment']);
+  assert.throws(() => plan(['packages/payment/src/main.ts'], 'match'), /cross the branch domain/);
+  assert.throws(() => plan([], 'payment', 'account'), /Invalid verification service/);
 });
 
 test('docs, tests and CI-only changes perform verification without image builds or publication', () => {

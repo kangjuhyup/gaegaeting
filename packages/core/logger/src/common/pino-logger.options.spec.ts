@@ -5,6 +5,7 @@ describe('createPinoLoggerOptions', () => {
     const options = createPinoLoggerOptions({ pretty: false });
     expect(options.pinoHttp.redact.paths).toEqual(expect.arrayContaining([
       'req.headers.authorization',
+      'req.headers["x-gaegaeting-principal"]',
       'req.body.ci',
       'req.body.di',
       'req.body.handoffId',
