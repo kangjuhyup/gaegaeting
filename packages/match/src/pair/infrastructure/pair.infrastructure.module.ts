@@ -9,39 +9,40 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { KafkaProducerModule } from "@core/kafka";
 import { ENV_KEY } from "#app/config/env.config";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { ChatPairsResolver } from './adapter/inbound/gql/chat-pairs.resolver.js';
 
-const providers : Provider[] = [
-    ChatPairsResolver,
-    PairOrmMapper,
-    { provide : PairRepositoryPort, useClass : PairOrmRepository },
-    { provide : KafkaProducerPort, useClass : KafkaProducerAdapter },
-]
+import { ChatPairsResolver } from "./adapter/inbound/gql/chat-pairs.resolver.js";
+import { PariEventHandler } from "./adapter/inbound/event/pair.handler.js";
+
+const providers: Provider[] = [
+  PairOrmMapper,
+  ChatPairsResolver,
+  PariEventHandler,
+  { provide: PairRepositoryPort, useClass: PairOrmRepository },
+  { provide: KafkaProducerPort, useClass: KafkaProducerAdapter },
+];
 
 @Module({
-    imports : [
-        EventEmitterModule.forRoot(),
-        KafkaProducerModule.forRootAsync({
-            imports: [ConfigModule],
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) => {
-                return {
-                    clientId: "pair-service",
-                    brokers: configService.get<string[]>(ENV_KEY.KAFKA_BROKERS),
-                    ssl: false,
-                    sasl: undefined,
-                    allowAutoTopicCreation: true,
-                    defaultHeaders: {
-                        'Content-Type': 'application/json',
-                    },
-                };
-            },
-        }),
-    ],
-    controllers: [
-        PairController
-    ],
-    providers,
-    exports : providers
+  imports: [
+    EventEmitterModule.forRoot(),
+    KafkaProducerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        return {
+          clientId: "pair-service",
+          brokers: configService.get<string[]>(ENV_KEY.KAFKA_BROKERS),
+          ssl: false,
+          sasl: undefined,
+          allowAutoTopicCreation: true,
+          defaultHeaders: {
+            "Content-Type": "application/json",
+          },
+        };
+      },
+    }),
+  ],
+  controllers: [PairController],
+  providers,
+  exports: providers,
 })
 export class PairInfrastructureModule {}
