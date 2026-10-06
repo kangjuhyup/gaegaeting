@@ -30,7 +30,6 @@ export const createPinoLoggerOptions = (
     redact: {
       paths: [
         'req.headers.authorization',
-        'req.headers["x-gaegaeting-principal"]',
         'req.headers.cookie',
         'req.headers["x-gaegaeting-principal"]',
         'req.body.body',

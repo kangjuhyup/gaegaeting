@@ -38,7 +38,7 @@ Match `.env`의 Kafka broker와 topic prefix를 Chat과 맞춘다. Kafka를 사�
 Gateway `.env`에 다음을 설정한다.
 
 ```dotenv
-CHAT_SERVICE_URL=http://127.0.0.1:2802/chat/graphql
+CHAT_SERVICE_URL=http://127.0.0.1:2804/chat/graphql
 CHAT_WS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
 
