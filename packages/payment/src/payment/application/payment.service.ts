@@ -168,7 +168,9 @@ export class PaymentService {
           ? new Date(cursor.getTime() - 3_600_000)
           : new Date(through.getTime() - 28 * 86_400_000);
         const retention =
-          (adapter.provider === "APPLE" ? 180 : 30) * 86_400_000;
+          (adapter.provider === "APPLE" && this.environment === "Production"
+            ? 180
+            : 30) * 86_400_000;
         if (since.getTime() < through.getTime() - retention)
           throw new PaymentError("REFUND_RECONCILIATION_WINDOW_EXCEEDED");
         const events = await adapter.refunds(since);
