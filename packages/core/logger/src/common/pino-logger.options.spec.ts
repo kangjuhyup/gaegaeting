@@ -14,6 +14,7 @@ describe("createPinoLoggerOptions", () => {
       },
     );
     const sensitive = {
+      body: "sensitive-chat-message",
       ci: "sensitive-ci",
       di: "sensitive-di",
       handoffId: "sensitive-handoff",

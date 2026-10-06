@@ -19,7 +19,7 @@ export class SavePairHandler implements ICommandHandler<SavePairCommand,PairEnti
         const pair = PairEntity.of({
             leftUserId: command.leftUserId,
             rightUserId: command.rightUserId,
-            active: true
+            active: true, likeAId: command.likeAId, likeBId: command.likeBId
         })
         
         const savedPair = await this.pairRepository.savePair(pair)

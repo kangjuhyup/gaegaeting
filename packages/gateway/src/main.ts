@@ -11,6 +11,7 @@ import { createAuthenticationMiddleware } from './auth/authentication-middleware
 import { createEdgeAuthenticationMiddleware } from './auth/edge-authentication-middleware.js';
 import { resolveApiAudience, resolveOidcRuntimeConfig } from './auth/oidc-runtime-config.js';
 import { pathToFileURL } from 'node:url';
+import { startChatWebsocket } from './chat-websocket.js';
 import { createGatewayContext, gatewayRequestMiddleware } from './request-context.js';
 
 const { json } = bodyParser;
@@ -62,14 +63,13 @@ export async function bootstrap(): Promise<{
   const assertionSecret = requireEnv('INTERNAL_AUTH_ASSERTION_SECRET');
   const authMode = process.env.GATEWAY_AUTH_MODE ?? 'direct';
   if (authMode !== 'direct' && authMode !== 'edge') throw new Error('Invalid GATEWAY_AUTH_MODE');
-  const oidc = authMode === 'direct' ? resolveOidcRuntimeConfig(process.env) : undefined;
+  const chatUrl = process.env.CHAT_SERVICE_URL;
+  const oidc = authMode === 'direct' || chatUrl ? resolveOidcRuntimeConfig(process.env) : undefined;
   const subjects = new AccountSubjectClient(
     process.env.ACCOUNT_SUBJECT_RESOLUTION_URL ??
       'http://account.app.svc.cluster.local:2800/account/internal/subjects/resolve',
   );
-  const authenticate = authMode === 'edge'
-    ? createEdgeAuthenticationMiddleware(subjects, requireEnv('EDGE_AUTH_ASSERTION_SECRET'))
-    : createAuthenticationMiddleware(
+  const authenticateDirect = oidc ? createAuthenticationMiddleware(
         new OpaqueTokenIntrospector(
           new OidcDiscoveryCache(oidc!.discoveryUrl, oidc!.issuer, fetch, {
             allowInsecureLoopbackHttp: oidc!.allowInsecureLoopbackHttp,
@@ -87,7 +87,10 @@ export async function bootstrap(): Promise<{
           },
         ),
         subjects,
-      );
+      ) : undefined;
+  const authenticate = authMode === 'edge'
+    ? createEdgeAuthenticationMiddleware(subjects, requireEnv('EDGE_AUTH_ASSERTION_SECRET'))
+    : authenticateDirect!;
 
   const gateway = new Gateway(assertionSecret);
   await gateway.initialize();
@@ -109,9 +112,14 @@ export async function bootstrap(): Promise<{
   // backward-compatible (local/dev)
   app.all('/graphql', json(), authenticate, gqlMiddleware);
 
+  const allowedWsOrigins = (process.env.CHAT_WS_ALLOWED_ORIGINS ??
+    (process.env.NODE_ENV === 'production' && chatUrl ? requireEnv('CHAT_WS_ALLOWED_ORIGINS') : 'http://localhost:5173,http://127.0.0.1:5173')).split(',').map(value => value.trim()).filter(Boolean);
+  let closeChatSockets: (() => Promise<void>) | undefined;
+
   // Graceful shutdown
   const shutdown = async () => {
     console.log('\nShutting down gracefully...');
+    await closeChatSockets?.();
     await gateway.shutdown();
     process.exit(0);
   };
@@ -128,6 +136,9 @@ export async function bootstrap(): Promise<{
     console.log(`❤️  Health: http://localhost:${PORT}/gateway/health`);
   });
 
+  if (chatUrl) closeChatSockets = startChatWebsocket(httpServer, {
+    serviceUrl: chatUrl, secret: assertionSecret, authenticate: authenticateDirect!, allowedOrigins: allowedWsOrigins,
+  });
   return { app, gateway, httpServer, shutdown };
 }
 

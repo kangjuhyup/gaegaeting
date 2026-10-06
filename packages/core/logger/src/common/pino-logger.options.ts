@@ -30,6 +30,8 @@ export const createPinoLoggerOptions = (options?: {
         "req.headers.authorization",
         "req.headers.cookie",
         "req.headers[\"x-gaegaeting-edge-assertion\"]",
+        "req.body.body",
+        "req.body.variables.input.body",
         "req.body.ci",
         "req.body.di",
         "req.body.handoffId",

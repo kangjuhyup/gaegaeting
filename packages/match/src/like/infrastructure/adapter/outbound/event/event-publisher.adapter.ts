@@ -16,6 +16,6 @@ export class EventPublisherAdapter implements EventPublisherPort {
      * @param payload 토픽에 매칭되는 페이로드
      */
     async publish<T extends Topics>(topic: T, payload: TopicPayloadMap[T]): Promise<void> {
-        this.eventEmitter.emit(topic, payload)
+        await this.eventEmitter.emitAsync(topic, payload)
     }
 }

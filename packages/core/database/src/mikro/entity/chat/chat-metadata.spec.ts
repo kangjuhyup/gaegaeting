@@ -3,7 +3,7 @@ import { MikroORM, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MIKRO_CHAT_ENTITIES } from '../../datasource/database-schema.js';
 
 describe('MikroORM CHAT metadata', () => {
-  it('discovers six tables with the frozen schema contract', async () => {
+  it('discovers six tables with matching and message deduplication constraints', async () => {
     expect(MIKRO_CHAT_ENTITIES).toHaveLength(6);
     const orm = await MikroORM.init({
       driver: PostgreSqlDriver,
@@ -32,8 +32,8 @@ describe('MikroORM CHAT metadata', () => {
           'ix_msg_sender_time',
           'ix_part_user',
         ]);
-      expect(metadata.flatMap(item => item.uniques).map(unique => unique.name))
-        .toEqual(['uq_conv_direct_key']);
+      expect(metadata.flatMap(item => item.uniques).map(unique => unique.name).sort())
+        .toEqual(['uq_conv_direct_key', 'uq_conv_pair', 'uq_msg_client']);
 
       const message = orm.getMetadata().get('MessageOrmEntity');
       expect(message.properties.conversation.foreignKeyName)

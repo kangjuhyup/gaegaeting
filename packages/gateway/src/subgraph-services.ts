@@ -5,6 +5,9 @@ export function getSubgraphServices(environment = process.env): Subgraph[] {
     { name: 'account', url: environment.ACCOUNT_SERVICE_URL ?? 'http://127.0.0.1:2800/account/graphql' },
     { name: 'match', url: environment.MATCH_SERVICE_URL ?? 'http://127.0.0.1:2801/match/graphql' },
   ];
+  if (environment.CHAT_SERVICE_URL?.trim()) {
+    services.push({ name: 'chat', url: environment.CHAT_SERVICE_URL });
+  }
   if (environment.PAYMENT_SERVICE_URL?.trim()) {
     services.push({ name: 'payment', url: environment.PAYMENT_SERVICE_URL });
   }

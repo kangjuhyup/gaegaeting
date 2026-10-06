@@ -11,6 +11,7 @@ import { PetPage } from "./pages/PetPage.js";
 import { RecommendationsPage } from "./pages/RecommendationsPage.js";
 import { SocialPreview } from "./pages/SocialPreview.js";
 import { StoryboardPage } from "./pages/StoryboardPage.js";
+import { LiveChat } from './pages/LiveChat.js';
 import {
   loadOnboarding,
   onboardingRoute,
@@ -159,7 +160,7 @@ export default function App() {
     <SocialPreview
       route={currentRoute === "likes" ? "likes" : "chats"}
       roomId={roomId}
-      onOpenChat={(id) => navigate("chats", id)}
+      onOpenChat={() => navigate("chats")}
       onChats={() => navigate("chats")}
       onLikes={() => navigate("likes")}
       onRecommendations={() => navigate("recommendations")}
@@ -208,7 +209,9 @@ export default function App() {
     ),
     recommendations: <RecommendationsPage config={config} token={token} />,
     likes: socialPage,
-    chats: socialPage,
+    chats: token ? <LiveChat key={roomId ?? 'list'} config={config} token={token}
+      roomId={roomId} onOpenChat={id => navigate('chats', id)}
+      onChats={() => navigate('chats')} onRecommendations={() => navigate('recommendations')} /> : null,
     storyboard: <StoryboardPage />,
   }[currentRoute];
   if (currentRoute === "storyboard") return <StoryboardPage />;
