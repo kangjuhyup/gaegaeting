@@ -339,4 +339,24 @@ describe("Apple authenticated notifications and refund recovery", () => {
       "REFUND_RECONCILIATION_WINDOW_EXCEEDED",
     );
   });
+
+  it("requires manual review for a 31-day Sandbox gap without calling Apple", async () => {
+    const { dependencies, getNotificationHistory } = fixture();
+    const adapter = new AppleStoreAdapter(
+      { ...options, environment: "Sandbox" },
+      dependencies,
+    );
+    await expect(
+      adapter.refunds(new Date(Date.now() - 31 * 86_400_000)),
+    ).rejects.toThrow("REFUND_RECONCILIATION_WINDOW_EXCEEDED");
+    expect(getNotificationHistory).not.toHaveBeenCalled();
+  });
+
+  it("can still reconcile a 31-day production gap", async () => {
+    const { adapter, getNotificationHistory } = fixture();
+    await expect(
+      adapter.refunds(new Date(Date.now() - 31 * 86_400_000)),
+    ).resolves.toEqual([]);
+    expect(getNotificationHistory).toHaveBeenCalledTimes(1);
+  });
 });
