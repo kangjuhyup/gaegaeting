@@ -29,6 +29,7 @@ export const createPinoLoggerOptions = (options?: {
       paths: [
         "req.headers.authorization",
         "req.headers.cookie",
+        "req.headers[\"x-gaegaeting-edge-assertion\"]",
         "req.body.ci",
         "req.body.di",
         "req.body.handoffId",
@@ -55,6 +56,10 @@ export const createPinoLoggerOptions = (options?: {
         "req.body.variables.input.password",
         "req.body.email",
         "req.body.variables.input.email",
+        "req.body.userName",
+        "req.body.variables.input.userName",
+        "req.body.certificationCode",
+        "req.body.variables.input.certificationCode",
       ],
       censor: "[REDACTED]",
     },

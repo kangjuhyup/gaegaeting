@@ -20,6 +20,7 @@ describe("createPinoLoggerOptions", () => {
       ticket: "sensitive-ticket",
       attemptId: "sensitive-attempt",
       providerSub: "sensitive-provider", name: "sensitive-name", birthDate: "sensitive-birthdate",
+      userName: "sensitive-pet-owner", certificationCode: "sensitive-pet-code",
       phone: "sensitive-phone", username: "sensitive-username", password: "sensitive-password", email: "sensitive-email",
     };
     logger.info(
@@ -30,6 +31,7 @@ describe("createPinoLoggerOptions", () => {
             authorization: "sensitive-bearer",
             cookie: "sensitive-cookie",
             "x-gaegaeting-principal": "sensitive-internal-assertion",
+            "x-gaegaeting-edge-assertion": "sensitive-edge-assertion",
           },
           body: {
             ...sensitive,
