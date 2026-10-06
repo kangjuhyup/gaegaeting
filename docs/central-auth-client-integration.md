@@ -7,8 +7,8 @@ This repository does not contain Flutter or Web/BFF application source. OIDC cli
 - Proposed production issuer: `https://auth.rvkang.app/t/gaegaeting/oidc`. The production tenant and clients have not yet been provisioned; verify the deployed Auth metadata before enabling this issuer. A DNS alias does not change the OIDC issuer.
 - Discover authorization, token, revocation, UserInfo, and end-session endpoints from the issuer metadata.
 - API resource/audience: `https://api.gaegaeting.app` (origin only; never add a path or query).
-- Scopes: `openid profile email offline_access account:read account:write match:read match:write`.
-- Request the four API scopes explicitly in the initial authorization request. A refresh request may retain or narrow the originally granted scopes, but must never be used to add a scope that was not granted to that session.
+- Scopes: `openid profile email offline_access account:read account:write match:read match:write payment:read payment:write`.
+- Request the six API scopes explicitly in the initial authorization request. A refresh request may retain or narrow the originally granted scopes, but must never be used to add a scope that was not granted to that session. Existing mobile sessions need a new authorization grant for Payment scopes.
 
 ## API scope policy
 
@@ -18,8 +18,10 @@ This repository does not contain Flutter or Web/BFF application source. OIDC cli
 | `account:write` | Create or change account and pet data |
 | `match:read` | Read feed, location, like, and pair data |
 | `match:write` | Create or change feed, location, like, and pair data |
+| `payment:read` | Read snack products, own wallet, and own purchase history |
+| `payment:write` | Prepare and confirm own iOS/Android snack purchases |
 
-Scopes only authorize these broad API capabilities. Account/match services still enforce roles, permissions, ownership, and resource-level rules independently.
+Scopes only authorize these broad API capabilities. Account, Match, and Payment services still enforce roles, permissions, ownership, and resource-level rules independently. Payment uses `payment:read` on `snackProducts`, `mySnackWallet`, and `mySnackTransactions`, and `payment:write` on `prepareSnackPurchase` and `confirmSnackPurchase`.
 
 ## Flutter (`gaegaeting-flutter`)
 
@@ -51,14 +53,23 @@ Run the issuer externally and supply the Gateway settings through `packages/gate
 | `OIDC_ALLOW_INSECURE_HTTP` | `true` only for a loopback HTTP issuer in development |
 | `OIDC_INTROSPECTION_CLIENT_ID` | Required in production; registered service client ID (proposed: `gaegaeting-gateway`, once provisioned) |
 | `OIDC_INTROSPECTION_CLIENT_SECRET` | That client's secret supplied by the infrastructure owner |
-| `INTERNAL_AUTH_ASSERTION_SECRET` | Separate secret shared with account/match, at least 32 characters |
+| `INTERNAL_AUTH_ASSERTION_SECRET` | Separate secret shared with Account/Match/Payment, at least 32 characters |
 | `ACCOUNT_SUBJECT_RESOLUTION_URL` | Account service's internal subject-resolution endpoint |
 | `ACCOUNT_SERVICE_URL` | Account GraphQL endpoint |
 | `MATCH_SERVICE_URL` | Match GraphQL endpoint |
+| `PAYMENT_SERVICE_URL` | Optional Payment GraphQL endpoint (`http://127.0.0.1:2802/payment/graphql` locally); absent means Payment is not composed |
 
 Do not enable insecure HTTP in production. Runtime validation rejects non-loopback HTTP issuers and discovery/introspection endpoints even with the development flag.
 
 Infrastructure bootstrap, client registration, credential distribution, and full-stack environment provisioning belong to the infrastructure repository. Application guards, introspection, signed assertions, and account subject mapping remain tested here.
+
+Register and permit `payment:read` and `payment:write` for the mobile client's API resource in that external infrastructure before requesting them. This repository change does not provision or modify remote Auth clients. Gateway forwards the granted scopes in a signed internal assertion with audience `payment` and issuer `gaegaeting-gateway`; Payment verifies both and enforces its resolver scopes.
+
+## Mobile purchase connection
+
+iOS and Android purchase UI and StoreKit/Play Billing integration belong to the separate Flutter repository. Request the new Payment scopes during login, fetch `snackProducts` through Gateway, and display the store's actual localized price. Send the purchaser link returned by `prepareSnackPurchase` as Apple's `appAccountToken` or Google's `obfuscatedAccountId`. Submit the store evidence to `confirmSnackPurchase`, and finish the Apple transaction only after the server confirms fulfillment. Google consume is a server-side follow-up. Retry unfinished confirmations after app restart; do not grant snacks from a client callback alone.
+
+Payment notifications are separate provider-authenticated endpoints: `/payment/notifications/apple` and `/payment/notifications/google`. They do not use mobile bearer tokens or user GraphQL scopes. Apple payload signature verification and Google Pub/Sub identity verification are performed by Payment. Expose only those exact paths to providers; keep `/payment/graphql` and other Payment endpoints internal.
 
 ## Production rollout gate
 

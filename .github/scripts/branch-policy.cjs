@@ -1,4 +1,4 @@
-const domains = ['account', 'match', 'gateway', 'core'];
+const domains = ['account', 'match', 'payment', 'gateway', 'core'];
 const domainPattern = `(${domains.join('|')})`;
 const taskPattern = new RegExp(`^(feat|fix|refactor|chore|docs|test)/${domainPattern}/[a-z0-9]+(?:-[a-z0-9]+)*$`);
 const devPattern = new RegExp(`^dev/${domainPattern}$`);

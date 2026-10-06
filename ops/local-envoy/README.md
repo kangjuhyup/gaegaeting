@@ -25,6 +25,10 @@ docker run --rm --name gaegaeting-local-envoy \
 
 Gateway는 `:4000`, edge-authz는 `127.0.0.1:4010`, Envoy는 `127.0.0.1:8080`을 사용합니다. macOS Docker의 `host.docker.internal`로 호스트 프로세스에 연결합니다. 다른 OS에서는 Envoy 설정의 호스트 주소를 조정해야 합니다.
 
+결제를 사용할 때는 Payment를 `:2802`에서 실행하고 Gateway에 `PAYMENT_SERVICE_URL=http://127.0.0.1:2802/payment/graphql`을 설정합니다. `pnpm dev account match payment gateway`도 같은 연결을 구성합니다. Payment의 DB 마이그레이션·스토어 설정은 [결제 서비스](../../packages/payment/README.md)를 참고하세요.
+
+Envoy는 정확히 `/payment/notifications/apple`, `/payment/notifications/google` 두 경로만 Payment로 전달합니다. 제공자 알림은 사용자 OIDC 인증 대신 Payment의 Apple 서명·Google Pub/Sub 인증 검증을 사용하므로 해당 두 경로에서만 ext_authz가 비활성화됩니다. Gateway GraphQL의 ext_authz는 계속 적용되며 `/payment/graphql`은 외부에 노출하지 않습니다. 로컬 알림 테스트는 제공자 테스트 설정과 접근 가능한 HTTPS 전달 주소를 별도로 준비해야 합니다.
+
 ## 확인
 
 ```bash

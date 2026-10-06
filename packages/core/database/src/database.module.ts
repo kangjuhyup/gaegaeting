@@ -1,4 +1,5 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import type { EntityClass } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { type DynamicModule, Global, Module, type Type } from '@nestjs/common';
 import type { DatabaseConfigReader } from './database-options.js';
@@ -47,6 +48,17 @@ export class DatabaseModule {
     }
 
     const entities = getMikroEntitiesBySchema(schema);
+    return this.forEntitiesAsync(options, entities);
+  }
+
+  /** Allows an independent service to own its persistence entities. */
+  static forEntitiesAsync(
+    options: DatabaseModuleAsyncOptions,
+    entities: EntityClass<any>[],
+  ): DynamicModule {
+    if (entities.length === 0) {
+      throw new Error('At least one database entity is required');
+    }
     const mikroModule = MikroOrmModule.forRootAsync({
       driver: PostgreSqlDriver,
       imports: options.imports,
