@@ -16,6 +16,10 @@ node_modules
 **/*.keystore
 .tmp
 .worktrees
+.yarn
+mysql
+mariadb
+redis
 ops
 docs
 scripts
