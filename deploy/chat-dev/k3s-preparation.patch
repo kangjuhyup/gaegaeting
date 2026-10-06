@@ -108,7 +108,7 @@ index 0000000..ed63eab
 +    app.kubernetes.io/part-of: gaegaeting
 +  ports:
 +  - name: http
-+    port: 2802
++    port: 2804
 +    targetPort: http
 diff --git a/gitops/apps/base/gaegaeting/chat.yaml b/gitops/apps/base/gaegaeting/chat.yaml
 new file mode 100644
@@ -149,7 +149,7 @@ index 0000000..889a7b1
 +        image: ghcr.io/kangjuhyup/gaegaeting/chat:sha-CHAT_RELEASE_SHA@sha256:CHAT_IMAGE_DIGEST
 +        ports:
 +        - name: http
-+          containerPort: 2802
++          containerPort: 2804
 +        envFrom:
 +        - secretRef:
 +            name: gaegaeting-chat-runtime
@@ -241,7 +241,7 @@ index 0000000..4b2be0b
 +          app.kubernetes.io/name: gateway
 +    ports:
 +    - protocol: TCP
-+      port: 2802
++      port: 2804
 diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/database/chat-provision-job.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/database/chat-provision-job.yaml
 new file mode 100644
 index 0000000..dfce904
