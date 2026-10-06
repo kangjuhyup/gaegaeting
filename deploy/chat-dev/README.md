@@ -2,6 +2,8 @@
 
 이 디렉터리는 Gaegaeting Chat을 원격 개발 환경에 연결하기 위한 검토용 K3s 변경안이다. 준비 작업에서는 원격 배포, Doppler 값 변경, main 병합을 실행하지 않는다.
 
+2026-10-06 개발 배포에서는 이 과거 패치를 현재 인프라에 통째로 적용하지 않는다. 현재 GitOps main의 Payment·Challenge 이미지, migration, Gateway URL 및 보안 경계를 먼저 보존하고 Chat 파일만 이관한다. 기존 8개 앱과 4개 migration 참조는 유지하며, Chat을 실제 등록할 때에만 9개 앱과 5개 migration 참조를 검증한다. Chat 기본 포트는 `2804`이며 Payment `2802`, Challenge `2803`과 구분한다. 기존 안전한 저장소의 Chat 전용 DB 자격 증명이 확인되기 전에는 Secret projection, CNPG 참조, migration/server 또는 Gateway Chat 연결을 활성화하지 않는다.
+
 ## 적용 대상과 원본
 
 - 앱 이미지 교체: **Chat, Match, Gateway, integration-ui**.

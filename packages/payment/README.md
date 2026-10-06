@@ -43,7 +43,7 @@ Apple·Google 기본 판매 조건 ID는 `apple-snacks-10`, `google-snacks-10` �
 
 비밀은 서비스별 환경 파일 또는 비밀 저장소로 주입한다. `pnpm dev payment gateway`는 `packages/payment/.env`를 읽으며 셸 환경변수가 우선한다. 실제 키·토큰은 커밋하지 않는다.
 
-스토어 상품이 등록된 경우 [설정 예제](.env.example)를 `packages/payment/.env`로 복사하고 빈 설정을 실제 값으로 채운다. 예제는 양 스토어를 활성화하므로 설정이 누락되면 서버 시작을 거절한다. 한 플랫폼만 연동하려면 다른 플랫폼의 `PAYMENT_*_ENABLED`를 `false`로 설정한다. `PAYMENT_PROOF_ENCRYPTION_KEY`는 `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`로 최초 생성할 수 있다.
+[설정 예제](.env.example)는 로컬 예시이며 양 스토어를 비활성으로 유지한다. 서버 비밀은 Doppler 등에서 주입하고 기존 `PAYMENT_PROOF_ENCRYPTION_KEY`를 유지한다. 별도 승인을 받은 Sandbox 검증에서만 해당 플랫폼의 설정과 파일 마운트를 준비한 뒤 활성화한다. [앱 출시 준비 보고서](../../docs/payment-mobile-release-readiness.md)와 `node scripts/payment-environment-preflight.mjs --mode disabled`를 먼저 확인한다.
 
 | 변수                                                                                        | 설정                                                                 |
 | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
@@ -112,7 +112,7 @@ pnpm dev payment gateway
 - 사용자 내부 assertion으로 스토어 알림을 인증하지 않는다. 각 제공자의 서명·OIDC 인증을 검증하며 저장 실패 시 수신 성공을 반환하지 않는다.
 - 알림 작업과 Google consume 작업은 암호화된 증거, 임대, 재시도 시각을 DB에 보존한다. 완료 행도 유지하여 같은 알림의 재지급을 방지한다.
 - 환불 대조는 제공자별 성공 시각을 DB에 저장한다. 재시작·일시 장애 이후 저장한 시각부터 겹치는 구간을 다시 읽는다. 첫 실행은 28일 범위다.
-- 복구 공백이 제공자 보존 범위를 넘으면 `refund_reconciliation_requires_review` 로그를 남기고 체크포인트를 진행하지 않는다. 운영 모니터링에서 이 이벤트와 반복 `jobs_retry_scheduled`를 확인한다.
+- 복구 공백이 제공자 보존 범위(Apple Production 180일, Apple Sandbox·Google 30일)를 넘으면 `refund_reconciliation_requires_review` 로그를 남기고 체크포인트를 진행하지 않는다. 운영 모니터링에서 이 이벤트와 반복 `jobs_retry_scheduled`를 확인한다.
 - 스토어 최종 처리 작업 중 이미 환불된 거래는 회수를 반영하고 종료한다. 환불 취소는 검증된 이벤트와 최신 스토어 구매 상태가 모두 확인된 경우만 복원한다.
 
 ## 검증
@@ -126,4 +126,4 @@ PAYMENT_TEST_DATABASE_URL=postgresql://user:password@127.0.0.1:5432/payment_test
 
 DB 환경변수가 없으면 PostgreSQL·실제 HTTP API 통합 테스트는 건너뛴다. SDK 어댑터 테스트는 스토어 응답을 주입해 검증 경계를 확인하며 실제 자격증명을 사용한 Sandbox 결제를 대신하지 않는다. 운영 판매 전에 별도 모바일 앱과 실제 스토어 테스트 계정으로 구매·재시도·재구매·환불을 확인한다.
 
-2026-10-05 검증: PostgreSQL 16.15를 포함한 결제 테스트 105개, 테스트 코드 TypeScript 검사, 전체 워크스페이스 빌드·테스트, 실행·인증·이미지 계약 테스트 88개가 통과했다. Payment 컨테이너 빌드와 비루트·읽기 전용 환경에서의 애플리케이션·마이그레이션 진입점 검사도 통과했다. 실제 스토어 Sandbox 구매와 운영 배포는 수행하지 않았다.
+2026-10-05 구현 검증 당시: PostgreSQL 16.15를 포함한 결제 테스트 105개, 테스트 코드 TypeScript 검사, 전체 워크스페이스 빌드·테스트, 실행·인증·이미지 계약 테스트 88개가 통과했다. Payment 컨테이너 빌드와 비루트·읽기 전용 환경에서의 애플리케이션·마이그레이션 진입점 검사도 통과했다. 당시 실제 스토어 Sandbox 구매와 운영 배포는 수행하지 않았다. 이후 배포 상태와 2026-10-06 준비 검증은 [앱 출시 준비 보고서](../../docs/payment-mobile-release-readiness.md)를 기준으로 한다.
