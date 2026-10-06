@@ -18,6 +18,8 @@ const env = {
   STORAGE_PROFILE_PREFIX: 'profiles', STORAGE_REGION: 'local', STORAGE_ACCESS_KEY_ID: 'image_test',
   STORAGE_SECRET_ACCESS_KEY: 'image_test', ACCOUNT_SERVICE_HOST: 'http://127.0.0.1:2800',
   KAFKA_BROKERS: '127.0.0.1:9092',
+  CHAT_SERVICE_API_PORT: '2804', CHAT_KAFKA_ENABLED: 'false',
+  MATCH_SERVICE_HOST: 'http://127.0.0.1:2801',
 };
 let code;
 if (service === 'integration-ui' || service === 'admin-ui') {
