@@ -165,10 +165,11 @@ export class AppleStoreAdapter extends StorePort {
   async refunds(since: Date): Promise<StoreNotification[]> {
     const endDate = Date.now();
     const startDate = since.getTime();
-    // Apple retains notification history for 180 days. Do not silently drop an older gap.
+    // Sandbox history is retained for 30 days; production history for 180 days.
+    const retentionDays = this.options.environment === "Sandbox" ? 30 : 180;
     if (
       !Number.isFinite(startDate) ||
-      startDate < endDate - 180 * 86_400_000 ||
+      startDate < endDate - retentionDays * 86_400_000 ||
       startDate > endDate
     ) {
       throw new PaymentError("REFUND_RECONCILIATION_WINDOW_EXCEEDED");
