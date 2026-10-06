@@ -1,0 +1,667 @@
+diff --git a/gitops/apps/base/gaegaeting/chat-migration.yaml b/gitops/apps/base/gaegaeting/chat-migration.yaml
+new file mode 100644
+index 0000000..2f518a3
+--- /dev/null
++++ b/gitops/apps/base/gaegaeting/chat-migration.yaml
+@@ -0,0 +1,85 @@
++apiVersion: batch/v1
++kind: Job
++metadata:
++  name: chat-migration-CHAT_RELEASE_SHORT_SHA
++  namespace: gaegaeting-dev
++  annotations:
++    argocd.argoproj.io/sync-wave: '0'
++spec:
++  suspend: true
++  backoffLimit: 0
++  activeDeadlineSeconds: 600
++  template:
++    metadata:
++      labels:
++        app.kubernetes.io/name: chat
++        app.kubernetes.io/part-of: gaegaeting
++    spec:
++      automountServiceAccountToken: false
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 1000
++        runAsGroup: 1000
++        fsGroup: 1000
++        seccompProfile:
++          type: RuntimeDefault
++      containers:
++      - name: chat
++        image: ghcr.io/kangjuhyup/gaegaeting/chat:sha-CHAT_RELEASE_SHA@sha256:CHAT_IMAGE_DIGEST
++        resources:
++          requests:
++            cpu: 100m
++            memory: 512Mi
++          limits:
++            memory: 1Gi
++        securityContext:
++          allowPrivilegeEscalation: false
++          capabilities:
++            drop:
++            - ALL
++        env:
++        - name: NODE_EXTRA_CA_CERTS
++          value: /etc/database/ca.crt
++        - name: DATABASE_HOST
++          valueFrom:
++            secretKeyRef:
++              name: gaegaeting-chat-runtime
++              key: DATABASE_HOST
++        - name: DATABASE_PORT
++          valueFrom:
++            secretKeyRef:
++              name: gaegaeting-chat-runtime
++              key: DATABASE_PORT
++        - name: DATABASE_USERNAME
++          valueFrom:
++            secretKeyRef:
++              name: gaegaeting-chat-runtime
++              key: DATABASE_USERNAME
++        - name: DATABASE_PASSWORD
++          valueFrom:
++            secretKeyRef:
++              name: gaegaeting-chat-runtime
++              key: DATABASE_PASSWORD
++        - name: DATABASE_NAME
++          valueFrom:
++            secretKeyRef:
++              name: gaegaeting-chat-runtime
++              key: DATABASE_NAME
++        - name: DATABASE_SSL_MODE
++          valueFrom:
++            secretKeyRef:
++              name: gaegaeting-chat-runtime
++              key: DATABASE_SSL_MODE
++        volumeMounts:
++        - name: db-ca
++          mountPath: /etc/database
++          readOnly: true
++        workingDir: /app
++        command:
++        - node
++        - dist/src/migrations/migrate.js
++      volumes:
++      - name: db-ca
++        secret:
++          secretName: gaegaeting-db-ca
++      restartPolicy: Never
+diff --git a/gitops/apps/base/gaegaeting/chat-service.yaml b/gitops/apps/base/gaegaeting/chat-service.yaml
+new file mode 100644
+index 0000000..ed63eab
+--- /dev/null
++++ b/gitops/apps/base/gaegaeting/chat-service.yaml
+@@ -0,0 +1,15 @@
++apiVersion: v1
++kind: Service
++metadata:
++  name: chat
++  namespace: gaegaeting-dev
++  annotations:
++    argocd.argoproj.io/sync-wave: '-10'
++spec:
++  selector:
++    app.kubernetes.io/name: chat
++    app.kubernetes.io/part-of: gaegaeting
++  ports:
++  - name: http
++    port: 2804
++    targetPort: http
+diff --git a/gitops/apps/base/gaegaeting/chat.yaml b/gitops/apps/base/gaegaeting/chat.yaml
+new file mode 100644
+index 0000000..889a7b1
+--- /dev/null
++++ b/gitops/apps/base/gaegaeting/chat.yaml
+@@ -0,0 +1,78 @@
++apiVersion: apps/v1
++kind: Deployment
++metadata:
++  name: chat
++  namespace: gaegaeting-dev
++  annotations:
++    argocd.argoproj.io/sync-wave: '10'
++spec:
++  selector:
++    matchLabels:
++      app.kubernetes.io/name: chat
++      app.kubernetes.io/part-of: gaegaeting
++  template:
++    metadata:
++      labels:
++        app.kubernetes.io/name: chat
++        app.kubernetes.io/part-of: gaegaeting
++      annotations:
++        sidecar.istio.io/inject: 'false'
++    spec:
++      automountServiceAccountToken: false
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 1000
++        runAsGroup: 1000
++        fsGroup: 1000
++        seccompProfile:
++          type: RuntimeDefault
++      containers:
++      - name: chat
++        image: ghcr.io/kangjuhyup/gaegaeting/chat:sha-CHAT_RELEASE_SHA@sha256:CHAT_IMAGE_DIGEST
++        ports:
++        - name: http
++          containerPort: 2804
++        envFrom:
++        - secretRef:
++            name: gaegaeting-chat-runtime
++        securityContext:
++          allowPrivilegeEscalation: false
++          capabilities:
++            drop:
++            - ALL
++        startupProbe:
++          httpGet:
++            path: /chat/health
++            port: http
++          failureThreshold: 60
++          periodSeconds: 5
++        readinessProbe:
++          httpGet:
++            path: /chat/health/ready
++            port: http
++          periodSeconds: 10
++          timeoutSeconds: 6
++        livenessProbe:
++          httpGet:
++            path: /chat/health
++            port: http
++          periodSeconds: 20
++          failureThreshold: 3
++        env:
++        - name: NODE_EXTRA_CA_CERTS
++          value: /etc/database/ca.crt
++        volumeMounts:
++        - name: db-ca
++          mountPath: /etc/database
++          readOnly: true
++        resources:
++          requests:
++            cpu: 25m
++            memory: 256Mi
++          limits:
++            memory: 512Mi
++      volumes:
++      - name: db-ca
++        secret:
++          secretName: gaegaeting-db-ca
++  replicas: 0
+diff --git a/gitops/apps/base/gaegaeting/kustomization.yaml b/gitops/apps/base/gaegaeting/kustomization.yaml
+index 9acfcc1..8d57cba 100644
+--- a/gitops/apps/base/gaegaeting/kustomization.yaml
++++ b/gitops/apps/base/gaegaeting/kustomization.yaml
+@@ -17,3 +17,6 @@ resources:
+ - match-migration.yaml
+ - admin-ui.yaml
+ - admin-ui-service.yaml
++- chat.yaml
++- chat-service.yaml
++- chat-migration.yaml
+diff --git a/gitops/apps/dev/gaegaeting/edge-proxy-patch.yaml b/gitops/apps/dev/gaegaeting/edge-proxy-patch.yaml
+index 7d37d8d..b186bac 100644
+--- a/gitops/apps/dev/gaegaeting/edge-proxy-patch.yaml
++++ b/gitops/apps/dev/gaegaeting/edge-proxy-patch.yaml
+@@ -18,3 +18,4 @@ spec:
+     metadata:
+       annotations:
+         infra.oci-a1.example/doppler-config: stg
++        infra.oci-a1.example/proxy-config-sha256: ee2b1ffc2addced7221192a0cc1755192bf71e65b1ceaa556b3ff53415919c33
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/chat-ingress-policy.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/chat-ingress-policy.yaml
+new file mode 100644
+index 0000000..4b2be0b
+--- /dev/null
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/chat-ingress-policy.yaml
+@@ -0,0 +1,22 @@
++apiVersion: networking.k8s.io/v1
++kind: NetworkPolicy
++metadata:
++  name: chat-ingress
++  namespace: gaegaeting-dev
++spec:
++  podSelector:
++    matchLabels:
++      app.kubernetes.io/name: chat
++  policyTypes:
++  - Ingress
++  ingress:
++  - from:
++    - namespaceSelector:
++        matchLabels:
++          kubernetes.io/metadata.name: gaegaeting-dev
++      podSelector:
++        matchLabels:
++          app.kubernetes.io/name: gateway
++    ports:
++    - protocol: TCP
++      port: 2804
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/database/chat-provision-job.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/database/chat-provision-job.yaml
+new file mode 100644
+index 0000000..dfce904
+--- /dev/null
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/database/chat-provision-job.yaml
+@@ -0,0 +1,66 @@
++apiVersion: batch/v1
++kind: Job
++metadata:
++  name: gaegaeting-chat-db-provision-v1
++  namespace: databases
++  annotations:
++    argocd.argoproj.io/sync-wave: '-5'
++spec:
++  suspend: true
++  backoffLimit: 0
++  activeDeadlineSeconds: 180
++  template:
++    metadata:
++      labels:
++        app.kubernetes.io/name: gaegaeting-chat-db-provision
++    spec:
++      restartPolicy: Never
++      automountServiceAccountToken: false
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 26
++        runAsGroup: 26
++        fsGroup: 26
++        seccompProfile:
++          type: RuntimeDefault
++      containers:
++      - name: provision
++        image: ghcr.io/cloudnative-pg/postgresql:18.4-system-trixie@sha256:42708a75345b7a48fdd9257b071830783a97fd228529196b6313187a7198e185
++        command:
++        - /bin/sh
++        - '-c'
++        - |
++          set -eu
++          export PGHOST="$DATABASE_HOST" PGPORT="$DATABASE_PORT" PGUSER=postgres PGDATABASE=postgres PGSSLMODE=verify-full PGSSLROOTCERT=/tls/ca.crt PGSSLCERT=/tls/tls.crt PGSSLKEY=/tls/tls.key
++          export TARGET_DATABASE="$CHAT_DATABASE_NAME" TARGET_USERNAME="$CHAT_DATABASE_USERNAME" TARGET_PASSWORD="$CHAT_DATABASE_PASSWORD"
++          if ! psql -X -q -f /sql/provision.sql >/dev/null 2>&1; then echo 'Chat database provisioning failed; SQL and credentials suppressed.'; exit 1; fi
++          echo 'Chat database and restricted role prepared.'
++        envFrom:
++        - secretRef:
++            name: gaegaeting-db-provision-runtime
++        volumeMounts:
++        - name: tls
++          mountPath: /tls
++          readOnly: true
++        - name: sql
++          mountPath: /sql
++          readOnly: true
++        securityContext:
++          allowPrivilegeEscalation: false
++          capabilities:
++            drop:
++            - ALL
++        resources:
++          requests:
++            cpu: 50m
++            memory: 64Mi
++          limits:
++            memory: 128Mi
++      volumes:
++      - name: tls
++        secret:
++          secretName: gaegaeting-db-provision-tls
++          defaultMode: 288
++      - name: sql
++        configMap:
++          name: gaegaeting-dev-db-provision
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/database/cluster-patch.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/database/cluster-patch.yaml
+index 0869a5f..564f6f9 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/database/cluster-patch.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/database/cluster-patch.yaml
+@@ -8,10 +8,9 @@ spec:
+     pg_hba:
+     - hostssl postgres postgres all cert
+     - hostssl @/projected/identity/database @/projected/identity/username all scram-sha-256
+-    - hostssl @/projected/gaegaeting-dev/account/database @/projected/gaegaeting-dev/account/username
+-      all scram-sha-256
+-    - hostssl @/projected/gaegaeting-dev/match/database @/projected/gaegaeting-dev/match/username
+-      all scram-sha-256
++    - hostssl @/projected/gaegaeting-dev/account/database @/projected/gaegaeting-dev/account/username all scram-sha-256
++    - hostssl @/projected/gaegaeting-dev/match/database @/projected/gaegaeting-dev/match/username all scram-sha-256
++    - hostssl @/projected/gaegaeting-dev/chat/database @/projected/gaegaeting-dev/chat/username all scram-sha-256
+     - host all all all reject
+   projectedVolumeTemplate:
+     sources:
+@@ -36,3 +35,10 @@ spec:
+           path: gaegaeting-dev/match/database
+         - key: username
+           path: gaegaeting-dev/match/username
++    - secret:
++        name: gaegaeting-chat-db-identity
++        items:
++        - key: database
++          path: gaegaeting-dev/chat/database
++        - key: username
++          path: gaegaeting-dev/chat/username
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/database/kustomization.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/database/kustomization.yaml
+index 4393751..893f9d7 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/database/kustomization.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/database/kustomization.yaml
+@@ -3,3 +3,4 @@ kind: Kustomization
+ resources:
+ - provision-config.yaml
+ - provision-job.yaml
++- chat-provision-job.yaml
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/edge-proxy-config.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/edge-proxy-config.yaml
+index 0603350..c61f0ea 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/edge-proxy-config.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/edge-proxy-config.yaml
+@@ -27,6 +27,23 @@ data:
+                   domains:
+                   - '*'
+                   routes:
++                  - match:
++                      path: /gateway/graphql
++                      headers:
++                        - name: upgrade
++                          string_match:
++                            exact: websocket
++                            ignore_case: true
++                    route:
++                      cluster: gateway
++                      timeout: 0s
++                      upgrade_configs:
++                        - upgrade_type: websocket
++                          enabled: true
++                    typed_per_filter_config:
++                      envoy.filters.http.ext_authz:
++                        '@type': type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
++                        disabled: true
+                   - match:
+                       path: /gateway/graphql
+                     route:
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/kustomization.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/kustomization.yaml
+index 1350e27..c54c38f 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/kustomization.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/kustomization.yaml
+@@ -15,3 +15,4 @@ resources:
+ - ingress
+ - retired-kafka-namespace.yaml
+ - admin-ui-ingress-policy.yaml
++- chat-ingress-policy.yaml
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/match-ingress-policy.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/match-ingress-policy.yaml
+index fdfbd0b..75bbb30 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/match-ingress-policy.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/match-ingress-policy.yaml
+@@ -17,6 +17,12 @@ spec:
+       podSelector:
+         matchLabels:
+           app.kubernetes.io/name: gateway
++    - namespaceSelector:
++        matchLabels:
++          kubernetes.io/metadata.name: gaegaeting-dev
++      podSelector:
++        matchLabels:
++          app.kubernetes.io/name: chat
+     ports:
+     - protocol: TCP
+       port: 2801
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/chat-db-identity.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/chat-db-identity.yaml
+new file mode 100644
+index 0000000..30039a6
+--- /dev/null
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/chat-db-identity.yaml
+@@ -0,0 +1,30 @@
++apiVersion: secrets.doppler.com/v1alpha1
++kind: DopplerSecret
++metadata:
++  name: gaegaeting-dev-chat-db-identity
++  namespace: doppler-operator-system
++  annotations:
++    argocd.argoproj.io/sync-wave: '-20'
++spec:
++  project: gaegaeting
++  config: stg
++  host: https://api.doppler.com
++  verifyTLS: true
++  resyncSeconds: 120
++  tokenSecret:
++    name: doppler-auth-gaegaeting-stg
++    namespace: doppler-operator-system
++  managedSecret:
++    name: gaegaeting-chat-db-identity
++    namespace: databases
++    type: Opaque
++  secrets:
++  - CHAT_DATABASE_NAME
++  - CHAT_DATABASE_USERNAME
++  processors:
++    CHAT_DATABASE_NAME:
++      type: plain
++      asName: database
++    CHAT_DATABASE_USERNAME:
++      type: plain
++      asName: username
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/chat-runtime.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/chat-runtime.yaml
+new file mode 100644
+index 0000000..54fc039
+--- /dev/null
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/chat-runtime.yaml
+@@ -0,0 +1,78 @@
++apiVersion: secrets.doppler.com/v1alpha1
++kind: DopplerSecret
++metadata:
++  name: gaegaeting-dev-chat-runtime
++  namespace: doppler-operator-system
++  annotations:
++    argocd.argoproj.io/sync-wave: '-20'
++spec:
++  project: gaegaeting
++  config: stg
++  host: https://api.doppler.com
++  verifyTLS: true
++  resyncSeconds: 120
++  tokenSecret:
++    name: doppler-auth-gaegaeting-stg
++    namespace: doppler-operator-system
++  managedSecret:
++    name: gaegaeting-chat-runtime
++    namespace: gaegaeting-dev
++    type: Opaque
++  secrets:
++  - NODE_ENV
++  - INTERNAL_AUTH_ASSERTION_SECRET
++  - DATABASE_HOST
++  - DATABASE_PORT
++  - DATABASE_SSL_MODE
++  - CHAT_SERVICE_API_PORT
++  - MATCH_SERVICE_HOST
++  - CHAT_KAFKA_ENABLED
++  - CHAT_KAFKA_GROUP_ID
++  - KAFKA_BROKERS
++  - KAFKA_TOPIC_PREFIX
++  - CHAT_DATABASE_NAME
++  - CHAT_DATABASE_USERNAME
++  - CHAT_DATABASE_PASSWORD
++  processors:
++    NODE_ENV:
++      type: plain
++      asName: NODE_ENV
++    INTERNAL_AUTH_ASSERTION_SECRET:
++      type: plain
++      asName: INTERNAL_AUTH_ASSERTION_SECRET
++    DATABASE_HOST:
++      type: plain
++      asName: DATABASE_HOST
++    DATABASE_PORT:
++      type: plain
++      asName: DATABASE_PORT
++    DATABASE_SSL_MODE:
++      type: plain
++      asName: DATABASE_SSL_MODE
++    CHAT_SERVICE_API_PORT:
++      type: plain
++      asName: CHAT_SERVICE_API_PORT
++    MATCH_SERVICE_HOST:
++      type: plain
++      asName: MATCH_SERVICE_HOST
++    CHAT_KAFKA_ENABLED:
++      type: plain
++      asName: CHAT_KAFKA_ENABLED
++    CHAT_KAFKA_GROUP_ID:
++      type: plain
++      asName: CHAT_KAFKA_GROUP_ID
++    KAFKA_BROKERS:
++      type: plain
++      asName: KAFKA_BROKERS
++    KAFKA_TOPIC_PREFIX:
++      type: plain
++      asName: KAFKA_TOPIC_PREFIX
++    CHAT_DATABASE_NAME:
++      type: plain
++      asName: DATABASE_NAME
++    CHAT_DATABASE_USERNAME:
++      type: plain
++      asName: DATABASE_USERNAME
++    CHAT_DATABASE_PASSWORD:
++      type: plain
++      asName: DATABASE_PASSWORD
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/databases-role.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/databases-role.yaml
+index 1f84bdb..7669eef 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/databases-role.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/databases-role.yaml
+@@ -21,5 +21,6 @@ rules:
+   - gaegaeting-match-db-identity
+   - gaegaeting-db-provision-runtime
+   - gaegaeting-db-provision-tls
++  - gaegaeting-chat-db-identity
+   verbs:
+   - update
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/db-provision-runtime.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/db-provision-runtime.yaml
+index c912393..85779de 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/db-provision-runtime.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/db-provision-runtime.yaml
+@@ -27,6 +27,9 @@ spec:
+   - MATCH_DATABASE_NAME
+   - MATCH_DATABASE_USERNAME
+   - MATCH_DATABASE_PASSWORD
++  - CHAT_DATABASE_NAME
++  - CHAT_DATABASE_USERNAME
++  - CHAT_DATABASE_PASSWORD
+   processors:
+     DATABASE_HOST:
+       type: plain
+@@ -52,3 +55,12 @@ spec:
+     MATCH_DATABASE_PASSWORD:
+       type: plain
+       asName: MATCH_DATABASE_PASSWORD
++    CHAT_DATABASE_NAME:
++      type: plain
++      asName: CHAT_DATABASE_NAME
++    CHAT_DATABASE_USERNAME:
++      type: plain
++      asName: CHAT_DATABASE_USERNAME
++    CHAT_DATABASE_PASSWORD:
++      type: plain
++      asName: CHAT_DATABASE_PASSWORD
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/gaegaeting-dev-role.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/gaegaeting-dev-role.yaml
+index aefe8b7..32b0b84 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/gaegaeting-dev-role.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/gaegaeting-dev-role.yaml
+@@ -25,5 +25,6 @@ rules:
+   - gaegaeting-proxy-runtime
+   - gaegaeting-db-ca
+   - gaegaeting-admin-ui-runtime
++  - gaegaeting-chat-runtime
+   verbs:
+   - update
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/gateway-runtime.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/gateway-runtime.yaml
+index b97e72c..ac339aa 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/gateway-runtime.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/gateway-runtime.yaml
+@@ -28,6 +28,11 @@ spec:
+   - MATCH_SERVICE_URL
+   - ACCOUNT_SUBJECT_RESOLUTION_URL
+   - OIDC_API_AUDIENCE
++  - CHAT_SERVICE_URL
++  - CHAT_WS_ALLOWED_ORIGINS
++  - OIDC_ISSUER
++  - OIDC_INTROSPECTION_CLIENT_ID
++  - OIDC_INTROSPECTION_CLIENT_SECRET
+   processors:
+     NODE_ENV:
+       type: plain
+@@ -56,3 +61,18 @@ spec:
+     OIDC_API_AUDIENCE:
+       type: plain
+       asName: OIDC_API_AUDIENCE
++    CHAT_SERVICE_URL:
++      type: plain
++      asName: CHAT_SERVICE_URL
++    CHAT_WS_ALLOWED_ORIGINS:
++      type: plain
++      asName: CHAT_WS_ALLOWED_ORIGINS
++    OIDC_ISSUER:
++      type: plain
++      asName: OIDC_ISSUER
++    OIDC_INTROSPECTION_CLIENT_ID:
++      type: plain
++      asName: OIDC_INTROSPECTION_CLIENT_ID
++    OIDC_INTROSPECTION_CLIENT_SECRET:
++      type: plain
++      asName: OIDC_INTROSPECTION_CLIENT_SECRET
+diff --git a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/kustomization.yaml b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/kustomization.yaml
+index 8fe1b92..9c5791b 100644
+--- a/gitops/clusters/oci-a1/gaegaeting-dev/secrets/kustomization.yaml
++++ b/gitops/clusters/oci-a1/gaegaeting-dev/secrets/kustomization.yaml
+@@ -20,3 +20,5 @@ resources:
+ - istio-system-role.yaml
+ - istio-system-binding.yaml
+ - admin-ui-runtime.yaml
++- chat-runtime.yaml
++- chat-db-identity.yaml
+diff --git a/gitops/clusters/oci-a1/kafka/network-policy.yaml b/gitops/clusters/oci-a1/kafka/network-policy.yaml
+index 4afbe7f..180c20d 100644
+--- a/gitops/clusters/oci-a1/kafka/network-policy.yaml
++++ b/gitops/clusters/oci-a1/kafka/network-policy.yaml
+@@ -18,6 +18,12 @@ spec:
+     - namespaceSelector:
+         matchLabels:
+           kubernetes.io/metadata.name: kafka
++    - namespaceSelector:
++        matchLabels:
++          kubernetes.io/metadata.name: gaegaeting-dev
++      podSelector:
++        matchLabels:
++          app.kubernetes.io/name: chat
+     ports:
+     - port: 9092
+       protocol: TCP
+diff --git a/scripts/gaegaeting_validate.py b/scripts/gaegaeting_validate.py
+index fa85936..dee264a 100644
+--- a/scripts/gaegaeting_validate.py
++++ b/scripts/gaegaeting_validate.py
+@@ -35,11 +35,11 @@ def main():
+     check(all(re.fullmatch(r'[0-9a-f]{40}', r) for r in revisions.values()), 'Invalid service revision')
+     expected = {i['service']: i['image'] + ':sha-' + i['revision'] + '@' + i['digest']
+                 for i in release['images']}
+-    check(set(expected) == {'account', 'match', 'gateway', 'edge-authz', 'integration-ui', 'admin-ui'},
++    check(set(expected) == {'account', 'match', 'gateway', 'edge-authz', 'integration-ui', 'admin-ui', 'chat'},
+           'Incomplete release image manifest')
+     # Code-only releases preserve completed schema Jobs and their immutable artifacts.
+-    migrations = release.get('migrationImages', [i for i in release['images'] if i['service'] in {'account', 'match'}])
+-    check({i['service'] for i in migrations} == {'account', 'match'} and len(migrations) == 2,
++    migrations = release.get('migrationImages', [i for i in release['images'] if i['service'] in {'account', 'match', 'chat'}])
++    check({i['service'] for i in migrations} == {'account', 'match', 'chat'} and len(migrations) == 3,
+           'Incomplete migration image manifest')
+     migration_revisions = {i['service']: i['revision'] for i in migrations}
+     check(all(re.fullmatch(r'[0-9a-f]{40}', r) for r in migration_revisions.values()),
+@@ -65,7 +65,7 @@ def main():
+             check(c['securityContext']['allowPrivilegeEscalation'] is False, 'Privilege escalation allowed')
+             if args.release:
+                 check(re.search(r'@sha256:[0-9a-f]{64}$', c['image']), 'Unpinned release image')
+-    check(app_image_count == 8, 'Expected six application deployments and two migration image references')
++    check(app_image_count == 10, 'Expected seven application deployments and three migration image references')
+     admin = next(r for r in resources if r['kind'] == 'Deployment' and r['metadata']['name'] == 'admin-ui')
+     container = admin['spec']['template']['spec']['containers'][0]
+     check(all(container[p]['httpGet']['path'] == '/admin/health'

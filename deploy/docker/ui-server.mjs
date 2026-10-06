@@ -39,7 +39,10 @@ export function readPublicConfig(env) {
 
 export function createUiServer(config, root = resolve('dist')) {
   const storageOrigin = config.imageStorageOrigin ? new URL(config.imageStorageOrigin).origin : '';
-  const origins = [...new Set([config.authOrigin, new URL(config.accountUrl).origin, new URL(config.gatewayUrl).origin, storageOrigin].filter(Boolean))];
+  const websocket = new URL(config.gatewayUrl);
+  websocket.protocol = 'wss:';
+  const origins = [...new Set([config.authOrigin, new URL(config.accountUrl).origin, new URL(config.gatewayUrl).origin,
+    ...(config.basePath === '/admin' ? [] : [websocket.origin]), storageOrigin].filter(Boolean))];
   const csp = `default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: ${storageOrigin}; connect-src 'self' ${origins.join(' ')}; base-uri 'none'; frame-ancestors 'none'; form-action 'self' ${config.authOrigin}`;
   const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
   // Build the allowed asset table from the image at startup. Request paths never

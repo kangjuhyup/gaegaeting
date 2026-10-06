@@ -1,5 +1,5 @@
 import { Collection, type Ref } from '@mikro-orm/core';
-import { Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import { Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/legacy';
 import { BaseEntity } from '../base.js';
 import { ConversationOrmEntity } from './conversation.js';
 import { MessageAttachmentOrmEntity } from './message-attachment.js';
@@ -9,6 +9,7 @@ import { MessageReceiptOrmEntity } from './message-receipt.js';
 @Entity({ tableName: 'message' })
 @Index({ name: 'ix_msg_conv_id_desc', properties: ['conversation', 'id'] })
 @Index({ name: 'ix_msg_sender_time', properties: ['senderId', 'sentAt'] })
+@Unique({ name: 'uq_msg_client', properties: ['conversation', 'senderId', 'clientMessageId'] })
 export class MessageOrmEntity extends BaseEntity {
   @PrimaryKey({ fieldName: 'id', columnType: 'int', autoincrement: true })
   id!: number;
@@ -29,6 +30,9 @@ export class MessageOrmEntity extends BaseEntity {
 
   @Property({ fieldName: 'sender_id', columnType: 'char(26)' })
   senderId!: string;
+
+  @Property({ fieldName: 'client_message_id', columnType: 'uuid', nullable: true })
+  clientMessageId?: string | null;
 
   @Property({ fieldName: 'kind', columnType: 'smallint', defaultRaw: "'1'" })
   kind = 1;

@@ -8,12 +8,16 @@ import { ParticipantOrmEntity } from './participant.js';
 @Index({ name: 'ix_conv_last_msg_at', properties: ['lastMessageAt'] })
 @Index({ name: 'ix_conv_type', properties: ['type'] })
 @Unique({ name: 'uq_conv_direct_key', properties: ['directKey'] })
+@Unique({ name: 'uq_conv_pair', properties: ['pairId'] })
 export class ConversationOrmEntity extends BaseEntity {
   @PrimaryKey({ fieldName: 'id', columnType: 'int', autoincrement: true })
   id!: number;
 
   @Property({ fieldName: 'type', columnType: 'smallint' })
   type!: number;
+
+  @Property({ fieldName: 'pair_id', columnType: 'int', nullable: true })
+  pairId?: number | null;
 
   @Property({ fieldName: 'direct_key', columnType: 'char(53)', nullable: true })
   directKey?: string | null;

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -9,6 +9,7 @@ import { affectedServices, pendingPullRequestFiles, planImages, services } from 
 const packages = [
   { dir: 'packages/account', name: 'account', dependencies: ['@core/auth', '@core/storage'] },
   { dir: 'packages/match', name: 'match', dependencies: ['@core/auth'] },
+  { dir: 'packages/chat', name: 'chat', dependencies: ['@core/auth'] },
   { dir: 'packages/payment', name: 'payment', dependencies: ['@core/auth'] },
   { dir: 'packages/challenge', name: 'challenge', dependencies: ['@core/auth'] },
   { dir: 'packages/gateway', name: 'gateway', dependencies: ['@core/assertion'] },
@@ -25,6 +26,7 @@ test('Match feature publishes only Match; independent UI and Account changes sta
   assert.deepEqual(plan(['packages/match/src/feed/status.ts'], 'match').publishServices, ['match']);
   assert.deepEqual(plan(['packages/account/src/user/model.ts'], 'account').services, ['account']);
   assert.deepEqual(plan(['packages/integration-ui/src/App.tsx']).publishServices, ['integration-ui']);
+  assert.deepEqual(plan(['packages/chat/src/message/domain/model/message.ts']).publishServices, ['chat']);
   assert.deepEqual(plan(['packages/challenge/src/main.ts']).publishServices, ['challenge']);
 });
 
@@ -36,7 +38,7 @@ test('shared UI and server changes select both UI images; gateway selects its tw
 });
 
 test('workspace dependencies select transitive consumers, including removed dependency edges', () => {
-  assert.deepEqual(affectedServices(['packages/core/assertion/src/key.ts'], packages), ['account', 'match', 'payment', 'challenge', 'gateway', 'edge-authz']);
+  assert.deepEqual(affectedServices(['packages/core/assertion/src/key.ts'], packages), ['account', 'match', 'chat', 'payment', 'challenge', 'gateway', 'edge-authz']);
   assert.deepEqual(affectedServices(['packages/core/storage/src/client.ts'], packages), ['account']);
   const changed = [...packages, { dir: 'packages/account', name: 'account', dependencies: [] }];
   assert.deepEqual(affectedServices(['packages/core/storage/src/client.ts'], changed), ['account']);
@@ -98,4 +100,11 @@ test('main carryover, newer main changes, squash-equivalent files and dev sync a
     const main = git('rev-parse', 'main');
     assert.deepEqual(pendingPullRequestFiles(cwd, base, main, 'main'), []);
   } finally { await rm(cwd, { recursive: true, force: true }); }
+});
+
+test('every configured serving image retains a Docker target and packaged runtime source', async () => {
+  const docker = await readFile(new URL('../deploy/docker/Dockerfile', import.meta.url), 'utf8');
+  for (const service of services) {
+    assert.ok(docker.includes(`AS ${service}\n`), `Missing Docker target: ${service}`);
+  }
 });
