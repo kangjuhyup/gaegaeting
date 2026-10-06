@@ -138,4 +138,63 @@ describe("Saved signup identity", () => {
     const repository = new AccountSignupOrmRepository(em as any);
     await expect(repository.findIdentity("legacy-user")).resolves.toBeNull();
   });
+
+  test("카카오 가입은 비밀번호 가입과 같은 DI를 예약하지만 가짜 아이디를 저장하지 않는다", async () => {
+    let row: any = null;
+    const em: any = {
+      findOne: jest.fn(async () => row),
+      create: jest.fn((_entity: unknown, value: unknown) => value),
+      persist: jest.fn((value: unknown) => {
+        row = value;
+      }),
+      flush: jest.fn(async () => {}),
+      transactional: jest.fn(async (work: (em: any) => unknown) => work(em)),
+    };
+    const repository = new AccountSignupOrmRepository(em);
+    const social = {
+      diDigest: reservation.diDigest,
+      method: "SOCIAL" as const,
+      externalIdentityDigest: "e".repeat(64),
+      issuer: reservation.issuer,
+      termsVersion: reservation.termsVersion,
+      identity,
+      verification,
+    };
+    await repository.reserve(social);
+    expect(row).toMatchObject({
+      signupMethod: "SOCIAL",
+      externalIdentityDigest: social.externalIdentityDigest,
+      status: "PENDING",
+    });
+    expect(row.username).toBeUndefined();
+    await repository.reserve(social);
+    expect(em.persist).toHaveBeenCalledTimes(1);
+    await expect(repository.reserve(reservation)).rejects.toThrow(
+      "another account",
+    );
+    await expect(
+      repository.reserve({ ...social, externalIdentityDigest: "f".repeat(64) }),
+    ).rejects.toThrow("IDENTITY_ALREADY_REGISTERED");
+  });
+
+  test("기존 비밀번호 가입의 DI를 카카오 가입으로 전환하지 않는다", async () => {
+    const em = {
+      findOne: jest.fn(async () => ({
+        ...identity,
+        signupMethod: "PASSWORD",
+        username: "alice",
+        authIssuer: reservation.issuer,
+        termsVersion: reservation.termsVersion,
+      })),
+    };
+    const repository = new AccountSignupOrmRepository(em as never);
+    await expect(
+      repository.reserve({
+        ...reservation,
+        username: undefined,
+        method: "SOCIAL",
+        externalIdentityDigest: "e".repeat(64),
+      }),
+    ).rejects.toThrow("IDENTITY_ALREADY_REGISTERED");
+  });
 });

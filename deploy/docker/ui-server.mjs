@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 export function readPublicConfig(env) {
   if (env.UI_APP && !['user', 'admin'].includes(env.UI_APP)) throw new Error('Invalid UI_APP');
   const admin = env.UI_APP === 'admin';
+  const clientId = env.UI_OIDC_CLIENT_ID || 'gaegaeting-web';
   if (admin && (!env.UI_OIDC_CLIENT_ID || env.UI_OIDC_CLIENT_ID === 'gaegaeting-web')) {
     throw new Error('Admin UI requires its own UI_OIDC_CLIENT_ID');
   }
@@ -30,7 +31,9 @@ export function readPublicConfig(env) {
     tenantCode,
     apiAudience: url('UI_API_AUDIENCE'),
     authOrigin: new URL(issuer).origin,
-    clientId: env.UI_OIDC_CLIENT_ID || 'gaegaeting-web',
+    clientId,
+    interactionClientIds: !admin && clientId === 'gaegaeting-web'
+      ? [clientId, 'gaegaeting-mobile'] : [clientId],
     accountUrl: url('UI_ACCOUNT_GRAPHQL_URL'),
     gatewayUrl: url('UI_GATEWAY_GRAPHQL_URL'),
     ...(imageStorageUrl ? { imageStorageOrigin: imageStorageUrl.origin } : {}),

@@ -25,6 +25,13 @@ test('deployed UI requires HTTPS service addresses and exposes only public setti
   assert.throws(() => readPublicConfig({ ...env, UI_ACCOUNT_GRAPHQL_URL: 'https://user:password@example.test' }), /HTTPS/);
 });
 
+test('public shared user interaction allowlist keeps web plus native while admin stays isolated', () => {
+  assert.deepEqual(readPublicConfig(env).interactionClientIds, ['gaegaeting-web', 'gaegaeting-mobile']);
+  assert.equal(readPublicConfig(env).clientId, 'gaegaeting-web');
+  const admin = readPublicConfig({ ...env, UI_APP: 'admin', UI_OIDC_CLIENT_ID: 'gaegaeting-admin-web' });
+  assert.deepEqual(admin.interactionClientIds, ['gaegaeting-admin-web']);
+});
+
 test('login callbacks and interaction routes serve the SPA with uncached config and secure headers', async () => {
   const root = await mkdtemp(join(tmpdir(), 'gaegaeting-ui-'));
   await writeFile(join(root, 'index.html'), '<div>UI</div>');

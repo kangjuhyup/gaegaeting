@@ -8,12 +8,28 @@ import { BaseEntity } from "../base.js";
 
 @Entity({ tableName: "account_signup" })
 @Unique({ name: "uk_account_signup_di_digest", properties: ["diDigest"] })
+@Unique({
+  name: "uk_account_signup_external_identity_digest",
+  properties: ["externalIdentityDigest"],
+})
 export class AccountSignupOrmEntity extends BaseEntity {
   @PrimaryKey({ columnType: "char(26)" }) id!: string;
   @Property({ fieldName: "user_id", columnType: "char(26)" }) userId!: string;
   @Property({ fieldName: "di_digest", columnType: "char(64)" })
   diDigest!: string;
-  @Property({ columnType: "varchar(64)" }) username!: string;
+  @Property({ columnType: "varchar(64)", nullable: true }) username?: string;
+  @Property({
+    fieldName: "signup_method",
+    columnType: "varchar(16)",
+    default: "PASSWORD",
+  })
+  signupMethod: "PASSWORD" | "SOCIAL" = "PASSWORD";
+  @Property({
+    fieldName: "external_identity_digest",
+    columnType: "char(64)",
+    nullable: true,
+  })
+  externalIdentityDigest?: string;
   @Property({ fieldName: "terms_version", columnType: "varchar(64)" })
   termsVersion!: string;
   @Property({ fieldName: "terms_agreed_at", columnType: "timestamptz" })

@@ -5,14 +5,19 @@ export type SignupIdentity = {
   phone: string;
 };
 
-export type AccountSignupReservation = {
+type SignupReservationDetails = {
   diDigest: string;
-  username: string;
   issuer: string;
   termsVersion: string;
   identity?: SignupIdentity;
   verification: SignupVerification;
 };
+
+export type AccountSignupReservation = SignupReservationDetails &
+  (
+    | { method?: "PASSWORD"; username: string; externalIdentityDigest?: never }
+    | { method: "SOCIAL"; username?: never; externalIdentityDigest: string }
+  );
 
 export type SignupVerification = {
   provider: string;
@@ -22,7 +27,7 @@ export type SignupVerification = {
 
 export type AccountSignupRecord = {
   userId: string;
-  username: string;
+  username?: string;
   issuer: string;
   authSubject?: string;
 };

@@ -5,6 +5,7 @@ export type PublicConfig = {
   apiAudience: string;
   authOrigin: string;
   clientId: string;
+  interactionClientIds?: string[];
   accountUrl: string;
   gatewayUrl: string;
   imageStorageOrigin?: string;

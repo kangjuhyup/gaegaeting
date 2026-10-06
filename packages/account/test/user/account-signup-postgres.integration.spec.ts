@@ -11,11 +11,14 @@ import { accountSignupMigration } from "../../src/migrations/account-signup.migr
 import { accountSignupConsentMigration } from "../../src/migrations/account-signup-consent.migration.js";
 import { accountSignupIdentityMigration } from "../../src/migrations/account-signup-identity.migration.js";
 import { accountSignupVerificationMigration } from "../../src/migrations/account-signup-verification.migration.js";
+import { accountSocialSignupMigration } from "../../src/migrations/account-social-signup.migration.js";
 import { initialAccountSchema } from "../../src/migrations/0001-account-schema.js";
 import { AccountSignupOrmRepository } from "../../src/user/infrastructure/adapter/outbound/persistence/account-signup-orm.repository.js";
 import { AccountSignupService } from "../../src/user/application/service/account-signup.service.js";
 import { MockIdentityVerificationAdapter } from "../../src/user/infrastructure/adapter/outbound/identity/mock-identity-verification.adapter.js";
 import type { ProvisionAuthAccountInput } from "../../src/user/application/port/auth-account-provisioning.port.js";
+import { SocialAccountSignupService } from "../../src/user/application/service/social-account-signup.service.js";
+import type { ExternalSignupAttempt } from "../../src/user/application/port/auth-external-signup.port.js";
 
 const databaseUrl = process.env.ACCOUNT_TEST_DATABASE_URL;
 const postgresSuite = databaseUrl ? describe : describe.skip;
@@ -44,6 +47,7 @@ postgresSuite("PostgreSQL 가입 중복·재시도·인증 이력", () => {
   let migratedLegacy: Record<string, unknown>;
   const options = {
     authIssuer: "issuer",
+    signupClientId: "gaegaeting-web",
     diHmacSecret: "s".repeat(32),
     diHmacKeyVersion: 1,
     handoffTtlMs: 600000,
@@ -90,6 +94,8 @@ postgresSuite("PostgreSQL 가입 중복·재시도·인증 이력", () => {
       ["L".repeat(26), "U".repeat(26), "d".repeat(64)],
     );
     for (const statement of accountSignupVerificationMigration.statements)
+      await connection.execute(qualify(statement.text));
+    for (const statement of accountSocialSignupMigration.statements)
       await connection.execute(qualify(statement.text));
     [migratedLegacy] = await connection.execute(
       qualify('SELECT * FROM "account_signup" WHERE username = ?'),
@@ -247,6 +253,207 @@ postgresSuite("PostgreSQL 가입 중복·재시도·인증 이력", () => {
     });
     expect(provision.mock.calls[0][0].idempotencyKey).toBe(
       failed.mock.calls[0][0].idempotencyKey,
+    );
+  });
+
+  const socialInput = {
+    termsVersion: input.termsVersion,
+    termsAgreed: true,
+    name: input.name,
+    birthDate: input.birthDate,
+    gender: input.gender,
+    phone: input.phone,
+    ticket: "t".repeat(43),
+    attemptId: "a".repeat(43),
+  };
+  function socialService(
+    complete = jest.fn(
+      async (_attempt: ExternalSignupAttempt & { idempotencyKey: string }) => ({
+        issuer: "issuer",
+        authSubject: "kakao-auth-user",
+      }),
+    ),
+    providerSub = "123456789",
+  ) {
+    return {
+      complete,
+      signup: new SocialAccountSignupService(
+        verifier,
+        {
+          claim: async () => ({
+            ticketId: "ticket-1",
+            provider: "kakao",
+            providerSub,
+            clientId: options.signupClientId,
+            issuer: "issuer",
+            expiresAt: new Date(Date.now() + 600000),
+          }),
+          complete,
+        },
+        new AccountSignupOrmRepository(orm.em.fork()),
+        options,
+      ),
+    };
+  }
+
+  test("기존 가입을 보존하면서 아이디 없는 소셜 가입을 명시적으로 지원한다", async () => {
+    expect(migratedLegacy.signup_method).toBe("PASSWORD");
+    expect(migratedLegacy.username).toBe("legacy");
+    expect(migratedLegacy.external_identity_digest).toBeNull();
+    const { signup } = socialService();
+    await signup.register(socialInput);
+    const row = await orm.em
+      .fork()
+      .findOneOrFail(AccountSignupOrmEntity, { signupMethod: "SOCIAL" });
+    expect(row.username).toBeNull();
+    expect(row.externalIdentityDigest).toMatch(/^[a-f0-9]{64}$/);
+    expect(row).not.toHaveProperty("providerSub");
+    expect(row).not.toHaveProperty("ci");
+    expect(row).not.toHaveProperty("di");
+    const connection = orm.em.getConnection();
+    const columns = await connection.execute(
+      "SELECT column_name FROM information_schema.columns WHERE table_schema = ? AND table_name = ?",
+      [schema, "account_signup"],
+    );
+    expect(
+      columns.map((row: { column_name: string }) => row.column_name),
+    ).not.toEqual(expect.arrayContaining(["ci", "di", "provider_sub"]));
+    await expect(
+      connection.execute(
+        qualify(
+          `INSERT INTO "account_signup" (id,user_id,di_digest,auth_issuer,status,terms_version,terms_agreed_at,signup_method) VALUES (?,?,?,'issuer','PENDING','v1',now(),'SOCIAL')`,
+        ),
+        ["X".repeat(26), "Y".repeat(26), "x".repeat(64)],
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+  });
+
+  test.each(["비밀번호 먼저", "카카오 먼저"])(
+    "가입 수단이 달라도 같은 DI는 회원을 추가 생성할 수 없다: %s",
+    async (first) => {
+      const { signup, complete } = socialService();
+      const provision = jest.fn(async (_input: ProvisionAuthAccountInput) => ({
+        authSubject: "password-auth-user",
+      }));
+      if (first === "비밀번호 먼저") {
+        await service(provision).register(input);
+        await expect(signup.register(socialInput)).rejects.toThrow(
+          "IDENTITY_ALREADY_REGISTERED",
+        );
+        expect(complete).not.toHaveBeenCalled();
+      } else {
+        await signup.register(socialInput);
+        await expect(service(provision).register(input)).rejects.toThrow(
+          "another account",
+        );
+        expect(provision).not.toHaveBeenCalled();
+      }
+      expect(await orm.em.fork().count(AccountSignupOrmEntity, {})).toBe(1);
+      expect(await orm.em.fork().count(ExternalUserSubjectOrmEntity, {})).toBe(
+        1,
+      );
+    },
+  );
+
+  test("카카오 동시 가입은 회원과 Auth subject 연결을 하나만 만든다", async () => {
+    const complete = jest.fn(
+      async (_attempt: ExternalSignupAttempt & { idempotencyKey: string }) => ({
+        issuer: "issuer",
+        authSubject: "kakao-auth-user",
+      }),
+    );
+    const results = await Promise.all([
+      socialService(complete).signup.register(socialInput),
+      socialService(complete).signup.register(socialInput),
+    ]);
+    expect(results).toEqual([
+      { authSubject: "kakao-auth-user" },
+      { authSubject: "kakao-auth-user" },
+    ]);
+    expect(await orm.em.fork().count(AccountSignupOrmEntity, {})).toBe(1);
+    expect(await orm.em.fork().count(ExternalUserSubjectOrmEntity, {})).toBe(1);
+    expect(complete.mock.calls[0][0].idempotencyKey).toBe(
+      complete.mock.calls[1][0].idempotencyKey,
+    );
+  });
+
+  test("같은 DI에 다른 카카오 계정이 동시에 요청하면 승리한 가입만 Auth 생성으로 진행한다", async () => {
+    const complete = jest.fn(
+      async (_attempt: ExternalSignupAttempt & { idempotencyKey: string }) => ({
+        issuer: "issuer",
+        authSubject: "kakao-auth-user",
+      }),
+    );
+    const results = await Promise.allSettled([
+      socialService(complete, "123").signup.register(socialInput),
+      socialService(complete, "456").signup.register(socialInput),
+    ]);
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    expect(results.filter((r) => r.status === "rejected")).toHaveLength(1);
+    expect(complete).toHaveBeenCalledTimes(1);
+  });
+
+  test("이미 등록된 카카오 인증으로 다른 DI를 등록하면 Auth 요청 전에 차단한다", async () => {
+    const { signup, complete } = socialService();
+    await signup.register(socialInput);
+    await expect(
+      socialService(complete).signup.register({
+        ...socialInput,
+        phone: "01099999999",
+      }),
+    ).rejects.toThrow("IDENTITY_ALREADY_REGISTERED");
+    expect(complete).toHaveBeenCalledTimes(1);
+    expect(await orm.em.fork().count(AccountSignupOrmEntity, {})).toBe(1);
+  });
+
+  test("Auth 완료 후 연결 DB가 실패해도 새 티켓으로 최초 예약과 subject를 복구한다", async () => {
+    const { complete } = socialService();
+    const repository = new AccountSignupOrmRepository(orm.em.fork());
+    const broken = new SocialAccountSignupService(
+      verifier,
+      {
+        claim: async () => ({
+          ticketId: "ticket-1",
+          provider: "kakao",
+          providerSub: "123456789",
+          clientId: options.signupClientId,
+          issuer: "issuer",
+          expiresAt: new Date(Date.now() + 600000),
+        }),
+        complete,
+      },
+      {
+        reserve: (value) => repository.reserve(value),
+        complete: async () => {
+          throw new Error("DATABASE_UNAVAILABLE");
+        },
+        findIdentity: (userId) => repository.findIdentity(userId),
+      },
+      options,
+    );
+    await expect(broken.register(socialInput)).rejects.toThrow(
+      "DATABASE_UNAVAILABLE",
+    );
+    const pending = await orm.em
+      .fork()
+      .findOneOrFail(AccountSignupOrmEntity, { signupMethod: "SOCIAL" });
+    await socialService(complete).signup.register({
+      ...socialInput,
+      ticket: "n".repeat(43),
+      attemptId: "b".repeat(43),
+    });
+    const completed = await orm.em
+      .fork()
+      .findOneOrFail(AccountSignupOrmEntity, { signupMethod: "SOCIAL" });
+    expect(completed).toMatchObject({
+      id: pending.id,
+      userId: pending.userId,
+      providerTransactionId: pending.providerTransactionId,
+      status: "COMPLETED",
+      authSubject: "kakao-auth-user",
+    });
+    expect(complete.mock.calls[0][0].idempotencyKey).toBe(
+      complete.mock.calls[1][0].idempotencyKey,
     );
   });
 });

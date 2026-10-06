@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Alert, Button, Field, Spinner } from "./components/Ui.js";
 import {
   goToAuth,
@@ -10,9 +10,12 @@ import {
   submitWebAuthn,
   type InteractionDetails,
   type InteractionResult,
+  type ExternalSignup,
 } from "./lib/interaction.js";
+import { takeLoginProvider } from "./lib/oidc.js";
 
 import { publicConfig } from "./runtime-config.js";
+export type { ExternalSignup } from "./lib/interaction.js";
 
 type Step =
   | "loading"
@@ -22,9 +25,13 @@ type Step =
   | "enroll"
   | "recovery"
   | "consent"
+  | "external-signup"
   | "error";
 
-export function InteractionPage({ admin = false }: { admin?: boolean }) {
+export function InteractionPage({ admin = false, renderExternalSignup }: {
+  admin?: boolean;
+  renderExternalSignup?: (signup: ExternalSignup, resume: () => Promise<void>) => ReactNode;
+}) {
   const [step, setStep] = useState<Step>("loading");
   const [details, setDetails] = useState<InteractionDetails>();
   const [username, setUsername] = useState("");
@@ -37,8 +44,11 @@ export function InteractionPage({ admin = false }: { admin?: boolean }) {
   const [enrollment, setEnrollment] = useState<InteractionResult>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const started = useRef(false);
 
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     if (!interactionAvailable()) {
       setError(
         "로그인 세션이 없어요. 개개팅 로그인 화면에서 다시 시작해 주세요.",
@@ -50,6 +60,25 @@ export function InteractionPage({ admin = false }: { admin?: boolean }) {
       .then((raw) => {
         const value = validateInteractionDetails(raw);
         setDetails(value);
+        if (value.externalSignup) {
+          takeLoginProvider(value.clientId);
+          if (admin || !renderExternalSignup) throw new Error("이 화면에서는 카카오 가입을 진행할 수 없어요. 회원가입 화면에서 다시 시작해 주세요.");
+          setStep("external-signup");
+          return;
+        }
+        if (value.externalLoginResult) {
+          takeLoginProvider(value.clientId);
+          advance(value.externalLoginResult);
+          return;
+        }
+        const requested = takeLoginProvider(value.clientId);
+        if (requested && value.prompt === "login") {
+          if (admin || !value.idpList.some((idp) => idp.provider === requested.provider)) {
+            throw new Error("지금은 카카오 로그인을 이용할 수 없어요. 일반 로그인 또는 회원가입을 이용해 주세요.");
+          }
+          goToIdp(requested.provider, requested.intent);
+          return;
+        }
         if (value.prompt === "login" || value.prompt === "consent")
           setStep(value.prompt);
         else throw new Error("지원하지 않는 인증 단계입니다.");
@@ -63,6 +92,20 @@ export function InteractionPage({ admin = false }: { admin?: boolean }) {
         setStep("error");
       });
   }, []);
+
+  async function resumeExternalSignup() {
+    if (!details?.externalSignup) throw new Error("가입 정보를 확인할 수 없어요.");
+    const { ticket, attemptId } = details.externalSignup;
+    try {
+      advance(await interactionRequest<InteractionResult>("external-signup/resume", { ticket, attemptId }));
+    } catch (cause) {
+      if (cause instanceof InteractionExpiredError) {
+        setError(cause.message);
+        setStep("error");
+      }
+      throw cause;
+    }
+  }
 
   function advance(result: InteractionResult) {
     if (result.passwordChangeRequired) setStep("password-change");
@@ -174,7 +217,8 @@ export function InteractionPage({ admin = false }: { admin?: boolean }) {
         </span>
         <strong>{admin ? "개개팅 관리자" : "개개팅"}</strong>
       </div>
-      <section className="card form-card interaction-card" aria-busy={busy}>
+      <section className={`card form-card interaction-card${step === "external-signup" ? " interaction-signup" : ""}`} aria-busy={busy}>
+        {step === "external-signup" && details?.externalSignup && renderExternalSignup?.(details.externalSignup, resumeExternalSignup)}
         {step === "loading" && (
           <p role="status">
             <Spinner /> 로그인 정보를 불러오는 중이에요.
