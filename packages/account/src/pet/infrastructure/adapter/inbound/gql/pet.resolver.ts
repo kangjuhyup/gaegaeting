@@ -1,6 +1,6 @@
 import { ProfileImageService } from '../../../../../common/profile-images/profile-image.service.js';
 import { Int, Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
+import { NotImplementedException, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { UserParam, type UserPrincipal, GraphqlAccessGuard, Scopes } from '@core/auth';
 import { RegisterPetCommand } from '#app/pet/application/port/command/register-pet.port';
@@ -77,11 +77,12 @@ export class PetResolver {
   @UseGuards(GraphqlAccessGuard)
   @Scopes('account:write')
   async certifyPet(
+    @UserParam() user: UserPrincipal,
     @Args('id', { type: () => Int }) id: number,
     @Args('input') input: CertifyPetInput,
   ): Promise<Pet> {
     const pet = await this.commandBus.execute(
-      new CertifyPetCommand(id, input.userName, input.certificationCode),
+      new CertifyPetCommand(id, input.userName, input.certificationCode, user),
     );
     return PetGraphQLDto.fromDomain(pet);
   }
@@ -93,8 +94,7 @@ export class PetResolver {
     @UserParam() user: UserPrincipal,
     @Args('id', { type: () => Int }) id: number,
   ): Promise<boolean> {
-    // TODO: DeletePetCommand 구현 필요
-    return true;
+    throw new NotImplementedException('PET_DELETION_UNAVAILABLE');
   }
 
   @Mutation(() => PresignedUrl)

@@ -1,7 +1,7 @@
 import { ProfileImages } from '../components/ProfileImages.js';
 import { useEffect, useState, type FormEvent } from "react";
 import { Alert, Button, Field, PageTitle, Spinner } from "@gaegaeting/ui-common";
-import { errorMessage, graphql } from "@gaegaeting/ui-common";
+import { beginLogin, errorMessage, graphql } from "@gaegaeting/ui-common";
 import type { AppConfig, UserProfile } from "../types.js";
 
 type ProfileSummary = Pick<UserProfile, "id" | "nickname" | "region" | "bio">;
@@ -20,10 +20,12 @@ const regions = [
 export function ProfilePage({
   config,
   token,
+  authSubject,
   onNext,
 }: {
   config: AppConfig;
   token?: string;
+  authSubject?: string;
   onNext: () => void;
 }) {
   const [form, setForm] = useState({
@@ -37,6 +39,15 @@ export function ProfilePage({
     "idle",
   );
   const [message, setMessage] = useState("");
+  const [linking, setLinking] = useState(false);
+  const [linkError, setLinkError] = useState("");
+
+  async function linkKakao() {
+    setLinking(true);
+    setLinkError("");
+    try { await beginLogin(config, { action: "link-kakao", intendedSubject: authSubject, scopes: "openid profile", prompt: "login" }); }
+    catch (cause) { setLinkError(errorMessage(cause)); setLinking(false); }
+  }
 
   useEffect(() => {
     if (!token) return;
@@ -182,6 +193,12 @@ export function ProfilePage({
         </div>
       </form>
       {existing && <div className="profile-photos card"><ProfileImages config={config} token={token} onApprovedPhoto={setProfilePhoto} /></div>}
+      {token && authSubject && <section className="card form-card">
+        <h2>로그인 계정 연결</h2>
+        <p>기존 계정으로 본인 확인 후 카카오 계정을 연결할 수 있어요.</p>
+        {linkError && <Alert type="error">{linkError}</Alert>}
+        <Button type="button" variant="secondary" disabled={linking} onClick={() => void linkKakao()}>{linking && <Spinner />} 카카오 계정 연결</Button>
+      </section>}
     </section>
   );
 }

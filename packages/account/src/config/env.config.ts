@@ -49,6 +49,7 @@ export const envSpec = {
   AUTH_PROVISIONING_CLIENT_ID: { joi: Joi.string().required() },
   AUTH_PROVISIONING_CLIENT_SECRET: { joi: Joi.string().min(32).required() },
   AUTH_TENANT_CODE: { joi: Joi.string().required() },
+  AUTH_SIGNUP_CLIENT_ID: { joi: Joi.string().min(1).max(128).default("gaegaeting-web") },
   DATABASE_HOST: { joi: Joi.string().required() },
   DATABASE_PORT: { joi: Joi.number().required() },
   DATABASE_USERNAME: { joi: Joi.string().required() },

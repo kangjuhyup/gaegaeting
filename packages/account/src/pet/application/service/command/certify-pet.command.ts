@@ -4,6 +4,7 @@ import { CertifyPetCommand } from '../../port/command/certify-pet.port.js';
 import { PetProfileRepositoryPort } from '#app/pet/infrastructure/port/pet-profile-repository.port';
 import { PetCertificationPort } from '#app/pet/infrastructure/port/pet-certification.port';
 import { PetProfileEntity } from '#app/pet/domain/model/pet-profile';
+import { ForbiddenException } from '@nestjs/common';
 
 @CommandHandler(CertifyPetCommand)
 export class CertifyPetHandler
@@ -19,6 +20,9 @@ export class CertifyPetHandler
     const pet = await this.petProfileRepository.selectPetFromId(command.petId);
     if (!pet) {
       throw new Error('반려동물을 찾을 수 없습니다.');
+    }
+    if (pet.userId !== command.user.userId) {
+      throw new ForbiddenException('본인 반려동물만 인증할 수 있습니다.');
     }
 
     const userName = command.userName?.trim();
@@ -43,5 +47,4 @@ export class CertifyPetHandler
     return pet;
   }
 }
-
 

@@ -8,6 +8,8 @@ export const REGISTRATION_OPTIONS = Symbol('REGISTRATION_OPTIONS');
 
 export interface RegistrationOptions {
   authIssuer?: string;
+  signupClientId?: string;
+  signupClientIds?: readonly string[];
   diHmacSecret: string;
   diHmacKeyVersion: number;
   handoffTtlMs: number;
