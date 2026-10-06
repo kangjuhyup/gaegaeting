@@ -1,0 +1,16 @@
+{
+  "clientId": "gaegaeting-mobile",
+  "name": "Gaegaeting mobile dev",
+  "type": "public",
+  "applicationType": "native",
+  "redirectUris": ["app.gaegaeting:/oauth/callback"],
+  "postLogoutRedirectUris": ["app.gaegaeting:/oauth/logout"],
+  "grantTypes": ["authorization_code", "refresh_token"],
+  "responseTypes": ["code"],
+  "tokenEndpointAuthMethod": "none",
+  "scope": "openid profile email offline_access account:read account:write match:read match:write payment:read payment:write challenge:read challenge:write",
+  "allowedResources": ["https://test-ggt-api.rvkang.app"],
+  "introspectionResources": [],
+  "externalInteractionUiUrl": "https://test-ggt-ui.rvkang.app/interaction",
+  "skipConsent": true
+}

@@ -20,6 +20,16 @@ export class AccountSignupOrmRepository extends AccountSignupRepositoryPort {
   }
 
   async reserve(input: AccountSignupReservation): Promise<AccountSignupRecord> {
+    const method = input.method ?? "PASSWORD";
+    if (
+      (method === "SOCIAL" &&
+        (!/^[a-f0-9]{64}$/.test(input.externalIdentityDigest ?? "") ||
+          input.username !== undefined)) ||
+      (method === "PASSWORD" &&
+        (!input.username || input.externalIdentityDigest !== undefined))
+    ) {
+      throw new ConflictException("Invalid signup method binding");
+    }
     let row = await this.em.findOne(AccountSignupOrmEntity, {
       diDigest: input.diDigest,
     });
@@ -31,6 +41,8 @@ export class AccountSignupOrmRepository extends AccountSignupRepositoryPort {
             userId: ulid(),
             diDigest: input.diDigest,
             username: input.username,
+            signupMethod: method,
+            externalIdentityDigest: input.externalIdentityDigest,
             termsVersion: input.termsVersion,
             termsAgreedAt: new Date(),
             authIssuer: input.issuer,
@@ -55,12 +67,17 @@ export class AccountSignupOrmRepository extends AccountSignupRepositoryPort {
     }
     if (
       !row ||
-      row.username !== input.username ||
+      (row.signupMethod ?? "PASSWORD") !== method ||
+      (method === "PASSWORD"
+        ? row.username !== input.username
+        : row.externalIdentityDigest !== input.externalIdentityDigest) ||
       row.authIssuer !== input.issuer ||
       row.termsVersion !== input.termsVersion
     ) {
       throw new ConflictException(
-        "Identity is already registered with another account",
+        method === "SOCIAL"
+          ? "IDENTITY_ALREADY_REGISTERED"
+          : "Identity is already registered with another account",
       );
     }
     if (

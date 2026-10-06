@@ -465,6 +465,11 @@ textarea:focus-visible {
 .interaction-card {
   width: min(100%, 460px);
 }
+.social-signup .form-card {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
 .interaction-card h1 {
   font-family: Georgia, "Noto Serif KR", serif;
   font-size: 30px;

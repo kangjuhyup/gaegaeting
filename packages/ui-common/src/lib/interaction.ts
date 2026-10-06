@@ -7,11 +7,15 @@ type Bootstrap = {
 };
 export class InteractionExpiredError extends Error {}
 
+export type ExternalSignup = { ticket: string; provider: "kakao"; expiresAt: string; attemptId: string; clientId?: string };
+
 export type InteractionDetails = {
   prompt: string;
   clientId: string;
   missingScopes: string[];
   idpList: { provider: string; name: string }[];
+  externalSignup?: ExternalSignup;
+  externalLoginResult?: Pick<InteractionResult, "mfaRequired" | "mfaEnrollmentRequired" | "methods" | "redirectTo">;
 };
 
 export type InteractionResult = {
@@ -27,7 +31,7 @@ export type InteractionResult = {
 };
 
 const authOrigin = new URL(publicConfig.authOrigin).origin;
-const expectedClientId = publicConfig.clientId;
+const expectedClientIds = new Set(publicConfig.interactionClientIds ?? [publicConfig.clientId]);
 
 function readBootstrap(): Bootstrap | null {
   if (window.location.pathname !== `${publicConfig.basePath}/interaction`)
@@ -62,16 +66,47 @@ export function validateInteractionDetails(
   details: InteractionDetails,
 ): InteractionDetails {
   if (
-    details.clientId !== expectedClientId ||
+    !details || !expectedClientIds.has(details.clientId) ||
     !["login", "consent"].includes(details.prompt) ||
     !Array.isArray(details.idpList) ||
-    !Array.isArray(details.missingScopes)
+    !details.idpList.every((idp) => idp && typeof idp.provider === "string" && /^[A-Za-z0-9_-]+$/.test(idp.provider) && typeof idp.name === "string") ||
+    !Array.isArray(details.missingScopes) || !details.missingScopes.every((scope) => typeof scope === "string")
   ) {
     throw new Error(
       "인증 요청이 개개팅 로그인 설정과 일치하지 않아요. 다시 시작해 주세요.",
     );
   }
-  return details;
+  if (details.externalSignup !== undefined) {
+    const signup = details.externalSignup;
+    if (!signup || details.prompt !== "login" || signup.provider !== "kakao" ||
+      !details.idpList.some((idp) => idp.provider === signup.provider) ||
+      typeof signup.ticket !== "string" || !/^[A-Za-z0-9_-]{32,256}$/.test(signup.ticket) ||
+      typeof signup.attemptId !== "string" || !/^[A-Za-z0-9_-]{16,128}$/.test(signup.attemptId) ||
+      typeof signup.expiresAt !== "string" || !Number.isFinite(Date.parse(signup.expiresAt))) {
+      throw new Error("카카오 가입 정보를 확인할 수 없어요. 다시 시작해 주세요.");
+    }
+    if (Date.parse(signup.expiresAt) <= Date.now()) {
+      throw new InteractionExpiredError("카카오 인증이 만료됐어요. 다시 시작해 주세요.");
+    }
+  }
+  if (details.externalLoginResult !== undefined) {
+    const result = details.externalLoginResult;
+    if (!result || details.externalSignup ||
+      (result.mfaRequired !== undefined && typeof result.mfaRequired !== "boolean") ||
+      (result.mfaEnrollmentRequired !== undefined && typeof result.mfaEnrollmentRequired !== "boolean") ||
+      (result.methods !== undefined && (!Array.isArray(result.methods) || !result.methods.every((method) => ["totp", "webauthn", "recovery_code"].includes(method)))) ||
+      (result.redirectTo !== undefined && typeof result.redirectTo !== "string") ||
+      (!result.mfaRequired && !result.mfaEnrollmentRequired && !result.redirectTo)) {
+      throw new Error("추가 인증 정보를 확인할 수 없어요. 다시 시작해 주세요.");
+    }
+  }
+  // Bind the selector to Auth's verified interaction details, never URL input
+  // or an untrusted nested clientId. Account also rechecks the opaque ticket.
+  return details.externalSignup ? { ...details, externalSignup: {
+    provider: details.externalSignup.provider, ticket: details.externalSignup.ticket,
+    attemptId: details.externalSignup.attemptId, expiresAt: details.externalSignup.expiresAt,
+    clientId: details.clientId,
+  } } : details;
 }
 
 function apiBase(): string {
@@ -98,6 +133,9 @@ export async function interactionRequest<T>(
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   if (!response.ok) {
+    if ([401, 404, 410].includes(response.status) && ["details", "external-signup/resume"].includes(path)) {
+      throw new InteractionExpiredError("로그인 세션이 만료됐어요. 다시 시작해 주세요.");
+    }
     if (response.status === 401)
       throw new Error("아이디 또는 비밀번호를 확인해 주세요.");
     if (response.status === 403)
@@ -180,8 +218,8 @@ export function goToAuth(redirectTo: string): void {
   window.location.assign(target.href);
 }
 
-export function goToIdp(provider: string): void {
+export function goToIdp(provider: string, intent: "login" | "signup" = "login"): void {
   if (!/^[A-Za-z0-9_-]+$/.test(provider))
     throw new Error("잘못된 로그인 제공자입니다.");
-  window.location.assign(`${apiBase()}/idp/${encodeURIComponent(provider)}`);
+  window.location.assign(`${apiBase()}/idp/${encodeURIComponent(provider)}${intent === "signup" ? "?intent=signup" : ""}`);
 }

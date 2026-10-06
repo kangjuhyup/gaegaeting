@@ -23,6 +23,8 @@ import { AuthAccountProvisioningPort } from '../application/port/auth-account-pr
 import { AuthServiceAccountProvisioningAdapter } from './adapter/outbound/auth/auth-service-account-provisioning.adapter.js';
 import { AccountSignupRepositoryPort } from '../application/port/account-signup-repository.port.js';
 import { AccountSignupOrmRepository } from './adapter/outbound/persistence/account-signup-orm.repository.js';
+import { AuthExternalSignupPort } from '../application/port/auth-external-signup.port.js';
+import { AuthServiceExternalSignupAdapter } from './adapter/outbound/auth/auth-service-external-signup.adapter.js';
 
 const providers : Provider[] = [
     {
@@ -42,6 +44,7 @@ const providers : Provider[] = [
     { provide: IdentityVerificationPort, useClass: MockIdentityVerificationAdapter },
     { provide: RegistrationEligibilityRepositoryPort, useClass: RegistrationEligibilityOrmRepository },
     { provide: AuthAccountProvisioningPort, useClass: AuthServiceAccountProvisioningAdapter },
+    { provide: AuthExternalSignupPort, useClass: AuthServiceExternalSignupAdapter },
     { provide: AccountSignupRepositoryPort, useClass: AccountSignupOrmRepository },
     {
         provide: REGISTRATION_OPTIONS,
@@ -52,6 +55,8 @@ const providers : Provider[] = [
             handoffTtlMs: config.getOrThrow<number>(ENV_KEY.REGISTRATION_HANDOFF_TTL_MS),
             claimTtlMs: config.getOrThrow<number>(ENV_KEY.REGISTRATION_CLAIM_TTL_MS),
             authIssuer: config.getOrThrow<string>(ENV_KEY.AUTH_ISSUER),
+            signupClientId: config.getOrThrow<string>(ENV_KEY.AUTH_SIGNUP_CLIENT_ID),
+            signupClientIds: SOCIAL_SIGNUP_CLIENT_IDS,
         }),
     },
 ]
@@ -84,3 +89,4 @@ const providers : Provider[] = [
     exports : providers,
 })
 export class UserInfraStructureModule {}
+import { SOCIAL_SIGNUP_CLIENT_IDS } from '../application/port/auth-external-signup.port.js';
