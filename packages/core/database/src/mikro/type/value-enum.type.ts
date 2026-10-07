@@ -30,6 +30,11 @@ export class ValueEnumType<T extends ValueEnumObject> extends Type<
     return this.valueMap.get(value) ?? null;
   }
 
+  // The JS value is an enum object; MikroORM's default runtime type is string.
+  override get runtimeType(): string {
+    return 'object';
+  }
+
   getColumnType(_property: EntityProperty, _platform: Platform): string {
     return 'smallint';
   }
