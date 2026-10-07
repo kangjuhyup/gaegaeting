@@ -43,7 +43,7 @@ export function createAuthenticationMiddleware(
     delete request.headers.authorization;
     try {
       const external = await introspector.introspect(match[1]);
-      const mapped = await subjects.resolve(external);
+      const mapped = await subjects.resolve({ tenantId: external.issuer, subject: external.subject });
       request.authenticatedPrincipal = {
         tenantId: external.tenantId,
         subject: external.subject,
