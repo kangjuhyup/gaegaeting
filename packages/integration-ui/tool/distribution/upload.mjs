@@ -29,4 +29,4 @@ try{
  const summary=`Firebase APK ${manifest.versionName}+${number} uploaded.\n[Release](${result.firebaseConsoleUri})\nSource: ${manifest.sourceCommit}\nSHA256: ${manifest.sha256}\n${groups?'Distributed to configured tester groups.':'No tester invitations requested.'}\n`;
  if(process.env.GITHUB_STEP_SUMMARY)await writeFile(process.env.GITHUB_STEP_SUMMARY,summary,{flag:'a'});
  console.log(`Firebase release ${manifest.versionName}+${number} verified; signed download URLs omitted.`);
-}catch(error){console.error(`Distribution failed: ${error.response?.status??error.message}`);process.exitCode=1;}finally{await unlink('firebase-debug.log').catch(()=>{});}
+}catch(error){console.error(`Distribution failed (status ${Number(error.response?.status)||'unavailable'}); sensitive diagnostics suppressed.`);process.exitCode=1;}finally{await unlink('firebase-debug.log').catch(()=>{});}

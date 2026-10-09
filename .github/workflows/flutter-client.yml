@@ -48,7 +48,7 @@ jobs:
           echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"
           "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version
           "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version --machine > "$RUNNER_TEMP/flutter-version.json"
-          node tool/distribution/verify-sdk.mjs "$RUNNER_TEMP/flutter-version.json"
+          node tool/distribution/verify-sdk.mjs
       - name: Install pinned Android platform tools
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;28.2.13676358'
       - run: node --test test/distribution_policy.test.mjs test/release_preflight.test.mjs
@@ -94,7 +94,7 @@ jobs:
           echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"
           "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version
           "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version --machine > "$RUNNER_TEMP/flutter-version.json"
-          node tool/distribution/verify-sdk.mjs "$RUNNER_TEMP/flutter-version.json"
+          node tool/distribution/verify-sdk.mjs
       - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;28.2.13676358'
       - run: flutter pub get --enforce-lockfile
       - uses: DopplerHQ/cli-action@014df23b1329b615816a38eb5f473bb9000700b1 # v3

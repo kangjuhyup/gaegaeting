@@ -41,7 +41,7 @@ function publicHttps(value, { originOnly = false } = {}) {
       ) &&
       !/\.(?:local|localhost|test)$/.test(u.hostname) &&
       !/^\[(?:fc|fd|fe80:)/i.test(u.hostname) &&
-      !/example\.(com|org|invalid)|\.invalid$/.test(u.hostname) &&
+      !/(?:example\.(com|org|invalid)|\.invalid$)/.test(u.hostname) &&
       (!originOnly || value === u.origin)
     );
   } catch {

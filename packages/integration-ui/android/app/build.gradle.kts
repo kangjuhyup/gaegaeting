@@ -68,6 +68,8 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
             // Local release-mode reviews remain possible without store credentials.
             // Store builds must set GAEGAETING_REQUIRE_UPLOAD_SIGNING=true.
             signingConfig = signingConfigs.getByName(if (hasUploadSigning) "upload" else "debug")
