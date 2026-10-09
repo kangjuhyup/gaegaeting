@@ -1,0 +1,11 @@
+{
+  "API_ENABLED": true,
+  "STORE_PURCHASES_ENABLED": false,
+  "GATEWAY_GRAPHQL_URL": "http://localhost:8080/gateway/graphql",
+  "ACCOUNT_GRAPHQL_URL": "http://localhost:2800/account/graphql",
+  "OIDC_ISSUER": "http://localhost:3002/t/gaegaeting/oidc",
+  "OIDC_CLIENT_ID": "gaegaeting-mobile",
+  "OIDC_REDIRECT_URI": "app.gaegaeting:/oauth/callback",
+  "OIDC_LOGOUT_URI": "app.gaegaeting:/oauth/logout",
+  "API_AUDIENCE": "https://api.gaegaeting.app"
+}
