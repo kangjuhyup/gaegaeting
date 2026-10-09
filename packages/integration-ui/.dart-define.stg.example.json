@@ -1,0 +1,14 @@
+{
+  "API_ENABLED": true,
+  "STORE_PURCHASES_ENABLED": false,
+  "GATEWAY_GRAPHQL_URL": "https://test-ggt-api.rvkang.app/gateway/graphql",
+  "ACCOUNT_GRAPHQL_URL": "https://test-ggt-api.rvkang.app/account/graphql",
+  "OIDC_ISSUER": "https://auth.rvkang.app/t/gaegaeting-dev/oidc",
+  "OIDC_CLIENT_ID": "gaegaeting-mobile",
+  "OIDC_REDIRECT_URI": "app.gaegaeting:/oauth/callback",
+  "OIDC_LOGOUT_URI": "app.gaegaeting:/oauth/logout",
+  "API_AUDIENCE": "https://test-ggt-api.rvkang.app",
+  "MAP_TILE_URL": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  "MAP_ATTRIBUTION": "© OpenStreetMap contributors",
+  "IMAGE_STORAGE_ORIGIN": ""
+}

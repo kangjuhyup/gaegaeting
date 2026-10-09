@@ -1,0 +1,12 @@
+.dart_tool/
+.fvm/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+coverage/
+*.iml
+.idea/
+.dart-define.json
+.dart-define.*.json
+!.dart-define.example.json
+!.dart-define.*.example.json

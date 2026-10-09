@@ -7,7 +7,12 @@
     "build": "tsc -b && vite build",
     "dev": "vite --host 0.0.0.0",
     "preview": "vite preview --host 0.0.0.0",
-    "typecheck": "tsc -b --pretty false"
+    "typecheck": "tsc -b --pretty false",
+    "dev:flutter": "fvm flutter run -d chrome --web-port=5173",
+    "build:flutter": "fvm flutter build web --release",
+    "analyze:flutter": "fvm flutter analyze",
+    "test:flutter": "fvm flutter test",
+    "generate:flutter": "fvm dart run build_runner build"
   },
   "dependencies": {
     "react": "18.3.1",

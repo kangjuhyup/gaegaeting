@@ -1,0 +1,155 @@
+name: Flutter client
+
+on:
+  pull_request:
+    paths: ['packages/integration-ui/**', '.github/workflows/flutter-client.yml']
+  push:
+    branches: [dev/core, main]
+    paths: ['packages/integration-ui/**', '.github/workflows/flutter-client.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  FLUTTER_REVISION: 5fc346839b5d0eef006ed8404392afb4dfae428d
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: packages/integration-ui
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Checkout the exact pinned Flutter SDK
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: flutter/flutter
+          ref: ${{ env.FLUTTER_REVISION }}
+          path: .flutter-sdk
+          persist-credentials: false
+      - name: Activate and verify the repository SDK
+        run: |
+          echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"
+          "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version --machine > "$RUNNER_TEMP/flutter-version.json"
+          node tool/distribution/verify-sdk.mjs "$RUNNER_TEMP/flutter-version.json"
+      - name: Install pinned Android platform tools
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;28.2.13676358'
+      - run: node --test test/distribution_policy.test.mjs test/release_preflight.test.mjs
+      - run: flutter pub get --enforce-lockfile
+      - run: dart run build_runner build
+      - run: git diff --exit-code -- lib
+      - run: dart format --output=none --set-exit-if-changed lib test integration_test test_driver
+      - run: dart analyze --fatal-infos lib test integration_test test_driver
+      - run: flutter test --no-pub
+      - run: flutter build web --release --no-pub --dart-define-from-file=.dart-define.stg.example.json
+      - run: flutter build apk --debug --no-pub --dart-define-from-file=.dart-define.stg.example.json
+
+  internal-apk:
+    needs: verify
+    if: >-
+      github.repository == 'kangjuhyup/gaegaeting' &&
+      (github.ref == 'refs/heads/dev/core' || github.ref == 'refs/heads/main') &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    environment: mobile-dev
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: packages/integration-ui
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: flutter/flutter
+          ref: ${{ env.FLUTTER_REVISION }}
+          path: .flutter-sdk
+          persist-credentials: false
+      - run: |
+          echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"
+          "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version --machine > "$RUNNER_TEMP/flutter-version.json"
+          node tool/distribution/verify-sdk.mjs "$RUNNER_TEMP/flutter-version.json"
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;28.2.13676358'
+      - run: flutter pub get --enforce-lockfile
+      - uses: DopplerHQ/cli-action@014df23b1329b615816a38eb5f473bb9000700b1 # v3
+      - name: Build with the existing internal signature from Doppler
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: node tool/distribution/build-apk.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: mobile-dev-${{ github.sha }}-${{ github.run_number }}
+          path: |
+            packages/integration-ui/build/app/outputs/flutter-apk/app-release.apk
+            packages/integration-ui/build/distribution/manifest.json
+            packages/integration-ui/build/distribution/release-notes.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  firebase-upload:
+    needs: internal-apk
+    environment: mobile-dev
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: packages/integration-ui
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: mobile-dev-${{ github.sha }}-${{ github.run_number }}
+          path: packages/integration-ui/build
+      - name: Authenticate without a service account key
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.FIREBASE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.FIREBASE_DISTRIBUTION_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+      - name: Install the pinned distribution CLI
+        run: |
+          npm install --prefix "$RUNNER_TEMP/firebase-cli" --no-audit --no-fund --save-exact firebase-tools@15.33.0
+          echo "FIREBASE_TOOLS_ROOT=$RUNNER_TEMP/firebase-cli/node_modules/firebase-tools" >> "$GITHUB_ENV"
+      - name: Upload and verify the release
+        env:
+          FIREBASE_TESTER_GROUPS: ${{ vars.FIREBASE_TESTER_GROUPS }}
+        run: node tool/distribution/upload.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: firebase-release-${{ github.sha }}-${{ github.run_number }}
+          path: packages/integration-ui/build/distribution/firebase-release.json
+          if-no-files-found: error
+          retention-days: 30

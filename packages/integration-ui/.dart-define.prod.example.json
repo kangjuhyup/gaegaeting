@@ -1,0 +1,14 @@
+{
+  "API_ENABLED": true,
+  "STORE_PURCHASES_ENABLED": false,
+  "GATEWAY_GRAPHQL_URL": "",
+  "ACCOUNT_GRAPHQL_URL": "",
+  "OIDC_ISSUER": "",
+  "OIDC_CLIENT_ID": "",
+  "OIDC_REDIRECT_URI": "app.gaegaeting:/oauth/callback",
+  "OIDC_LOGOUT_URI": "app.gaegaeting:/oauth/logout",
+  "API_AUDIENCE": "",
+  "MAP_TILE_URL": "",
+  "MAP_ATTRIBUTION": "",
+  "IMAGE_STORAGE_ORIGIN": ""
+}
