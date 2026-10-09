@@ -28,7 +28,7 @@ versionName은 0.1.0, versionCode는 `1000 + github.run_number`다. 재시도는
 
 ## 결과 확인 및 재시도
 
-Actions의 verify/internal-apk/firebase-upload 세 job을 확인한다. `mobile-dev-{sha}-{run}` artifact에는 APK·manifest·릴리스 노트만, `firebase-release-{sha}-{run}`에는 민감한 다운로드 URL을 제거한 릴리스 메타데이터만 보관한다(30일). job summary에서 Firebase 콘솔 링크, 소스 커밋, SHA256을 확인한다. signed binaryDownloadUri 및 원시 Firebase CLI 출력은 로그/artifact에 남기지 않는다.
+Actions의 verify/internal-distribution 두 job을 확인한다. 공개 GitHub 저장소에 APK artifact를 남기지 않는다. 서명·Firebase 인증·업로드는 같은 보호 브랜치 runner에서 순서대로 수행하며, `firebase-release-{sha}-{run}` artifact에는 민감한 다운로드 URL을 제거한 릴리스 메타데이터만 보관한다(30일). job summary에서 Firebase 콘솔 링크, 소스 커밋, SHA256을 확인한다. signed binaryDownloadUri 및 원시 Firebase CLI 출력은 로그/artifact에 남기지 않는다.
 
 실패하면 같은 Actions run의 실패 job을 재시도한다. 새 비밀키/서명을 발급하지 않는다. Doppler 접근 오류는 기존 `DOPPLER_TOKEN`의 해당 config 접근 권한만 확인한다. 앱 업데이트 서명이 다르면 자동 제거/사용자 데이터 삭제를 하지 않는다.
 
