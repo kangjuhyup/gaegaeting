@@ -40,12 +40,13 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: flutter/flutter
-          ref: ${{ env.FLUTTER_REVISION }}
+          ref: 3.47.6
           path: .flutter-sdk
           persist-credentials: false
       - name: Activate and verify the repository SDK
         run: |
           echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"
+          "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version
           "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version --machine > "$RUNNER_TEMP/flutter-version.json"
           node tool/distribution/verify-sdk.mjs "$RUNNER_TEMP/flutter-version.json"
       - name: Install pinned Android platform tools
@@ -86,11 +87,12 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: flutter/flutter
-          ref: ${{ env.FLUTTER_REVISION }}
+          ref: 3.47.6
           path: .flutter-sdk
           persist-credentials: false
       - run: |
           echo "$GITHUB_WORKSPACE/.flutter-sdk/bin" >> "$GITHUB_PATH"
+          "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version
           "$GITHUB_WORKSPACE/.flutter-sdk/bin/flutter" --version --machine > "$RUNNER_TEMP/flutter-version.json"
           node tool/distribution/verify-sdk.mjs "$RUNNER_TEMP/flutter-version.json"
       - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;28.2.13676358'
